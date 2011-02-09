@@ -15,6 +15,11 @@ if test "$HAVE_ENIGMA" = "no"; then
     echo "Fatal error: Enigma header not found!"
     exit 1
 fi
+AC_CHECK_HEADER(mdcomp/kosinski.h,break,[HAVE_KOSINSKI="no"])
+if test "$HAVE_KOSINSKI" = "no"; then
+    echo "Fatal error: Kosinski header not found!"
+    exit 1
+fi
 
 dnl ***************************************************************************
 dnl Internatinalization

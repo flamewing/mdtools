@@ -41,7 +41,7 @@ static void plane_map(std::istream& src, std::ostream& dst, size_t w, size_t h,
                       std::streamsize pointer, bool sonic2)
 {
 	src.seekg(0, std::ios::end);
-	std::streamsize sz = src.tellg() - pointer;
+	std::streamsize sz = std::streamsize(src.tellg()) - pointer;
 	src.seekg(pointer);
 
 	size_t nframes = sz / (2 * w * h);

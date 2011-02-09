@@ -1,13 +1,33 @@
 
 bin_PROGRAMS = \
-	plame_map
+	plane_map \
+	mapping_tool \
+	recolor_art
 
-plame_map_SOURCES = \
+recolor_art_SOURCES = \
+	recolor_art.cc
+
+recolor_art_LDFLAGS = -lnemesis -lkosinski
+
+recolor_art_CXXFLAGS = \
+	-I$(srcdir)/../lib
+
+mapping_tool_SOURCES = \
+	mapping_tool.cc
+
+mapping_tool_LDFLAGS = \
+	$(builddir)/../lib/libmappings.la
+
+mapping_tool_CXXFLAGS = \
+	-I$(srcdir)/../lib
+
+plane_map_SOURCES = \
 	plane_map.cc
 
-plame_map_LDFLAGS = -lenigma
+plane_map_LDFLAGS = -lenigma
 
-plame_map_CXXFLAGS = -I$(srcdir)/../lib
+plane_map_CXXFLAGS = \
+	-I$(srcdir)/../lib
 
 AM_CXXFLAGS =
 
