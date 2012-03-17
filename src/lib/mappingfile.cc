@@ -28,10 +28,20 @@ void mapping_file::read(std::istream& in, bool s2)
 	in.seekg(0,std::ios::beg);
 	
 	std::vector<size_t> off;
-	std::streampos const term = BigEndian::Read2(in);
+	signed short term = static_cast<signed short>(BigEndian::Read2(in));
+	while (term == 0)
+	{
+		off.push_back(term);
+		term = BigEndian::Read2(in);
+	}
 	off.push_back(term);
 	while (in.tellg() < term)
-		off.push_back(BigEndian::Read2(in));
+	{
+		signed short newterm = static_cast<signed short>(BigEndian::Read2(in));
+		if (newterm >= 0 && newterm < term)
+			term = newterm;
+		off.push_back(newterm);
+	}
 	
 	for (std::vector<size_t>::const_iterator it = off.begin(); it != off.end(); ++it)
 	{

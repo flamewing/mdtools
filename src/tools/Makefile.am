@@ -2,7 +2,27 @@
 bin_PROGRAMS = \
 	plane_map \
 	mapping_tool \
-	recolor_art
+	recolor_art \
+	smps2asm \
+	voice_dumper
+
+voice_dumper_SOURCES = \
+	fmvoice.cc    \
+	fmvoice.h    \
+	voice_dumper.cc
+
+voice_dumper_CXXFLAGS = \
+	-I$(srcdir)/../lib
+
+smps2asm_SOURCES = \
+	smps2asm.cc\
+	fmvoice.cc\
+	fmvoice.h \
+	songtrack.cc \
+	songtrack.h
+
+smps2asm_CXXFLAGS = \
+	-I$(srcdir)/../lib
 
 recolor_art_SOURCES = \
 	recolor_art.cc

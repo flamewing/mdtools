@@ -24,7 +24,7 @@
 
 static void usage()
 {
-	std::cerr << "Usage: recolor-art [-f|--format {unc|nem|kos}] [-m|--moduled] {-s|--source-color clr1} {-d|--dest-color clr2} {input_art} {output_art}" << std::endl;
+	std::cerr << "Usage: recolor-art [-f|--format {unc|nem|kos}] [-m|--moduled] {-s|--source-color clr1} {-d|--dest-color clr2} {-b|--blacklist clr3} {input_art} {output_art}" << std::endl;
 	std::cerr << "\tRecolors the art file, changing palette index clr1 to clr2" << std::endl << std::endl;
 }
 
@@ -35,18 +35,55 @@ enum Formats
 	eKosinski     = 2
 };
 
-void recolor(std::istream& in, std::ostream& out, int const srccolor, int const dstcolor)
+struct Tile
 {
-	unsigned char const c1l = srccolor, c1h = srccolor << 4,
-	                    c2l = dstcolor, c2h = dstcolor << 4;
-	
+	unsigned char tiledata[64];
+	bool read(std::istream& in)
+	{
+		for (size_t i = 0; i < sizeof(tiledata); i += 2)
+		{
+			size_t col = in.get();
+			if (!in.good())
+				return false;
+			tiledata[i + 0] = col & 0x0f;
+			tiledata[i + 1] = (col & 0xf0) >> 4;
+		}
+		return true;
+	}
+	bool blacklisted(unsigned char const bll)
+	{
+		for (size_t i = 0; i < sizeof(tiledata); i++)
+			if (tiledata[i] == bll)
+				return true;
+		return false;
+	}
+	void remap(unsigned char const c1l, unsigned char const c2l)
+	{
+		for (size_t i = 0; i < sizeof(tiledata); i++)
+			if (tiledata[i] == c1l)
+				tiledata[i] = c2l;
+	}
+	void write(std::ostream& out)
+	{
+		for (size_t i = 0; i < sizeof(tiledata); i += 2)
+			out.put(tiledata[i] | (tiledata[i + 1] << 4));
+	}
+};
+
+void recolor(std::istream& in, std::ostream& out, int const srccolor, int const dstcolor, int const blacklist)
+{
+	unsigned char const c1l = srccolor  & 0xf,
+	                    c2l = dstcolor  & 0xf,
+	                    bll = blacklist & 0xf;
+
+	Tile tile;
 	while (true)
 	{
-		int col = in.get();
-		if (!in.good())
+		if (!tile.read(in))
 			break;
-		int cl = col & 0xf, ch = col & 0xf0;
-		out.put((cl == c1l ? c2l : cl) | (ch == c1h ? c2h : ch));
+		if (blacklist < 0 || !tile.blacklisted(bll))
+			tile.remap(c1l, c2l);
+		tile.write(out);
 	}
 }
 
@@ -57,17 +94,18 @@ int main(int argc, char *argv[])
 		{"moduled"     , no_argument      , 0, 'm'},
 		{"source-color", required_argument, 0, 's'},
 		{"dest-color"  , required_argument, 0, 'd'},
+		{"blacklist"   , required_argument, 0, 'b'},
 		{0, 0, 0, 0}
 	};
 
 	bool moduled = false;
-	int srccolor = -1, dstcolor = -1;
+	int srccolor = -1, dstcolor = -1, blacklist = -1;
 	Formats fmt = eUncompressed;
 
 	while (true)
 	{
 		int option_index = 0;
-		int c = getopt_long(argc, argv, "f:ms:d:",
+		int c = getopt_long(argc, argv, "f:ms:d:b:",
                             long_options, &option_index);
 		if (c == -1)
 			break;
@@ -99,6 +137,10 @@ int main(int argc, char *argv[])
 			case 'd':
 				dstcolor = std::strtoul(optarg, 0, 0);
 				break;
+
+			case 'b':
+				blacklist = std::strtoul(optarg, 0, 0);
+				break;
 		}
 	}
 
@@ -128,7 +170,7 @@ int main(int argc, char *argv[])
 
 	fin.close();
 	sin.seekg(0);
-	recolor(sin, sout, srccolor, dstcolor);
+	recolor(sin, sout, srccolor, dstcolor, blacklist);
 
 	std::fstream fout(argv[optind+1], std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc);
 	if (!fout.good())
