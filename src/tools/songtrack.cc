@@ -724,8 +724,10 @@ void CoordFlagPointer2ParamBytes<noret>::print(std::ostream& out,
 	out << std::endl;
 }
 
+#include <iostream>
 void InstantiateTemplates()
 {
+	std::multimap<int,std::string> labels;
 	CoordFlagNoParams<true > ft0(0);
 	CoordFlagNoParams<false> ff0(0);
 	CoordFlag1ParamByte<true > ft1(0, 0);
@@ -744,4 +746,22 @@ void InstantiateTemplates()
 	CoordFlagPointer1ParamByte<false> ffp1(0, 0, 0);
 	CoordFlagPointer2ParamBytes<true > ftp2(0, 0, 0, 0);
 	CoordFlagPointer2ParamBytes<false> ffp2(0, 0, 0, 0);
+	ft0.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ff0.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ft1.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ff1.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ft2.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ff2.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ft3.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ff3.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ft4.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ff4.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ft5.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ff5.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ftp0.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ffp0.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ftp1.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ffp1.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ftp2.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ffp2.print(std::cout, 1, LocTraits::eHeader, labels, false);
 }
