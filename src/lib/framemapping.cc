@@ -25,23 +25,26 @@
 
 #include "framemapping.h"
 
-void frame_mapping::read(std::istream& in, bool s2)
+void frame_mapping::read(std::istream& in, int ver)
 {
-	size_t cnt = BigEndian::Read2(in);
+	size_t cnt = ver == 1 ? Read1(in) : BigEndian::Read2(in);
 	for (size_t i = 0; i < cnt; i++)
 	{
 		single_mapping sd;
-		sd.read(in, s2);
+		sd.read(in, ver);
 		maps.push_back(sd);
 	}
 }
 
-void frame_mapping::write(std::ostream& out, bool s2) const
+void frame_mapping::write(std::ostream& out, int ver) const
 {
-	BigEndian::Write2(out,maps.size());
+	if (ver == 1)
+		Write1(out, maps.size());
+	else
+		BigEndian::Write2(out, maps.size());
 	for (std::vector<single_mapping>::const_iterator it = maps.begin();
 	     it != maps.end(); ++it)
-		it->write(out, s2);
+		it->write(out, ver);
 }
 
 void frame_mapping::print() const
@@ -115,5 +118,21 @@ void frame_mapping::change_pal(int srcpal, int dstpal)
 	for (std::vector<single_mapping>::iterator it = maps.begin();
 	     it != maps.end(); ++it)
 		it->change_pal(srcpal, dstpal);
+}
+
+bool frame_mapping::operator<(frame_mapping const& rhs) const
+{
+	if (maps.size() < rhs.maps.size())
+		return true;
+	else if (maps.size() > rhs.maps.size())
+		return false;
+	for (size_t ii = 0; ii < maps.size(); ii++)
+	{
+		if (maps[ii] < rhs.maps[ii])
+			return true;
+		else if (rhs.maps[ii] < maps[ii])
+			return false;
+	}
+	return false;
 }
 

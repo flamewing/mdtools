@@ -23,7 +23,7 @@
 
 #include "singlemapping.h"
 
-void single_mapping::read(std::istream& in, bool s2)
+void single_mapping::read(std::istream& in, int ver)
 {
 	yy = static_cast<signed char>(Read1(in));
 	sx = Read1(in);
@@ -32,19 +32,25 @@ void single_mapping::read(std::istream& in, bool s2)
 	tile = BigEndian::Read2(in);
 	flags = ((tile & 0xf800u) >> 8u);
 	tile &= 0x07ffu;
-	if (s2)
+	if (ver == 2)
 		in.ignore(2);
-	xx = BigEndian::Read2(in);
+	if (ver == 1)
+		xx = static_cast<signed char>(Read1(in));
+	else
+		xx = BigEndian::Read2(in);
 }
 
-void single_mapping::write(std::ostream& out, bool s2) const
+void single_mapping::write(std::ostream& out, int ver) const
 {
 	Write1(out, static_cast<unsigned char>(yy));
 	Write1(out, ((sy - 1) << 2) | (sx - 1));
 	BigEndian::Write2(out, (flags << 8) | tile);
-	if (s2)
+	if (ver == 2)
 		BigEndian::Write2(out, (flags << 8) | (tile >> 1));
-	BigEndian::Write2(out, xx);
+	if (ver == 1)
+		Write1(out, static_cast<unsigned char>(xx));
+	else
+		BigEndian::Write2(out, xx);
 }
 
 void single_mapping::print() const

@@ -32,14 +32,19 @@ class frame_mapping
 protected:
 	std::vector<single_mapping> maps;
 public:
-	void read(std::istream& in, bool s2);
-	void write(std::ostream& out, bool s2) const;
+	void read(std::istream& in, int ver);
+	void write(std::ostream& out, int ver) const;
 	void print() const;
 	void split(frame_mapping const& src, frame_dplc& dplc);
 	void merge(frame_mapping const& src, frame_dplc const& dplc);
 	void change_pal(int srcpal, int dstpal);
-	size_t size(bool s2) const
-	{	return 2 + single_mapping::size(s2) * maps.size();	}
+	size_t size() const
+	{	return maps.size();	}
+	size_t size(int ver) const
+	{	return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();	}
+	bool operator<(frame_mapping const& rhs) const;
+	bool operator==(frame_mapping const& rhs) const
+	{   return !(*this < rhs || rhs < *this);	}  
 };
 
 #endif // _FRAMEMAPPING_H_

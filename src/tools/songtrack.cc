@@ -201,7 +201,7 @@ void FMPSGNote::print(std::ostream& out,
 		"nD5" , "nEb5", "nE5" , "nF5" , "nFs5", "nG5" , "nAb5", "nA5" , "nBb5",
 		"nB5" , "nC6" , "nCs6", "nD6" , "nEb6", "nE6" , "nF6" , "nFs6", "nG6" ,
 		"nAb6", "nA6" , "nBb6", "nB6" , "nC7" , "nCs7", "nD7" , "nEb7", "nE7" ,
-		"nF7" , "nFs7", "nG7" , "nAb7", "nA7" , "nBb7"
+		"nF7" , "nFs7", "nG7" , "nAb7", "nA7" , "nBb7", "nMaxPSG", "nMaxPSG2"
 	};
 
 	if (val - 0x80 >= sizeof(fmpsglut)/sizeof(fmpsglut[0]))

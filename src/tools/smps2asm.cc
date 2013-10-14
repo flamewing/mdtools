@@ -145,6 +145,10 @@ BaseNote *BaseNote::read(std::istream& in, int sonicver, int offset,
 				return new FMPSGNote(byte);
 			case LocTraits::ePSGInit:
 			case LocTraits::ePSGTrack:
+				if (sonicver >= 3 && (byte == 0xd2 || byte == 0xd3))
+					byte = 0xe0 + (byte & 1);
+				else if (sonicver <= 2 && byte == 0xc5)
+					byte = 0xe0;
 				return new FMPSGNote(byte);
 			case LocTraits::eDACInit:
 			case LocTraits::eDACTrack:

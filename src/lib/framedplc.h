@@ -32,14 +32,19 @@ class frame_dplc
 protected:
 	std::vector<single_dplc> dplc;
 public:
-	void read(std::istream& in);
-	void write(std::ostream& out) const;
+	void read(std::istream& in, int ver);
+	void write(std::ostream& out, int ver) const;
 	void print() const;
 	void consolidate(frame_dplc const& src);
 	void insert(single_dplc const& val);
 	void build_vram_map(std::map<size_t,size_t>& vram_map) const;
 	size_t size() const
-	{	return 2 + single_dplc::size() * dplc.size();	}
+	{	return dplc.size();	}
+	size_t size(int ver) const
+	{	return (ver == 1 ? 1 : 2) + single_dplc::size(ver) * dplc.size();	}
+	bool operator<(frame_dplc const& rhs) const;
+	bool operator==(frame_dplc const& rhs) const
+	{   return !(*this < rhs || rhs < *this);	}  
 };
 
 #endif // _FRAMEDPLC_H_

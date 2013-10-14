@@ -24,8 +24,9 @@
 
 static void usage()
 {
-	std::cerr << "Usage: recolor-art [-f|--format {unc|nem|kos}] [-m|--moduled] {-s|--source-color clr1} {-d|--dest-color clr2} {-b|--blacklist clr3} {input_art} {output_art}" << std::endl;
-	std::cerr << "\tRecolors the art file, changing palette index clr1 to clr2" << std::endl << std::endl;
+	std::cerr << "Usage: recolor-art [-o|--format {unc|nem|kos}] [-m|--moduled] {-clr1 clr2}+ {input_art} {output_art}" << std::endl;
+	std::cerr << "\tRecolors the art file, changing palette index clr1 to clr2. Both are assumed to be an hex digit." << std::endl
+		      << "\tYou can specify as many colors to remap as you want, but each source color can appear only once." << std::endl << std::endl;
 }
 
 enum Formats
@@ -57,11 +58,10 @@ struct Tile
 				return true;
 		return false;
 	}
-	void remap(unsigned char const c1l, unsigned char const c2l)
+	void remap(int const *colormap)
 	{
 		for (size_t i = 0; i < sizeof(tiledata); i++)
-			if (tiledata[i] == c1l)
-				tiledata[i] = c2l;
+			tiledata[i] = colormap[tiledata[i]];
 	}
 	void write(std::ostream& out)
 	{
@@ -70,19 +70,14 @@ struct Tile
 	}
 };
 
-void recolor(std::istream& in, std::ostream& out, int const srccolor, int const dstcolor, int const blacklist)
+void recolor(std::istream& in, std::ostream& out, int const *colormap)
 {
-	unsigned char const c1l = srccolor  & 0xf,
-	                    c2l = dstcolor  & 0xf,
-	                    bll = blacklist & 0xf;
-
 	Tile tile;
 	while (true)
 	{
 		if (!tile.read(in))
 			break;
-		if (blacklist < 0 || !tile.blacklisted(bll))
-			tile.remap(c1l, c2l);
+		tile.remap(colormap);
 		tile.write(out);
 	}
 }
@@ -90,30 +85,39 @@ void recolor(std::istream& in, std::ostream& out, int const srccolor, int const 
 int main(int argc, char *argv[])
 {
 	static struct option long_options[] = {
-		{"format"      , required_argument, 0, 'f'},
-		{"moduled"     , no_argument      , 0, 'm'},
-		{"source-color", required_argument, 0, 's'},
-		{"dest-color"  , required_argument, 0, 'd'},
-		{"blacklist"   , required_argument, 0, 'b'},
+		{"format"      , required_argument, 0, 'o'},
+		{"moduled"     , optional_argument, 0, 'm'},
 		{0, 0, 0, 0}
 	};
 
 	bool moduled = false;
-	int srccolor = -1, dstcolor = -1, blacklist = -1;
+	std::streamsize modulesize = 0x1000;
+	// Identity map.
+	int colormap[16] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+	                    0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
+	unsigned numcolors = 0;
 	Formats fmt = eUncompressed;
 
 	while (true)
 	{
 		int option_index = 0;
-		int c = getopt_long(argc, argv, "f:ms:d:b:",
+		int c = getopt_long(argc, argv, "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
                             long_options, &option_index);
 		if (c == -1)
 			break;
 		
+		if (c >= 'A' && c <= 'F')
+			c += ('a' - 'A');
+		
 		switch (c)
 		{
-			case 'f':
-				if (!std::strcmp(optarg, "unc"))
+			case 'o':
+				if (!optarg)
+				{
+					usage();
+					return 1;
+				}
+				else if (!std::strcmp(optarg, "unc"))
 					fmt = eUncompressed;
 				else if (!std::strcmp(optarg, "nem"))
 					fmt = eNemesis;
@@ -128,33 +132,69 @@ int main(int argc, char *argv[])
 				
 			case 'm':
 				moduled = true;
+				if (optarg)
+					modulesize = strtoul(optarg, 0, 0);
 				break;
 
-			case 's':
-				srccolor = std::strtoul(optarg, 0, 0);
-				break;
-
-			case 'd':
-				dstcolor = std::strtoul(optarg, 0, 0);
-				break;
-
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+			case 'a':
 			case 'b':
-				blacklist = std::strtoul(optarg, 0, 0);
+			case 'c':
+			case 'd':
+			case 'e':
+			case 'f':
+			{
+				if (!optarg || std::strlen(optarg) != 1)
+				{
+					usage();
+					return 1;
+				}
+				int c1;
+				if (c >= '0' && c <= '9')
+					c1 = c - '0';
+				else
+					c1 = c - 'a' + 10;
+				int d = *optarg;
+				if (d >= '0' && d <= '9')
+					colormap[c1] = d - '0';
+				else if (d >= 'a' && d <= 'f')
+					colormap[c1] = d - 'a' + 10;
+				else if (d >= 'A' && d <= 'F')
+					colormap[c1] = d - 'A' + 10;
+				else
+				{
+					usage();
+					return 1;
+				}
+				numcolors++;
 				break;
+			}
+			default:
+				usage();
+				return 1;
 		}
 	}
 
-	if (argc - optind < 2 || srccolor < 0 || dstcolor < 0)
+	if (argc - optind < 2 || numcolors == 0)
 	{
 		usage();
-		return 1;
+		return 2;
 	}
 
 	std::ifstream fin(argv[optind], std::ios::in|std::ios::binary);
 	if (!fin.good())
 	{
 		std::cerr << "Input file '" << argv[optind] << "' could not be opened." << std::endl << std::endl;
-		return 2;
+		return 3;
 	}
 
 	std::stringstream sin (std::ios::in|std::ios::out|std::ios::binary),
@@ -170,13 +210,13 @@ int main(int argc, char *argv[])
 
 	fin.close();
 	sin.seekg(0);
-	recolor(sin, sout, srccolor, dstcolor, blacklist);
+	recolor(sin, sout, colormap);
 
 	std::fstream fout(argv[optind+1], std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc);
 	if (!fout.good())
 	{
 		std::cerr << "Output file '" << argv[optind+1] << "' could not be opened." << std::endl << std::endl;
-		return 3;
+		return 4;
 	}
 
 	sout.seekg(0);
@@ -186,7 +226,7 @@ int main(int argc, char *argv[])
 	else if (fmt == eNemesis)
 		nemesis::encode(sout, fout);
 	else // if (fmt == eKosinski)
-		kosinski::encode(sout, fout, 8192, 256, moduled);
+		kosinski::encode(sout, fout, 8192, 256, moduled, modulesize);
 
 	fout.close();
 }

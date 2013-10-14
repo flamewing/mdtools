@@ -31,13 +31,13 @@ class dplc_file
 protected:
 	std::vector<frame_dplc> frames;
 public:
-	void read(std::istream& in);
-	void write(std::ostream& out) const;
+	void read(std::istream& in, int ver);
+	void write(std::ostream& out, int ver, bool nullfirst) const;
 	void print() const;
 	void consolidate(dplc_file const& src);
 	void insert(frame_dplc const& val);
 	frame_dplc const& get_dplc(size_t i) const;
-	size_t size() const;
+	size_t size(int ver) const;
 };
 
 #endif // _DPLCFILE_H_

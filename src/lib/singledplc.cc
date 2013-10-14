@@ -23,16 +23,27 @@
 
 #include "singledplc.h"
 
-void single_dplc::read(std::istream& in)
+void single_dplc::read(std::istream& in, int ver)
 {
 	tile = BigEndian::Read2(in);
-	cnt  = ((tile & 0xf000) >> 12) + 1;
-	tile &= 0x0fff;
+	if (ver < 4)
+	{
+		cnt  = ((tile & 0xf000) >> 12) + 1;
+		tile &= 0x0fff;
+	}
+	else
+	{
+		cnt  = (tile & 0x000f) + 1;
+		tile = (tile & 0xfff0) >> 4;
+	}
 }
 
-void single_dplc::write(std::ostream& out) const
+void single_dplc::write(std::ostream& out, int ver) const
 {
-	BigEndian::Write2(out, ((cnt - 1) << 12) | tile);
+	if (ver < 4)
+		BigEndian::Write2(out, ((cnt - 1) << 12) | tile);
+	else
+		BigEndian::Write2(out, (tile << 4) | (cnt - 1));
 }
 
 void single_dplc::print() const

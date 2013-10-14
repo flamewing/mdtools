@@ -17,13 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <map>
 #include <iostream>
 #include <iomanip>
 #include "bigendian_io.h"
 
 #include "mappingfile.h"
 
-void mapping_file::read(std::istream& in, bool s2)
+void mapping_file::read(std::istream& in, int ver)
 {
 	in.seekg(0,std::ios::beg);
 	
@@ -32,13 +33,13 @@ void mapping_file::read(std::istream& in, bool s2)
 	while (term == 0)
 	{
 		off.push_back(term);
-		term = BigEndian::Read2(in);
+		term = static_cast<signed short>(BigEndian::Read2(in));
 	}
 	off.push_back(term);
 	while (in.tellg() < term)
 	{
 		signed short newterm = static_cast<signed short>(BigEndian::Read2(in));
-		if (newterm >= 0 && newterm < term)
+		if (newterm > 0 && newterm < term)
 			term = newterm;
 		off.push_back(newterm);
 	}
@@ -49,23 +50,46 @@ void mapping_file::read(std::istream& in, bool s2)
 		in.clear();
 		in.seekg(pos);
 		frame_mapping sd;
-		sd.read(in, s2);
+		sd.read(in, ver);
 		frames.push_back(sd);
 	}
 }
 
-void mapping_file::write(std::ostream& out, bool s2) const
+void mapping_file::write(std::ostream& out, int ver, bool nullfirst) const
 {
+	std::map<frame_mapping,size_t> mappos;
+	std::map<size_t,frame_mapping> posmap;
 	size_t sz = 2 * frames.size();
-	for (std::vector<frame_mapping>::const_iterator it = frames.begin();
-	     it != frames.end(); ++it)
+	std::vector<frame_mapping>::const_iterator it;
+	it = frames.begin();
+
+	if (nullfirst && it != frames.end() && it->size() == 0)
 	{
-		BigEndian::Write2(out, sz);
-		sz += it->size(s2);
+		mappos.insert(std::make_pair(*it, size_t(0)));
+		posmap.insert(std::make_pair(size_t(0), *it));
 	}
-	for (std::vector<frame_mapping>::const_iterator it = frames.begin();
-	     it != frames.end(); ++it)
-		it->write(out, s2);
+	for ( ; it != frames.end(); ++it)
+	{
+		std::map<frame_mapping,size_t>::iterator it2 = mappos.find(*it);
+		if (it2 != mappos.end())
+			BigEndian::Write2(out, it2->second);
+		else
+		{
+			mappos.insert(std::make_pair(*it, sz));
+			posmap.insert(std::make_pair(sz, *it));
+			BigEndian::Write2(out, sz);
+			sz += it->size(ver);
+		}
+	}
+	for (std::map<size_t,frame_mapping>::iterator it2 = posmap.begin();
+	     it2 != posmap.end(); ++it2)
+		if (it2->first == out.tellp())
+			(it2->second).write(out, ver);
+		else if (it2->first)
+		{
+			std::cerr << "Missed write at " << out.tellp() << std::endl;
+			(it2->second).print();
+		}
 }
 
 void mapping_file::print() const
@@ -104,6 +128,32 @@ void mapping_file::merge(mapping_file const& src, dplc_file const& dplc)
 	}
 }
 
+void mapping_file::optimize(mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc)
+{
+	for (size_t i = 0; i < src.frames.size(); i++)
+	{
+		frame_mapping endmap;
+		frame_dplc    enddplc;
+		frame_mapping const& intmap  = src.frames[i];
+		frame_dplc    const& intdplc = indplc.get_dplc(i);
+		if (intdplc.size() && intmap.size())
+		{
+			frame_mapping mm;
+			frame_dplc    dd;
+			mm.merge(intmap, intdplc);
+			endmap.split(mm, dd);
+			enddplc.consolidate(dd);
+		}
+		else if (intdplc.size())
+			enddplc.consolidate(intdplc);
+		else
+			endmap = intmap;
+
+		frames.push_back(endmap);
+		outdplc.insert(enddplc);
+	}
+}
+
 void mapping_file::change_pal(int srcpal, int dstpal)
 {
 	for (std::vector<frame_mapping>::iterator it = frames.begin();
@@ -111,12 +161,12 @@ void mapping_file::change_pal(int srcpal, int dstpal)
 		it->change_pal(srcpal, dstpal);
 }
 
-size_t mapping_file::size(bool s2) const
+size_t mapping_file::size(int ver) const
 {
 	size_t sz = 2 * frames.size();
 	for (std::vector<frame_mapping>::const_iterator it = frames.begin();
 	     it != frames.end(); ++it)
-		sz += it->size(s2);
+		sz += it->size(ver);
 	return sz;
 }
 

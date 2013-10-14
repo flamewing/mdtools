@@ -33,14 +33,21 @@ protected:
 	short xx, yy;
 	unsigned char sx, sy;
 public:
-	void read(std::istream& in, bool s2);
-	void write(std::ostream& out, bool s2) const;
+	void read(std::istream& in, int ver);
+	void write(std::ostream& out, int ver) const;
 	void print() const;
 	void split(single_mapping const& src, single_dplc& dplc, std::map<size_t,size_t>& vram_map);
 	void merge(single_mapping const& src, std::map<size_t,size_t>& vram_map);
 	void change_pal(int srcpal, int dstpal);
-	static size_t size(bool s2)
-	{	return 6 + (s2 ? 2 : 0);	}
+	static size_t size(int ver)
+	{
+		switch (ver)
+		{
+			case 1: 	return 5;
+			case 2: 	return 8;
+			default:	return 6;
+		}
+	}
 	unsigned short get_flags() const
 	{	return flags;	}
 	unsigned short get_tile() const
@@ -65,6 +72,35 @@ public:
 	{	sx = t;	}
 	void set_sy(unsigned char t)
 	{	sy = t;	}
+	bool operator<(single_mapping const& rhs) const
+	{
+		if (flags < rhs.flags)
+			return true;
+		else if (flags > rhs.flags)
+			return false;
+		if (tile < rhs.tile)
+			return true;
+		else if (tile > rhs.tile)
+			return false;
+		if (xx < rhs.xx)
+			return true;
+		else if (xx > rhs.xx)
+			return false;
+		if (yy < rhs.yy)
+			return true;
+		else if (yy > rhs.yy)
+			return false;
+		if (sx < rhs.sx)
+			return true;
+		else if (sx > rhs.sx)
+			return false;
+		if (sy < rhs.sy)
+			return true;
+		else
+			return false;
+	}
+	bool operator==(single_mapping const& rhs) const
+	{   return !(*this < rhs || rhs < *this);	}  
 };
 
 #endif // _SINGLEMAPPING_H_

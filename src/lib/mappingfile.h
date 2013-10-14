@@ -32,13 +32,14 @@ class mapping_file
 protected:
 	std::vector<frame_mapping> frames;
 public:
-	void read(std::istream& in, bool s2);
-	void write(std::ostream& out, bool s2) const;
+	void read(std::istream& in, int ver);
+	void write(std::ostream& out, int ver, bool nullfirst) const;
 	void print() const;
 	void split(mapping_file const& src, dplc_file& dplc);
 	void merge(mapping_file const& src, dplc_file const& dplc);
+	void optimize(mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc);
 	void change_pal(int srcpal, int dstpal);
-	size_t size(bool s2) const;
+	size_t size(int ver) const;
 };
 
 #endif // _MAPPINGFILE_H_
