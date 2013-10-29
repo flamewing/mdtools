@@ -1,16 +1,20 @@
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License, or (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public
-// License along with main.c; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor Boston, MA 02110-1301,  USA
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/*
+ * Copyright (C) Flamewing 2011-2013 <flamewing.sonic@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <iostream>
 #include <fstream>
@@ -22,8 +26,7 @@
 #include "mappingfile.h"
 #include "dplcfile.h"
 
-static void usage()
-{
+static void usage() {
 	std::cerr << "Usage: mapping_tool {-c|--crush-mappings} [OPTIONS] INPUT_MAPS OUTPUT_MAPS" << std::endl;
 	std::cerr << "\tPerforms several size optimizations on the mappings file. All other options that write mappings also perform these" << std::endl
 	          << "\toptimizations, so this option should be used only if you don't want those side-effects." << std::endl << std::endl;
@@ -61,11 +64,10 @@ static void usage()
 	std::cerr << "\t                \tVER=2\tSonic 2 mappings and DPLC." << std::endl;
 	std::cerr << "\t                \tVER=3\tSonic 3 mappings and DPLC, as used by player objects." << std::endl;
 	std::cerr << "\t                \tVER=4\tSonic 3 mappings and DPLC, as used by non-player objects." << std::endl;
-    std::cerr << "\t                \tInvalid values or unspecified options will default to Sonic 2 format all cases." << std::endl << std::endl;
-	}
+	std::cerr << "\t                \tInvalid values or unspecified options will default to Sonic 2 format all cases." << std::endl << std::endl;
+}
 
-enum Actions
-{
+enum Actions {
 	eNone = 0,
 	eOptimize,
 	eSplit,
@@ -78,8 +80,7 @@ enum Actions
 	ePalChange
 };
 
-enum FileErrors
-{
+enum FileErrors {
 	eInvalidArgs = 1,
 	eInputMapsMissing,
 	eInputDplcMissing,
@@ -87,28 +88,27 @@ enum FileErrors
 	eOutputDplcMissing
 };
 
-#define ARG_CASE(x,y,z,w) 	case (x):	\
-				if (act != eNone)	\
-				{	\
-					usage();	\
-					return eInvalidArgs;	\
-				}	\
-				act = (y);	\
-				nargs = (z);	\
-				w;	\
-				break;
+#define ARG_CASE(x,y,z,w)   case (x):   \
+	if (act != eNone)   \
+	{   \
+		usage();    \
+		return eInvalidArgs;    \
+	}   \
+	act = (y);  \
+	nargs = (z);    \
+	w;  \
+	break;
 
-#define TEST_FILE(x,y,z)	do {	\
-				if (!(x).good())	\
-				{	\
-					std::cerr << "File '" << argv[(y)] << "' could not be opened." << std::endl << std::endl;	\
-					return (z);	\
-				}	\
-			} while (0)
+#define TEST_FILE(x,y,z)    do {    \
+		if (!(x).good())    \
+		{   \
+			std::cerr << "File '" << argv[(y)] << "' could not be opened." << std::endl << std::endl;   \
+			return (z); \
+		}   \
+	} while (0)
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	static struct option long_options[] = {
 		{"optimize"      , no_argument      , 0, 'o'},
 		{"split"         , no_argument      , 0, 's'},
@@ -132,16 +132,14 @@ int main(int argc, char *argv[])
 	int nargs = 0, srcpal = -1, dstpal = -1;
 	int tosonicver = 2, fromsonicver = 2;
 
-	while (true)
-	{
+	while (true) {
 		int option_index = 0;
 		int c = getopt_long(argc, argv, "osmfckidp:a:0",
-                            long_options, &option_index);
+		                    long_options, &option_index);
 		if (c == -1)
 			break;
-		
-		switch (c)
-		{
+
+		switch (c) {
 			case '0':
 				nullfirst = false;
 				break;
@@ -160,28 +158,27 @@ int main(int argc, char *argv[])
 				if (fromsonicver < 1 || fromsonicver > 4)
 					fromsonicver = tosonicver = 2;
 				break;
-			ARG_CASE('o',eOptimize,4,)
-			ARG_CASE('s',eSplit,3,)
-			ARG_CASE('m',eMerge,3,)
-			ARG_CASE('f',eFix,2,)
-			ARG_CASE('c',eConvert,2,)
-			ARG_CASE('k',eConvertDPLC,2,)
-			ARG_CASE('i',eInfo,1,)
-			ARG_CASE('d',eDplc,1,)
-			ARG_CASE('p',ePalChange,2,srcpal = (strtoul(optarg, 0, 0) & 3) << 5)
-			/*case 'p':
-				if (act != eNone)
-				{
-					usage();
-					return eInvalidArgs;
-				}
-				act = ePalChange;
-				nargs = 2;
-				srcpal = (strtoul(optarg, 0, 0) & 3) << 5;
-				break;*/
+				ARG_CASE('o', eOptimize, 4,)
+				ARG_CASE('s', eSplit, 3,)
+				ARG_CASE('m', eMerge, 3,)
+				ARG_CASE('f', eFix, 2,)
+				ARG_CASE('c', eConvert, 2,)
+				ARG_CASE('k', eConvertDPLC, 2,)
+				ARG_CASE('i', eInfo, 1,)
+				ARG_CASE('d', eDplc, 1,)
+				ARG_CASE('p', ePalChange, 2, srcpal = (strtoul(optarg, 0, 0) & 3) << 5)
+				/*case 'p':
+				    if (act != eNone)
+				    {
+				        usage();
+				        return eInvalidArgs;
+				    }
+				    act = ePalChange;
+				    nargs = 2;
+				    srcpal = (strtoul(optarg, 0, 0) & 3) << 5;
+				    break;*/
 			case 'a':
-				if (act != ePalChange)
-				{
+				if (act != ePalChange) {
 					usage();
 					return eInvalidArgs;
 				}
@@ -191,20 +188,17 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (argc - optind < nargs || act == eNone)
-	{
+	if (argc - optind < nargs || act == eNone) {
 		usage();
 		return eInvalidArgs;
 	}
 
-	switch (act)
-	{
-		case eOptimize:
-		{
-			std::ifstream inmaps(argv[optind+0], std::ios::in|std::ios::binary),
-			              indplc(argv[optind+1], std::ios::in|std::ios::binary);
-			TEST_FILE(inmaps, optind+0, eInputMapsMissing);
-			TEST_FILE(indplc, optind+1, eInputDplcMissing);
+	switch (act) {
+		case eOptimize: {
+			std::ifstream inmaps(argv[optind + 0], std::ios::in | std::ios::binary),
+			    indplc(argv[optind + 1], std::ios::in | std::ios::binary);
+			TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
+			TEST_FILE(indplc, optind + 1, eInputDplcMissing);
 
 			mapping_file srcmaps;
 			srcmaps.read(inmaps, fromsonicver);
@@ -222,10 +216,10 @@ int main(int argc, char *argv[])
 			//dstmaps.split(intmaps, dstdplc);
 			dstmaps.optimize(srcmaps, srcdplc, dstdplc);
 
-			std::ofstream outmaps(argv[optind+2], std::ios::out|std::ios::binary|std::ios::trunc),
-			              outdplc(argv[optind+3], std::ios::out|std::ios::binary|std::ios::trunc);
-			TEST_FILE(outmaps, optind+2, eOutputMapsMissing);
-			TEST_FILE(outdplc, optind+3, eOutputDplcMissing);
+			std::ofstream outmaps(argv[optind + 2], std::ios::out | std::ios::binary | std::ios::trunc),
+			    outdplc(argv[optind + 3], std::ios::out | std::ios::binary | std::ios::trunc);
+			TEST_FILE(outmaps, optind + 2, eOutputMapsMissing);
+			TEST_FILE(outdplc, optind + 3, eOutputDplcMissing);
 
 			dstmaps.write(outmaps, tosonicver, nullfirst);
 			outmaps.close();
@@ -234,10 +228,9 @@ int main(int argc, char *argv[])
 			outdplc.close();
 			break;
 		}
-		case eSplit:
-		{
-			std::ifstream inmaps(argv[optind+0], std::ios::in|std::ios::binary);
-			TEST_FILE(inmaps, optind+0, eInputMapsMissing);
+		case eSplit: {
+			std::ifstream inmaps(argv[optind + 0], std::ios::in | std::ios::binary);
+			TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
 			mapping_file srcmaps;
 			srcmaps.read(inmaps, fromsonicver);
@@ -247,10 +240,10 @@ int main(int argc, char *argv[])
 			dplc_file    dstdplc;
 			dstmaps.split(srcmaps, dstdplc);
 
-			std::ofstream outmaps(argv[optind+1], std::ios::out|std::ios::binary|std::ios::trunc),
-			              outdplc(argv[optind+2], std::ios::out|std::ios::binary|std::ios::trunc);
-			TEST_FILE(outmaps, optind+1, eOutputMapsMissing);
-			TEST_FILE(outdplc, optind+2, eOutputDplcMissing);
+			std::ofstream outmaps(argv[optind + 1], std::ios::out | std::ios::binary | std::ios::trunc),
+			    outdplc(argv[optind + 2], std::ios::out | std::ios::binary | std::ios::trunc);
+			TEST_FILE(outmaps, optind + 1, eOutputMapsMissing);
+			TEST_FILE(outdplc, optind + 2, eOutputDplcMissing);
 
 			dstmaps.write(outmaps, tosonicver, nullfirst);
 			outmaps.close();
@@ -259,12 +252,11 @@ int main(int argc, char *argv[])
 			outdplc.close();
 			break;
 		}
-		case eMerge:
-		{
-			std::ifstream inmaps(argv[optind+0], std::ios::in|std::ios::binary),
-			              indplc(argv[optind+1], std::ios::in|std::ios::binary);
-			TEST_FILE(inmaps, optind+0, eInputMapsMissing);
-			TEST_FILE(indplc, optind+1, eInputDplcMissing);
+		case eMerge: {
+			std::ifstream inmaps(argv[optind + 0], std::ios::in | std::ios::binary),
+			    indplc(argv[optind + 1], std::ios::in | std::ios::binary);
+			TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
+			TEST_FILE(indplc, optind + 1, eInputDplcMissing);
 
 			mapping_file srcmaps;
 			srcmaps.read(inmaps, fromsonicver);
@@ -277,65 +269,61 @@ int main(int argc, char *argv[])
 			mapping_file dstmaps;
 			dstmaps.merge(srcmaps, srcdplc);
 
-			std::ofstream outmaps(argv[optind+2], std::ios::out|std::ios::binary|std::ios::trunc);
-			TEST_FILE(outmaps, optind+2, eOutputMapsMissing);
+			std::ofstream outmaps(argv[optind + 2], std::ios::out | std::ios::binary | std::ios::trunc);
+			TEST_FILE(outmaps, optind + 2, eOutputMapsMissing);
 
 			dstmaps.write(outmaps, tosonicver, nullfirst);
 			outmaps.close();
 			break;
 		}
-		case eFix:
-		{
-			std::ifstream inmaps(argv[optind+0], std::ios::in|std::ios::binary);
-			TEST_FILE(inmaps, optind+0, eInputMapsMissing);
+		case eFix: {
+			std::ifstream inmaps(argv[optind + 0], std::ios::in | std::ios::binary);
+			TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
 			mapping_file srcmaps;
 			srcmaps.read(inmaps, fromsonicver);
 			inmaps.close();
 
-			std::ofstream outmaps(argv[optind+1], std::ios::out|std::ios::binary|std::ios::trunc);
-			TEST_FILE(outmaps, optind+1, eOutputMapsMissing);
+			std::ofstream outmaps(argv[optind + 1], std::ios::out | std::ios::binary | std::ios::trunc);
+			TEST_FILE(outmaps, optind + 1, eOutputMapsMissing);
 
 			srcmaps.write(outmaps, tosonicver, nullfirst);
 			outmaps.close();
 			break;
 		}
-		case eConvert:
-		{
-			std::ifstream inmaps(argv[optind+0], std::ios::in|std::ios::binary);
-			TEST_FILE(inmaps, optind+0, eInputMapsMissing);
+		case eConvert: {
+			std::ifstream inmaps(argv[optind + 0], std::ios::in | std::ios::binary);
+			TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
 			mapping_file srcmaps;
 			srcmaps.read(inmaps, fromsonicver);
 			inmaps.close();
 
-			std::ofstream outmaps(argv[optind+1], std::ios::out|std::ios::binary|std::ios::trunc);
-			TEST_FILE(outmaps, optind+1, eOutputMapsMissing);
+			std::ofstream outmaps(argv[optind + 1], std::ios::out | std::ios::binary | std::ios::trunc);
+			TEST_FILE(outmaps, optind + 1, eOutputMapsMissing);
 
 			srcmaps.write(outmaps, tosonicver, nullfirst);
 			outmaps.close();
 			break;
 		}
-		case eConvertDPLC:
-		{
-			std::ifstream indplc(argv[optind+0], std::ios::in|std::ios::binary);
-			TEST_FILE(indplc, optind+0, eInputDplcMissing);
+		case eConvertDPLC: {
+			std::ifstream indplc(argv[optind + 0], std::ios::in | std::ios::binary);
+			TEST_FILE(indplc, optind + 0, eInputDplcMissing);
 
 			dplc_file srcdplc;
 			srcdplc.read(indplc, fromsonicver);
 			indplc.close();
 
-			std::ofstream outdplc(argv[optind+1], std::ios::out|std::ios::binary|std::ios::trunc);
-			TEST_FILE(outdplc, optind+1, eOutputDplcMissing);
+			std::ofstream outdplc(argv[optind + 1], std::ios::out | std::ios::binary | std::ios::trunc);
+			TEST_FILE(outdplc, optind + 1, eOutputDplcMissing);
 
 			srcdplc.write(outdplc, tosonicver, nullfirst);
 			outdplc.close();
 			break;
 		}
-		case eInfo:
-		{
-			std::ifstream inmaps(argv[optind+0], std::ios::in|std::ios::binary);
-			TEST_FILE(inmaps, optind+0, eInputMapsMissing);
+		case eInfo: {
+			std::ifstream inmaps(argv[optind + 0], std::ios::in | std::ios::binary);
+			TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
 			mapping_file srcmaps;
 			srcmaps.read(inmaps, fromsonicver);
@@ -343,10 +331,9 @@ int main(int argc, char *argv[])
 			srcmaps.print();
 			break;
 		}
-		case eDplc:
-		{
-			std::ifstream indplc(argv[optind+0], std::ios::in|std::ios::binary);
-			TEST_FILE(indplc, optind+0, eInputDplcMissing);
+		case eDplc: {
+			std::ifstream indplc(argv[optind + 0], std::ios::in | std::ios::binary);
+			TEST_FILE(indplc, optind + 0, eInputDplcMissing);
 
 			dplc_file    srcdplc;
 			srcdplc.read(indplc, fromsonicver);
@@ -354,29 +341,27 @@ int main(int argc, char *argv[])
 			srcdplc.print();
 			break;
 		}
-		case ePalChange:
-		{
-			if (srcpal < 0 || dstpal < 0)
-			{
+		case ePalChange: {
+			if (srcpal < 0 || dstpal < 0) {
 				usage();
 				return eInvalidArgs;
 			}
-			std::ifstream inmaps(argv[optind+0], std::ios::in|std::ios::binary);
-			TEST_FILE(inmaps, optind+0, eInputMapsMissing);
+			std::ifstream inmaps(argv[optind + 0], std::ios::in | std::ios::binary);
+			TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
 			mapping_file srcmaps;
 			srcmaps.read(inmaps, fromsonicver);
 			inmaps.close();
 			srcmaps.change_pal(srcpal, dstpal);
 
-			std::ofstream outmaps(argv[optind+1], std::ios::out|std::ios::binary|std::ios::trunc);
-			TEST_FILE(outmaps, optind+1, eOutputMapsMissing);
+			std::ofstream outmaps(argv[optind + 1], std::ios::out | std::ios::binary | std::ios::trunc);
+			TEST_FILE(outmaps, optind + 1, eOutputMapsMissing);
 
 			srcmaps.write(outmaps, tosonicver, nullfirst);
 			outmaps.close();
 			break;
 		}
 	}
-	
+
 	return 0;
 }

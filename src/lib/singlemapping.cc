@@ -1,18 +1,17 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
- * s2-ssedit
- * Copyright (C) Flamewing 2011 <flamewing.sonic@gmail.com>
- * 
- * s2-ssedit is free software: you can redistribute it and/or modify it
+ * Copyright (C) Flamewing 2011-2013 <flamewing.sonic@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
- * s2-ssedit is distributed in the hope that it will be useful, but
+ *
+ * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -23,8 +22,7 @@
 
 #include "singlemapping.h"
 
-void single_mapping::read(std::istream& in, int ver)
-{
+void single_mapping::read(std::istream &in, int ver) {
 	yy = static_cast<signed char>(Read1(in));
 	sx = Read1(in);
 	sy = ((sx & 0xc) >> 2) + 1;
@@ -40,8 +38,7 @@ void single_mapping::read(std::istream& in, int ver)
 		xx = BigEndian::Read2(in);
 }
 
-void single_mapping::write(std::ostream& out, int ver) const
-{
+void single_mapping::write(std::ostream &out, int ver) const {
 	Write1(out, static_cast<unsigned char>(yy));
 	Write1(out, ((sy - 1) << 2) | (sx - 1));
 	BigEndian::Write2(out, (flags << 8) | tile);
@@ -53,8 +50,7 @@ void single_mapping::write(std::ostream& out, int ver) const
 		BigEndian::Write2(out, xx);
 }
 
-void single_mapping::print() const
-{
+void single_mapping::print() const {
 	std::cout << std::nouppercase << "\t\tPosition: (x,y) = (";
 	std::cout << std::dec << std::setfill(' ') << std::setw(4) << static_cast<short>(xx);
 	std::cout << ",";
@@ -69,20 +65,17 @@ void single_mapping::print() const
 	std::cout << std::nouppercase << "\tLast tile: $";
 	std::cout << std::uppercase   << std::hex << std::setfill('0') << std::setw(4) << (tile + sx * sy - 1);
 	std::cout << std::nouppercase << "\tFlags: ";
-	if ((flags & 0x80u) != 0)
-	{
+	if ((flags & 0x80u) != 0) {
 		std::cout << "foreground";
 		if ((flags & 0x78u) != 0)
 			std::cout << "|";
 	}
-	if ((flags & 0x60u) != 0)
-	{
+	if ((flags & 0x60u) != 0) {
 		std::cout << "palette+" << std::dec << ((flags & 0x60u) >> 5u);
 		if ((flags & 0x18u) != 0)
 			std::cout << "|";
 	}
-	if ((flags & 0x08u) != 0)
-	{
+	if ((flags & 0x08u) != 0) {
 		std::cout << "flip_x";
 		if ((flags & 0x10u) != 0)
 			std::cout << "|";
@@ -92,8 +85,7 @@ void single_mapping::print() const
 	std::cout << std::endl;
 }
 
-void single_mapping::split(single_mapping const& src, single_dplc& dplc, std::map<size_t,size_t>& vram_map)
-{
+void single_mapping::split(single_mapping const &src, single_dplc &dplc, std::map<size_t, size_t>& vram_map) {
 	xx = src.xx;
 	yy = src.yy;
 	sx = src.sx;
@@ -104,8 +96,7 @@ void single_mapping::split(single_mapping const& src, single_dplc& dplc, std::ma
 	dplc.set_tile(src.tile);
 }
 
-void single_mapping::merge(single_mapping const& src, std::map<size_t,size_t>& vram_map)
-{
+void single_mapping::merge(single_mapping const &src, std::map<size_t, size_t>& vram_map) {
 	xx = src.xx;
 	yy = src.yy;
 	sx = src.sx;
@@ -114,8 +105,7 @@ void single_mapping::merge(single_mapping const& src, std::map<size_t,size_t>& v
 	tile = vram_map[src.tile];
 }
 
-void single_mapping::change_pal(int srcpal, int dstpal)
-{
+void single_mapping::change_pal(int srcpal, int dstpal) {
 	if ((flags & 0x60) == srcpal)
 		flags = (flags & 0x9f) | dstpal;
 }

@@ -1,16 +1,20 @@
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License, or (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public
-// License along with main.c; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor Boston, MA 02110-1301,  USA
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/*
+ * Copyright (C) Flamewing 2011-2013 <flamewing.sonic@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <iostream>
 #include <fstream>
@@ -22,27 +26,22 @@
 #include <mdcomp/kosinski.h>
 #include <mdcomp/nemesis.h>
 
-static void usage()
-{
+static void usage() {
 	std::cerr << "Usage: recolor-art [-o|--format {unc|nem|kos}] [-m|--moduled] {-clr1 clr2}+ {input_art} {output_art}" << std::endl;
 	std::cerr << "\tRecolors the art file, changing palette index clr1 to clr2. Both are assumed to be an hex digit." << std::endl
-		      << "\tYou can specify as many colors to remap as you want, but each source color can appear only once." << std::endl << std::endl;
+	          << "\tYou can specify as many colors to remap as you want, but each source color can appear only once." << std::endl << std::endl;
 }
 
-enum Formats
-{
+enum Formats {
 	eUncompressed = 0,
 	eNemesis      = 1,
 	eKosinski     = 2
 };
 
-struct Tile
-{
+struct Tile {
 	unsigned char tiledata[64];
-	bool read(std::istream& in)
-	{
-		for (size_t i = 0; i < sizeof(tiledata); i += 2)
-		{
+	bool read(std::istream &in) {
+		for (size_t i = 0; i < sizeof(tiledata); i += 2) {
 			size_t col = in.get();
 			if (!in.good())
 				return false;
@@ -51,30 +50,25 @@ struct Tile
 		}
 		return true;
 	}
-	bool blacklisted(unsigned char const bll)
-	{
+	bool blacklisted(unsigned char const bll) {
 		for (size_t i = 0; i < sizeof(tiledata); i++)
 			if (tiledata[i] == bll)
 				return true;
 		return false;
 	}
-	void remap(int const *colormap)
-	{
+	void remap(int const *colormap) {
 		for (size_t i = 0; i < sizeof(tiledata); i++)
 			tiledata[i] = colormap[tiledata[i]];
 	}
-	void write(std::ostream& out)
-	{
+	void write(std::ostream &out) {
 		for (size_t i = 0; i < sizeof(tiledata); i += 2)
 			out.put(tiledata[i] | (tiledata[i + 1] << 4));
 	}
 };
 
-void recolor(std::istream& in, std::ostream& out, int const *colormap)
-{
+void recolor(std::istream &in, std::ostream &out, int const *colormap) {
 	Tile tile;
-	while (true)
-	{
+	while (true) {
 		if (!tile.read(in))
 			break;
 		tile.remap(colormap);
@@ -82,8 +76,7 @@ void recolor(std::istream& in, std::ostream& out, int const *colormap)
 	}
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	static struct option long_options[] = {
 		{"format"      , required_argument, 0, 'o'},
 		{"moduled"     , optional_argument, 0, 'm'},
@@ -94,42 +87,38 @@ int main(int argc, char *argv[])
 	std::streamsize modulesize = 0x1000;
 	// Identity map.
 	int colormap[16] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
-	                    0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
+	                    0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF
+	                   };
 	unsigned numcolors = 0;
 	Formats fmt = eUncompressed;
 
-	while (true)
-	{
+	while (true) {
 		int option_index = 0;
 		int c = getopt_long(argc, argv, "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
-                            long_options, &option_index);
+		                    long_options, &option_index);
 		if (c == -1)
 			break;
-		
+
 		if (c >= 'A' && c <= 'F')
 			c += ('a' - 'A');
-		
-		switch (c)
-		{
+
+		switch (c) {
 			case 'o':
-				if (!optarg)
-				{
+				if (!optarg) {
 					usage();
 					return 1;
-				}
-				else if (!std::strcmp(optarg, "unc"))
+				} else if (!std::strcmp(optarg, "unc"))
 					fmt = eUncompressed;
 				else if (!std::strcmp(optarg, "nem"))
 					fmt = eNemesis;
 				else if (!std::strcmp(optarg, "kos"))
 					fmt = eKosinski;
-				else
-				{
+				else {
 					usage();
 					return 1;
 				}
 				break;
-				
+
 			case 'm':
 				moduled = true;
 				if (optarg)
@@ -151,10 +140,8 @@ int main(int argc, char *argv[])
 			case 'c':
 			case 'd':
 			case 'e':
-			case 'f':
-			{
-				if (!optarg || std::strlen(optarg) != 1)
-				{
+			case 'f': {
+				if (!optarg || std::strlen(optarg) != 1) {
 					usage();
 					return 1;
 				}
@@ -170,8 +157,7 @@ int main(int argc, char *argv[])
 					colormap[c1] = d - 'a' + 10;
 				else if (d >= 'A' && d <= 'F')
 					colormap[c1] = d - 'A' + 10;
-				else
-				{
+				else {
 					usage();
 					return 1;
 				}
@@ -184,21 +170,19 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (argc - optind < 2 || numcolors == 0)
-	{
+	if (argc - optind < 2 || numcolors == 0) {
 		usage();
 		return 2;
 	}
 
-	std::ifstream fin(argv[optind], std::ios::in|std::ios::binary);
-	if (!fin.good())
-	{
+	std::ifstream fin(argv[optind], std::ios::in | std::ios::binary);
+	if (!fin.good()) {
 		std::cerr << "Input file '" << argv[optind] << "' could not be opened." << std::endl << std::endl;
 		return 3;
 	}
 
-	std::stringstream sin (std::ios::in|std::ios::out|std::ios::binary),
-	                  sout(std::ios::in|std::ios::out|std::ios::binary);
+	std::stringstream sin(std::ios::in | std::ios::out | std::ios::binary),
+	    sout(std::ios::in | std::ios::out | std::ios::binary);
 
 	fin.seekg(0);
 	if (fmt == eUncompressed)
@@ -212,10 +196,9 @@ int main(int argc, char *argv[])
 	sin.seekg(0);
 	recolor(sin, sout, colormap);
 
-	std::fstream fout(argv[optind+1], std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc);
-	if (!fout.good())
-	{
-		std::cerr << "Output file '" << argv[optind+1] << "' could not be opened." << std::endl << std::endl;
+	std::fstream fout(argv[optind + 1], std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+	if (!fout.good()) {
+		std::cerr << "Output file '" << argv[optind + 1] << "' could not be opened." << std::endl << std::endl;
 		return 4;
 	}
 
@@ -230,4 +213,4 @@ int main(int argc, char *argv[])
 
 	fout.close();
 }
- 
+
