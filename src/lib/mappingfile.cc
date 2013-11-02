@@ -23,10 +23,12 @@
 
 #include "mappingfile.h"
 
-void mapping_file::read(std::istream &in, int ver) {
-	in.seekg(0, std::ios::beg);
+using namespace std;
 
-	std::vector<size_t> off;
+void mapping_file::read(istream &in, int ver) {
+	in.seekg(0, ios::beg);
+
+	vector<size_t> off;
 	signed short term = static_cast<signed short>(BigEndian::Read2(in));
 	while (term == 0) {
 		off.push_back(term);
@@ -40,7 +42,7 @@ void mapping_file::read(std::istream &in, int ver) {
 		off.push_back(newterm);
 	}
 
-	for (std::vector<size_t>::const_iterator it = off.begin(); it != off.end(); ++it) {
+	for (vector<size_t>::const_iterator it = off.begin(); it != off.end(); ++it) {
 		size_t pos = *it;
 		in.clear();
 		in.seekg(pos);
@@ -50,51 +52,51 @@ void mapping_file::read(std::istream &in, int ver) {
 	}
 }
 
-void mapping_file::write(std::ostream &out, int ver, bool nullfirst) const {
-	std::map<frame_mapping, size_t> mappos;
-	std::map<size_t, frame_mapping> posmap;
+void mapping_file::write(ostream &out, int ver, bool nullfirst) const {
+	map<frame_mapping, size_t> mappos;
+	map<size_t, frame_mapping> posmap;
 	size_t sz = 2 * frames.size();
-	std::vector<frame_mapping>::const_iterator it;
+	vector<frame_mapping>::const_iterator it;
 	it = frames.begin();
 
 	if (nullfirst && it != frames.end() && it->size() == 0) {
-		mappos.insert(std::make_pair(*it, size_t(0)));
-		posmap.insert(std::make_pair(size_t(0), *it));
+		mappos.insert(make_pair(*it, size_t(0)));
+		posmap.insert(make_pair(size_t(0), *it));
 	}
 	for (; it != frames.end(); ++it) {
-		std::map<frame_mapping, size_t>::iterator it2 = mappos.find(*it);
+		map<frame_mapping, size_t>::iterator it2 = mappos.find(*it);
 		if (it2 != mappos.end())
 			BigEndian::Write2(out, it2->second);
 		else {
-			mappos.insert(std::make_pair(*it, sz));
-			posmap.insert(std::make_pair(sz, *it));
+			mappos.insert(make_pair(*it, sz));
+			posmap.insert(make_pair(sz, *it));
 			BigEndian::Write2(out, sz);
 			sz += it->size(ver);
 		}
 	}
-	for (std::map<size_t, frame_mapping>::iterator it2 = posmap.begin();
+	for (map<size_t, frame_mapping>::iterator it2 = posmap.begin();
 	        it2 != posmap.end(); ++it2)
-		if (it2->first == out.tellp())
+		if (it2->first == size_t(out.tellp()))
 			(it2->second).write(out, ver);
 		else if (it2->first) {
-			std::cerr << "Missed write at " << out.tellp() << std::endl;
+			cerr << "Missed write at " << out.tellp() << endl;
 			(it2->second).print();
 		}
 }
 
 void mapping_file::print() const {
-	std::cout << "================================================================================" << std::endl;
+	cout << "================================================================================" << endl;
 	for (size_t i = 0; i < frames.size(); i++) {
-		std::cout << "Mappings for frame $";
-		std::cout << std::uppercase << std::hex << std::setfill('0') << std::setw(4) << i;
-		std::cout << std::nouppercase << ":" << std::endl;
+		cout << "Mappings for frame $";
+		cout << uppercase << hex << setfill('0') << setw(4) << i;
+		cout << nouppercase << ":" << endl;
 		frames[i].print();
 	}
 }
 
 void mapping_file::split(mapping_file const &src, dplc_file &dplc) {
-	for (std::vector<frame_mapping>::const_iterator it = src.frames.begin();
-	        it != src.frames.end(); ++it) {
+	for (vector<frame_mapping>::const_iterator it = src.frames.begin();
+	     it != src.frames.end(); ++it) {
 		frame_mapping nn;
 		frame_dplc interm, dd;
 		nn.split(*it, interm);
@@ -135,15 +137,15 @@ void mapping_file::optimize(mapping_file const &src, dplc_file const &indplc, dp
 }
 
 void mapping_file::change_pal(int srcpal, int dstpal) {
-	for (std::vector<frame_mapping>::iterator it = frames.begin();
-	        it != frames.end(); ++it)
+	for (vector<frame_mapping>::iterator it = frames.begin();
+	     it != frames.end(); ++it)
 		it->change_pal(srcpal, dstpal);
 }
 
 size_t mapping_file::size(int ver) const {
 	size_t sz = 2 * frames.size();
-	for (std::vector<frame_mapping>::const_iterator it = frames.begin();
-	        it != frames.end(); ++it)
+	for (vector<frame_mapping>::const_iterator it = frames.begin();
+	     it != frames.end(); ++it)
 		sz += it->size(ver);
 	return sz;
 }

@@ -24,42 +24,43 @@
 
 #include <mdcomp/kosinski.h>
 
+using namespace std;
+
 static void usage() {
-	std::cerr << "Usage: chunk_census {chunk_ID} {filename_list}" << std::endl;
-	std::cerr << std::endl;
-	std::cerr << "\tchunk_ID     \tThe chunk to scan for." << std::endl;
-	std::cerr << "\tfilename_list\tList of Kosinski-compressed files with 128x128 blocks. Currently, S2 format only." << std::endl << std::endl;
+	cerr << "Usage: chunk_census {chunk_ID} {filename_list}" << endl;
+	cerr << endl;
+	cerr << "\tchunk_ID     \tThe chunk to scan for." << endl;
+	cerr << "\tfilename_list\tList of Kosinski-compressed files with 128x128 blocks. Currently, S2 format only." << endl << endl;
 }
 
 int main(int argc, char *argv[]) {
-	std::streamsize pointer = 0, slidewin = 8192, reclen = 256, modulesize = 0x1000;
 	if (argc < 3) {
 		usage();
 		return 1;
 	}
 
 	unsigned long chunkid = strtoul(argv[1], 0, 0);
-	for (size_t ii = 2; ii < argc; ii++) {
-		std::ifstream fin(argv[ii], std::ios::in | std::ios::binary);
+	for (int ii = 2; ii < argc; ii++) {
+		ifstream fin(argv[ii], ios::in | ios::binary);
 		unsigned cnt = 0;
 		if (!fin.good()) {
-			std::cerr << "Input file '" << argv[ii] << "' could not be opened." << std::endl;
+			cerr << "Input file '" << argv[ii] << "' could not be opened." << endl;
 		} else {
-			std::stringstream sin(std::ios::in | std::ios::out | std::ios::binary);
+			stringstream sin(ios::in | ios::out | ios::binary);
 			kosinski::decode(fin, sin);
 			sin.seekg(0ul);
 			size_t xpos = 0, ypos = 0;
 			bool planeA = true;
 			while (sin.good()) {
 				int c = sin.get();
-				if (c == chunkid) {
+				if (size_t(c) == chunkid) {
 					cnt++;
-					std::cout << argv[ii] << ": chunk appears on plane "
-					          << (planeA ? "A" : "B") << " @ (0x"
-					          << std::hex << std::setw(4) << std::setfill('0') << xpos
-					          << ", 0x"
-					          << std::hex << std::setw(3) << std::setfill('0') << ypos
-					          << ")" << std::endl;
+					cout << argv[ii] << ": chunk appears on plane "
+					     << (planeA ? "A" : "B") << " @ (0x"
+					     << hex << setw(4) << setfill('0') << xpos
+					     << ", 0x"
+					     << hex << setw(3) << setfill('0') << ypos
+					     << ")" << endl;
 				}
 				xpos += 128;
 				if (xpos == 128 * 128) {
@@ -69,7 +70,7 @@ int main(int argc, char *argv[]) {
 						ypos += 128;
 				}
 			}
-			std::cout << argv[ii] << ": " << std::dec << cnt << std::endl;
+			cout << argv[ii] << ": " << dec << cnt << endl;
 		}
 	}
 

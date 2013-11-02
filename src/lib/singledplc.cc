@@ -22,18 +22,20 @@
 
 #include "singledplc.h"
 
-void single_dplc::read(std::istream &in, int ver) {
+using namespace std;
+
+void single_dplc::read(istream &in, int ver) {
 	tile = BigEndian::Read2(in);
 	if (ver < 4) {
-		cnt  = ((tile & 0xf000) >> 12) + 1;
+		cnt  = ((tile & 0xf000u) >> 12) + 1u;
 		tile &= 0x0fff;
 	} else {
-		cnt  = (tile & 0x000f) + 1;
-		tile = (tile & 0xfff0) >> 4;
+		cnt  = (tile & 0x000fu) + 1u;
+		tile = (tile & 0xfff0u) >> 4;
 	}
 }
 
-void single_dplc::write(std::ostream &out, int ver) const {
+void single_dplc::write(ostream &out, int ver) const {
 	if (ver < 4)
 		BigEndian::Write2(out, ((cnt - 1) << 12) | tile);
 	else
@@ -41,11 +43,11 @@ void single_dplc::write(std::ostream &out, int ver) const {
 }
 
 void single_dplc::print() const {
-	std::cout << std::nouppercase << "\tFirst tile: $";
-	std::cout << std::uppercase   << std::hex << std::setfill('0') << std::setw(4) << tile;
-	std::cout << std::nouppercase << "\tLast tile: $";
-	std::cout << std::uppercase   << std::hex << std::setfill('0') << std::setw(4) << (tile + cnt - 1);
-	std::cout << std::nouppercase << "\tNum tiles: $";
-	std::cout << std::uppercase   << std::hex << std::setfill('0') << std::setw(4) << cnt;
-	std::cout << std::endl;
+	cout << nouppercase << "\tFirst tile: $";
+	cout << uppercase   << hex << setfill('0') << setw(4) << tile;
+	cout << nouppercase << "\tLast tile: $";
+	cout << uppercase   << hex << setfill('0') << setw(4) << (tile + cnt - 1);
+	cout << nouppercase << "\tNum tiles: $";
+	cout << uppercase   << hex << setfill('0') << setw(4) << cnt;
+	cout << endl;
 }

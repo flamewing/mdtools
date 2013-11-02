@@ -25,26 +25,29 @@
 
 #include "bigendian_io.h"
 
+using namespace std;
+
 size_t BaseNote::notesprinted = 0;
 BaseNote const *BaseNote::last_note = 0;
 bool BaseNote::need_rest = false;
 
-void BaseNote::force_linebreak(std::ostream &out, bool force) {
+void BaseNote::force_linebreak(ostream &out, bool force) {
 	if (force)
-		out << std::endl;
+		out << endl;
 
 	if (notesprinted != 0)
-		out << std::endl;
+		out << endl;
 	notesprinted = 0;
 }
 
-void BaseNote::write(std::ostream &out, int sonicver, size_t offset) const {
+void BaseNote::write(ostream &UNUSED(out), int UNUSED(sonicver),
+                     size_t UNUSED(offset)) const {
 }
 
-void Duration::print(std::ostream &out,
+void Duration::print(ostream &out,
                      int sonicver,
                      LocTraits::LocType tracktype,
-                     std::multimap<int, std::string>& labels,
+                     multimap<int, string> &labels,
                      bool s3kmode) const {
 	if (s3kmode && last_note && last_note->is_rest() && need_rest)
 		last_note->print(out, sonicver, tracktype, labels, s3kmode);
@@ -57,32 +60,32 @@ void Duration::print(std::ostream &out,
 	PrintHex2Pre(out, val, notesprinted == 0);
 
 	if (++notesprinted == 12) {
-		out << std::endl;
+		out << endl;
 		notesprinted = 0;
 	}
 }
 
-FMVoice::FMVoice(std::istream &in, int sonicver, int n)
+FMVoice::FMVoice(istream &in, int sonicver, int n)
 	: BaseNote(0x00), id(n) {
 	voc.read(in, sonicver);
 }
 
-void FMVoice::print(std::ostream &out,
+void FMVoice::print(ostream &out,
                     int sonicver,
-                    LocTraits::LocType tracktype,
-                    std::multimap<int, std::string>& labels,
-                    bool s3kmode) const {
+                    LocTraits::LocType UNUSED(tracktype),
+                    multimap<int, string> &UNUSED(labels),
+                    bool UNUSED(s3kmode)) const {
 	voc.print(out, sonicver, id);
 }
 
-static void print_dac_sample(std::ostream &out, int val, int sonicver, bool flag) {
-	static std::string s12daclut[] = {
+static void print_dac_sample(ostream &out, int val, int sonicver, bool flag) {
+	static string s12daclut[] = {
 		"nRst", "dKick", "dSnare", "dClap", "dScratch", "dTimpani", "dHiTom",
 		"dVLowClap", "dHiTimpani", "dMidTimpani", "dLowTimpani", "dVLowTimpani",
 		"dMidTom", "dLowTom", "dFloorTom", "dHiClap", "dMidClap", "dLowClap"
 	};
 
-	static std::string s3daclut[] = {
+	static string s3daclut[] = {
 		"nRst", "dSnareS3", "dHighTom", "dMidTomS3", "dLowTomS3", "dFloorTomS3",
 		"dKickS3", "dMuffledSnare", "dCrashCymbal", "dRideCymbal", "dLowMetalHit",
 		"dMetalHit", "dHighMetalHit", "dHigherMetalHit", "dMidMetalHit",
@@ -102,7 +105,7 @@ static void print_dac_sample(std::ostream &out, int val, int sonicver, bool flag
 		"dLowestPowerKickHit"
 	};
 
-	static std::string skdaclut[] = {
+	static string skdaclut[] = {
 		"nRst", "dSnareS3", "dHighTom", "dMidTomS3", "dLowTomS3", "dFloorTomS3",
 		"dKickS3", "dMuffledSnare", "dCrashCymbal", "dRideCymbal", "dLowMetalHit",
 		"dMetalHit", "dHighMetalHit", "dHigherMetalHit", "dMidMetalHit",
@@ -122,7 +125,7 @@ static void print_dac_sample(std::ostream &out, int val, int sonicver, bool flag
 		"dLowestPowerKickHit"
 	};
 
-	static std::string s3ddaclut[] = {
+	static string s3ddaclut[] = {
 		"nRst", "dSnareS3", "dHighTom", "dMidTomS3", "dLowTomS3", "dFloorTomS3",
 		"dKickS3", "dMuffledSnare", "dCrashCymbal", "dCrashCymbal2", "dLowMetalHit",
 		"dMetalHit", "dHighMetalHit", "dHigherMetalHit", "dMidMetalHit",
@@ -133,25 +136,26 @@ static void print_dac_sample(std::ostream &out, int val, int sonicver, bool flag
 		"dIntroKick", "dFinalFightMetalCrash"
 	};
 
-	if (sonicver == 5 && val - 0x80 <= sizeof(s3ddaclut) / sizeof(s3ddaclut[0]))
-		PrintName(out, s3ddaclut[val - 0x80], flag);
-	else if (sonicver == 4 && val - 0x80 <= sizeof(skdaclut) / sizeof(skdaclut[0]))
-		PrintName(out, skdaclut[val - 0x80], flag);
-	else if (sonicver == 3 && val - 0x80 <= sizeof(s3daclut) / sizeof(s3daclut[0]))
-		PrintName(out, s3daclut[val - 0x80], flag);
-	else if (sonicver == 1 && (val < 0x84 || (val >= 0x88 && val <= 0x8b)))
-		PrintName(out, s12daclut[val - 0x80], flag);
-	else if (sonicver == 2 && val - 0x80 <= sizeof(s12daclut) / sizeof(s12daclut[0]))
-		PrintName(out, s12daclut[val - 0x80], flag);
+	size_t note = val - 0x80;
+	if (sonicver == 5 && note <= sizeof(s3ddaclut) / sizeof(s3ddaclut[0]))
+		PrintName(out, s3ddaclut[note], flag);
+	else if (sonicver == 4 && note <= sizeof(skdaclut) / sizeof(skdaclut[0]))
+		PrintName(out, skdaclut[note], flag);
+	else if (sonicver == 3 && note <= sizeof(s3daclut) / sizeof(s3daclut[0]))
+		PrintName(out, s3daclut[note], flag);
+	else if (sonicver == 1 && (note < 0x4 || (note >= 0x8 && note <= 0xb)))
+		PrintName(out, s12daclut[note], flag);
+	else if (sonicver == 2 && note <= sizeof(s12daclut) / sizeof(s12daclut[0]))
+		PrintName(out, s12daclut[note], flag);
 	else
 		PrintHex2Pre(out, val, flag);
 }
 
-void DACNote::print(std::ostream &out,
+void DACNote::print(ostream &out,
                     int sonicver,
-                    LocTraits::LocType tracktype,
-                    std::multimap<int, std::string>& labels,
-                    bool s3kmode) const {
+                    LocTraits::LocType UNUSED(tracktype),
+                    multimap<int, string> &UNUSED(labels),
+                    bool UNUSED(s3kmode)) const {
 	last_note = this;
 	need_rest = false;
 
@@ -162,16 +166,16 @@ void DACNote::print(std::ostream &out,
 	print_dac_sample(out, val, sonicver, notesprinted == 0);
 
 	if (++notesprinted == 12) {
-		out << std::endl;
+		out << endl;
 		notesprinted = 0;
 	}
 }
 
-void FMPSGNote::print(std::ostream &out,
-                      int sonicver,
-                      LocTraits::LocType tracktype,
-                      std::multimap<int, std::string>& labels,
-                      bool s3kmode) const {
+void FMPSGNote::print(ostream &out,
+                      int UNUSED(sonicver),
+                      LocTraits::LocType UNUSED(tracktype),
+                      multimap<int, string> &UNUSED(labels),
+                      bool UNUSED(s3kmode)) const {
 	last_note = this;
 	need_rest = false;
 
@@ -179,7 +183,7 @@ void FMPSGNote::print(std::ostream &out,
 	if (notesprinted == 0)
 		out << "\tdc.b\t";
 
-	static std::string fmpsglut[] = {
+	static string fmpsglut[] = {
 		"nRst", "nC0" , "nCs0", "nD0" , "nEb0", "nE0" , "nF0" , "nFs0", "nG0" ,
 		"nAb0", "nA0" , "nBb0", "nB0" , "nC1" , "nCs1", "nD1" , "nEb1", "nE1" ,
 		"nF1" , "nFs1", "nG1" , "nAb1", "nA1" , "nBb1", "nB1" , "nC2" , "nCs2",
@@ -193,25 +197,26 @@ void FMPSGNote::print(std::ostream &out,
 		"nF7" , "nFs7", "nG7" , "nAb7", "nA7" , "nBb7", "nMaxPSG", "nMaxPSG2"
 	};
 
-	if (val - 0x80 >= sizeof(fmpsglut) / sizeof(fmpsglut[0]))
+	size_t note = val - 0x80;
+	if (note >= sizeof(fmpsglut) / sizeof(fmpsglut[0]))
 		PrintHex2Pre(out, val, notesprinted == 0);
 	else
-		PrintName(out, fmpsglut[val - 0x80], notesprinted == 0);
+		PrintName(out, fmpsglut[note], notesprinted == 0);
 
 	if (++notesprinted == 12) {
-		out << std::endl;
+		out << endl;
 		notesprinted = 0;
 	}
 }
 
 template<bool noret>
-void CoordFlagNoParams<noret>::print(std::ostream &out,
+void CoordFlagNoParams<noret>::print(ostream &out,
                                      int sonicver,
-                                     LocTraits::LocType tracktype,
-                                     std::multimap<int, std::string>& labels,
-                                     bool s3kmode) const {
+                                     LocTraits::LocType UNUSED(tracktype),
+                                     multimap<int, string> &UNUSED(labels),
+                                     bool UNUSED(s3kmode)) const {
 	// Note-like macros:
-	std::string s;
+	string s;
 	bool notelike = false;
 	if (sonicver >= 3) {
 		switch (val) {
@@ -279,12 +284,12 @@ void CoordFlagNoParams<noret>::print(std::ostream &out,
 		PrintName(out, s, notesprinted == 0);
 
 		if (++notesprinted == 12) {
-			out << std::endl;
+			out << endl;
 			notesprinted = 0;
 		}
 	} else {
 		if (notesprinted != 0)
-			out << std::endl;
+			out << endl;
 		notesprinted = 0;
 
 		if (s.size() == 0) {
@@ -295,11 +300,11 @@ void CoordFlagNoParams<noret>::print(std::ostream &out,
 			PrintName(out, s.c_str(), true);
 		}
 
-		out << std::endl;
+		out << endl;
 	}
 }
 
-void BaseNote::print_psg_tone(std::ostream &out, int tone, int sonicver,
+void BaseNote::print_psg_tone(ostream &out, int tone, int sonicver,
                               bool last) {
 	if (tone == 0) {
 		PrintHex2(out, tone, true);
@@ -311,24 +316,24 @@ void BaseNote::print_psg_tone(std::ostream &out, int tone, int sonicver,
 	else
 		out << "fTone_";
 
-	out << std::hex << std::setw(2) << std::setfill('0') << std::uppercase
-	    << tone << std::nouppercase;
+	out << hex << setw(2) << setfill('0') << uppercase
+	    << tone << nouppercase;
 
 	if (!last)
 		out << ", ";
 }
 
 template<bool noret>
-void CoordFlag1ParamByte<noret>::print(std::ostream &out,
+void CoordFlag1ParamByte<noret>::print(ostream &out,
                                        int sonicver,
                                        LocTraits::LocType tracktype,
-                                       std::multimap<int, std::string>& labels,
-                                       bool s3kmode) const {
+                                       multimap<int, string> &UNUSED(labels),
+                                       bool UNUSED(s3kmode)) const {
 	if (notesprinted != 0)
-		out << std::endl;
+		out << endl;
 	notesprinted = 0;
 
-	std::string s;
+	string s;
 	bool metacf = false;
 	if (sonicver >= 3) {
 		switch (val) {
@@ -438,7 +443,7 @@ void CoordFlag1ParamByte<noret>::print(std::ostream &out,
 		out << "\tdc.b\t";
 		PrintHex2(out, val, false);
 	} else if (metacf) {
-		out << "\t" << s << std::endl;
+		out << "\t" << s << endl;
 		return;
 	} else
 		PrintMacro(out, s.c_str());
@@ -468,20 +473,20 @@ void CoordFlag1ParamByte<noret>::print(std::ostream &out,
 		print_dac_sample(out, param, sonicver, true);
 	else
 		PrintHex2(out, param, true);
-	out << std::endl;
+	out << endl;
 }
 
 template<bool noret>
-void CoordFlag2ParamBytes<noret>::print(std::ostream &out,
+void CoordFlag2ParamBytes<noret>::print(ostream &out,
                                         int sonicver,
-                                        LocTraits::LocType tracktype,
-                                        std::multimap<int, std::string>& labels,
-                                        bool s3kmode) const {
+                                        LocTraits::LocType UNUSED(tracktype),
+                                        multimap<int, string> &UNUSED(labels),
+                                        bool UNUSED(s3kmode)) const {
 	if (notesprinted != 0)
-		out << std::endl;
+		out << endl;
 	notesprinted = 0;
 
-	std::string s;
+	string s;
 	bool metacf = false;
 	if (sonicver >= 3) {
 		switch (val) {
@@ -524,20 +529,20 @@ void CoordFlag2ParamBytes<noret>::print(std::ostream &out,
 		PrintHex2(out, param1, false);
 
 	PrintHex2(out, param2, true);
-	out << std::endl;
+	out << endl;
 }
 
 template<bool noret>
-void CoordFlag3ParamBytes<noret>::print(std::ostream &out,
+void CoordFlag3ParamBytes<noret>::print(ostream &out,
                                         int sonicver,
-                                        LocTraits::LocType tracktype,
-                                        std::multimap<int, std::string>& labels,
-                                        bool s3kmode) const {
+                                        LocTraits::LocType UNUSED(tracktype),
+                                        multimap<int, string> &UNUSED(labels),
+                                        bool UNUSED(s3kmode)) const {
 	if (notesprinted != 0)
-		out << std::endl;
+		out << endl;
 	notesprinted = 0;
 
-	std::string s;
+	string s;
 	bool metacf = false;
 	if (sonicver >= 3) {
 		switch (val) {
@@ -563,20 +568,20 @@ void CoordFlag3ParamBytes<noret>::print(std::ostream &out,
 
 	PrintHex2(out, param2, false);
 	PrintHex2(out, param3, true);
-	out << std::endl;
+	out << endl;
 }
 
 template<bool noret>
-void CoordFlag4ParamBytes<noret>::print(std::ostream &out,
+void CoordFlag4ParamBytes<noret>::print(ostream &out,
                                         int sonicver,
-                                        LocTraits::LocType tracktype,
-                                        std::multimap<int, std::string>& labels,
-                                        bool s3kmode) const {
+                                        LocTraits::LocType UNUSED(tracktype),
+                                        multimap<int, string> &UNUSED(labels),
+                                        bool UNUSED(s3kmode)) const {
 	if (notesprinted != 0)
-		out << std::endl;
+		out << endl;
 	notesprinted = 0;
 
-	std::string s;
+	string s;
 	bool metacf = false;
 	if (sonicver >= 3) {
 		switch (val) {
@@ -607,20 +612,20 @@ void CoordFlag4ParamBytes<noret>::print(std::ostream &out,
 	PrintHex2(out, param2, false);
 	PrintHex2(out, param3, false);
 	PrintHex2(out, param4, true);
-	out << std::endl;
+	out << endl;
 }
 
 template<bool noret>
-void CoordFlag5ParamBytes<noret>::print(std::ostream &out,
+void CoordFlag5ParamBytes<noret>::print(ostream &out,
                                         int sonicver,
-                                        LocTraits::LocType tracktype,
-                                        std::multimap<int, std::string>& labels,
-                                        bool s3kmode) const {
+                                        LocTraits::LocType UNUSED(tracktype),
+                                        multimap<int, string> &UNUSED(labels),
+                                        bool UNUSED(s3kmode)) const {
 	if (notesprinted != 0)
-		out << std::endl;
+		out << endl;
 	notesprinted = 0;
 
-	std::string s;
+	string s;
 	bool metacf = false;
 	if (sonicver >= 3) {
 		switch (val) {
@@ -648,17 +653,17 @@ void CoordFlag5ParamBytes<noret>::print(std::ostream &out,
 	PrintHex2(out, param3, false);
 	PrintHex2(out, param4, false);
 	PrintHex2(out, param5, true);
-	out << std::endl;
+	out << endl;
 }
 
 template<bool noret>
-void CoordFlagPointerParam<noret>::print(std::ostream &out,
-        int sonicver,
-        LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels,
-        bool s3kmode) const {
+void CoordFlagPointerParam<noret>::print(ostream &out,
+                                         int UNUSED(sonicver),
+                                         LocTraits::LocType UNUSED(tracktype),
+                                         multimap<int, string> &labels,
+                                         bool UNUSED(s3kmode)) const {
 	if (notesprinted != 0)
-		out << std::endl;
+		out << endl;
 	notesprinted = 0;
 
 	if (val == 0xf6)
@@ -669,21 +674,21 @@ void CoordFlagPointerParam<noret>::print(std::ostream &out,
 	} else if (val == 0xfc) // Sonic 3 only
 		PrintMacro(out, "smpsContinuousLoop");
 
-	std::multimap<int, std::string>::iterator it = labels.find(jumptarget);
-	out << it->second << std::endl;
+	multimap<int, string>::iterator it = labels.find(jumptarget);
+	out << it->second << endl;
 }
 
 template<bool noret>
-void CoordFlagPointer1ParamByte<noret>::print(std::ostream &out,
-        int sonicver,
-        LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels,
-        bool s3kmode) const {
+void CoordFlagPointer1ParamByte<noret>::print(ostream &out,
+                                              int sonicver,
+                                              LocTraits::LocType UNUSED(tracktype),
+                                              multimap<int, string> &labels,
+                                              bool UNUSED(s3kmode)) const {
 	if (notesprinted != 0)
-		out << std::endl;
+		out << endl;
 	notesprinted = 0;
 
-	std::string s;
+	string s;
 	bool metacf = false;
 	if (sonicver >= 3) {
 		switch (val) {
@@ -702,21 +707,21 @@ void CoordFlagPointer1ParamByte<noret>::print(std::ostream &out,
 	if (!metacf)
 		PrintHex2(out, param1, false);
 
-	std::multimap<int, std::string>::iterator it = labels.find(jumptarget);
-	out << it->second << std::endl;
+	multimap<int, string>::iterator it = labels.find(jumptarget);
+	out << it->second << endl;
 }
 
 template<bool noret>
-void CoordFlagPointer2ParamBytes<noret>::print(std::ostream &out,
-        int sonicver,
-        LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels,
-        bool s3kmode) const {
+void CoordFlagPointer2ParamBytes<noret>::print(ostream &out,
+                                               int sonicver,
+                                               LocTraits::LocType UNUSED(tracktype),
+                                               multimap<int, string> &labels,
+                                               bool UNUSED(s3kmode)) const {
 	if (notesprinted != 0)
-		out << std::endl;
+		out << endl;
 	notesprinted = 0;
 
-	std::string s;
+	string s;
 	bool metacf = false;
 	if (sonicver >= 3) {
 		switch (val) {
@@ -750,7 +755,7 @@ void CoordFlagPointer2ParamBytes<noret>::print(std::ostream &out,
 		PrintHex2(out, param1, false);
 		PrintHex2(out, param2, false);
 	}
-	std::multimap<int, std::string>::iterator it = labels.find(jumptarget);
+	multimap<int, string>::iterator it = labels.find(jumptarget);
 
 	if (it != labels.end())
 		out << it->second;
@@ -761,12 +766,12 @@ void CoordFlagPointer2ParamBytes<noret>::print(std::ostream &out,
 		out << ", ";
 		PrintHex2(out, param2, true);
 	}
-	out << std::endl;
+	out << endl;
 }
 
 #include <iostream>
 void InstantiateTemplates() {
-	std::multimap<int, std::string> labels;
+	multimap<int, string> labels;
 	CoordFlagNoParams<true > ft0(0);
 	CoordFlagNoParams<false> ff0(0);
 	CoordFlag1ParamByte<true > ft1(0, 0);
@@ -785,22 +790,22 @@ void InstantiateTemplates() {
 	CoordFlagPointer1ParamByte<false> ffp1(0, 0, 0);
 	CoordFlagPointer2ParamBytes<true > ftp2(0, 0, 0, 0);
 	CoordFlagPointer2ParamBytes<false> ffp2(0, 0, 0, 0);
-	ft0.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ff0.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ft1.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ff1.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ft2.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ff2.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ft3.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ff3.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ft4.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ff4.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ft5.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ff5.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ftp0.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ffp0.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ftp1.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ffp1.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ftp2.print(std::cout, 1, LocTraits::eHeader, labels, false);
-	ffp2.print(std::cout, 1, LocTraits::eHeader, labels, false);
+	ft0.print(cout, 1, LocTraits::eHeader, labels, false);
+	ff0.print(cout, 1, LocTraits::eHeader, labels, false);
+	ft1.print(cout, 1, LocTraits::eHeader, labels, false);
+	ff1.print(cout, 1, LocTraits::eHeader, labels, false);
+	ft2.print(cout, 1, LocTraits::eHeader, labels, false);
+	ff2.print(cout, 1, LocTraits::eHeader, labels, false);
+	ft3.print(cout, 1, LocTraits::eHeader, labels, false);
+	ff3.print(cout, 1, LocTraits::eHeader, labels, false);
+	ft4.print(cout, 1, LocTraits::eHeader, labels, false);
+	ff4.print(cout, 1, LocTraits::eHeader, labels, false);
+	ft5.print(cout, 1, LocTraits::eHeader, labels, false);
+	ff5.print(cout, 1, LocTraits::eHeader, labels, false);
+	ftp0.print(cout, 1, LocTraits::eHeader, labels, false);
+	ffp0.print(cout, 1, LocTraits::eHeader, labels, false);
+	ftp1.print(cout, 1, LocTraits::eHeader, labels, false);
+	ffp1.print(cout, 1, LocTraits::eHeader, labels, false);
+	ftp2.print(cout, 1, LocTraits::eHeader, labels, false);
+	ffp2.print(cout, 1, LocTraits::eHeader, labels, false);
 }

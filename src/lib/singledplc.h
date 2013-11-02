@@ -19,8 +19,18 @@
 #ifndef _SINGLEDPLC_H_
 #define _SINGLEDPLC_H_
 
-class istream;
-class ostream;
+#include <iosfwd>
+
+#ifdef UNUSED
+#elif defined(__GNUC__)
+#	define UNUSED(x) UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+#	define UNUSED(x) /*@unused@*/ x
+#elif defined(__cplusplus)
+#	define UNUSED(x)
+#else
+#	define UNUSED(x) x
+#endif
 
 class single_dplc {
 protected:
@@ -29,7 +39,7 @@ public:
 	void read(std::istream &in, int ver);
 	void write(std::ostream &out, int ver) const;
 	void print() const;
-	static size_t size(int ver) {
+	static size_t size(int UNUSED(ver)) {
 		return 2;
 	}
 	unsigned short get_cnt() const {

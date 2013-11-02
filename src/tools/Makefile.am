@@ -5,7 +5,8 @@ bin_PROGRAMS = \
 	recolor_art \
 	smps2asm \
 	voice_dumper \
-	chunk_census
+	chunk_census \
+	split_art
 
 voice_dumper_SOURCES = \
 	fmvoice.cc    \
@@ -22,6 +23,14 @@ chunk_census_CXXFLAGS = -I$(srcdir)/../lib
 
 chunk_census_LDFLAGS = -lkosinski
 
+split_art_SOURCES =  \
+	split_art.cc
+
+split_art_CXXFLAGS = -I$(srcdir)/../lib 
+
+split_art_LDFLAGS = -lcomper -lkosinski \
+	$(builddir)/../lib/libmappings.la
+
 smps2asm_SOURCES = \
 	smps2asm.cc\
 	fmvoice.cc\
@@ -31,6 +40,8 @@ smps2asm_SOURCES = \
 
 smps2asm_CXXFLAGS = \
 	-I$(srcdir)/../lib
+
+smps2asm_LDFLAGS = -lsaxman
 
 recolor_art_SOURCES = \
 	recolor_art.cc

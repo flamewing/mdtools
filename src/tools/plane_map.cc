@@ -22,28 +22,31 @@
 #include <cstdlib>
 #include <map>
 
-#include "getopt.h"
+#include <getopt.h>
+
 #include "bigendian_io.h"
 #include <mdcomp/enigma.h>
 
+using namespace std;
+
 static void usage() {
-	std::cerr << "Usage: plane_map [-x|--extract [{pointer}]] [--sonic2] {input_filename} {output_filename} {width} {height}" << std::endl;
-	std::cerr << "\tPerforms a plane map operation on {input_filename}. {input_filename} is assumed to be a linear array which must be mapped into an area of {width} x {height} cells of 8x8 pixels." << std::endl;
-	std::cerr << "\t{output_filename} is a mappings file." << std::endl;
-	std::cerr << std::endl;
-	std::cerr << "\t-x,--extract\tAssume input file is Enigma-compressed and decode it before doing the plane map. File is read starting from {pointer}." << std::endl;
-	std::cerr << "\t--sonic2\t{output_filename} is in Sonic 2 mappings format. Default to non-Sonic 2 format." << std::endl << std::endl;
-	std::cerr << "Usage: plane_map -u [-c|--compress] [--sonic2] {input_filename} {output_filename}" << std::endl;
-	std::cerr << "\tDoes the reverse operation of the above usage (without -u). {input_filename} must contain only single-tile pieces." << std::endl;
-	std::cerr << std::endl;
-	std::cerr << "\t-c,--compress\t{output_filename} is Enigma compressed." << std::endl;
-	std::cerr << "\t--sonic2\t{input_filename} is in Sonic 2 mappings format. Default to non-Sonic 2 format." << std::endl << std::endl;
+	cerr << "Usage: plane_map [-x|--extract [{pointer}]] [--sonic2] {input_filename} {output_filename} {width} {height}" << endl;
+	cerr << "\tPerforms a plane map operation on {input_filename}. {input_filename} is assumed to be a linear array which must be mapped into an area of {width} x {height} cells of 8x8 pixels." << endl;
+	cerr << "\t{output_filename} is a mappings file." << endl;
+	cerr << endl;
+	cerr << "\t-x,--extract\tAssume input file is Enigma-compressed and decode it before doing the plane map. File is read starting from {pointer}." << endl;
+	cerr << "\t--sonic2\t{output_filename} is in Sonic 2 mappings format. Default to non-Sonic 2 format." << endl << endl;
+	cerr << "Usage: plane_map -u [-c|--compress] [--sonic2] {input_filename} {output_filename}" << endl;
+	cerr << "\tDoes the reverse operation of the above usage (without -u). {input_filename} must contain only single-tile pieces." << endl;
+	cerr << endl;
+	cerr << "\t-c,--compress\t{output_filename} is Enigma compressed." << endl;
+	cerr << "\t--sonic2\t{input_filename} is in Sonic 2 mappings format. Default to non-Sonic 2 format." << endl << endl;
 }
 
-static void plane_map(std::istream &src, std::ostream &dst, size_t w, size_t h,
-                      std::streamsize pointer, bool sonic2) {
-	src.seekg(0, std::ios::end);
-	std::streamsize sz = std::streamsize(src.tellg()) - pointer;
+static void plane_map(istream &src, ostream &dst, size_t w, size_t h,
+                      streamsize pointer, bool sonic2) {
+	src.seekg(0, ios::end);
+	streamsize sz = streamsize(src.tellg()) - pointer;
 	src.seekg(pointer);
 
 	size_t nframes = sz / (2 * w * h);
@@ -77,15 +80,14 @@ struct Position {
 	}
 };
 
-typedef std::pair<Position const, unsigned short> Enigma_entry;
-typedef std::map<Position, unsigned short> Enigma_map;
+typedef pair<Position const, unsigned short> Enigma_entry;
+typedef map<Position, unsigned short> Enigma_map;
 
-static void plane_unmap(std::istream &src, std::ostream &dst,
-                        std::streamsize pointer, bool sonic2) {
-	std::streamsize next_loc = src.tellg();
-	std::streamsize last_loc = BigEndian::Read2(src);
-	src.seekg(0, std::ios::end);
-	std::streamsize end_loc = 0, file_len = src.tellg();
+static void plane_unmap(istream &src, ostream &dst,
+                        streamsize UNUSED(pointer), bool sonic2) {
+	streamsize next_loc = src.tellg();
+	streamsize last_loc = BigEndian::Read2(src);
+	src.seekg(0, ios::end);
 	src.seekg(next_loc);
 
 	while (next_loc < last_loc) {
@@ -93,10 +95,8 @@ static void plane_unmap(std::istream &src, std::ostream &dst,
 
 		size_t offset = BigEndian::Read2(src);
 		next_loc = src.tellg();
-		if (next_loc == last_loc)
-			end_loc = file_len;
-		else
-			end_loc = BigEndian::Read2(src);
+		if (next_loc != last_loc)
+			src.ignore(2);
 
 		src.seekg(offset);
 
@@ -122,7 +122,7 @@ static void plane_unmap(std::istream &src, std::ostream &dst,
 
 int main(int argc, char *argv[]) {
 	int sonic2 = 0;
-	static struct option long_options[] = {
+	static option long_options[] = {
 		{"extract"  , optional_argument, 0, 'x'},
 		{"sonic2"   , no_argument      , &sonic2, 1},
 		{"compress" , no_argument      , 0, 'c'},
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 	};
 
 	bool extract = false, compress = false, unmap = false;
-	std::streamsize pointer = 0;
+	streamsize pointer = 0;
 
 	while (true) {
 		int option_index = 0;
@@ -161,30 +161,30 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	std::ifstream fin(argv[optind], std::ios::in | std::ios::binary);
+	ifstream fin(argv[optind], ios::in | ios::binary);
 	if (!fin.good()) {
-		std::cerr << "Input file '" << argv[optind] << "' could not be opened." << std::endl << std::endl;
+		cerr << "Input file '" << argv[optind] << "' could not be opened." << endl << endl;
 		return 2;
 	}
 
-	std::ofstream fout(argv[optind + 1], std::ios::out | std::ios::binary);
+	ofstream fout(argv[optind + 1], ios::out | ios::binary);
 	if (!fout.good()) {
-		std::cerr << "Output file '" << argv[optind + 1] << "' could not be opened." << std::endl << std::endl;
+		cerr << "Output file '" << argv[optind + 1] << "' could not be opened." << endl << endl;
 		return 3;
 	}
 
 	if (unmap) {
-		std::stringstream fbuf(std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+		stringstream fbuf(ios::in | ios::out | ios::binary | ios::trunc);
 		if (compress) {
 			plane_unmap(fin, fbuf, 0      , sonic2);
 			enigma::encode(fbuf, fout);
 		} else
 			plane_unmap(fin, fout, pointer, sonic2);
 	} else {
-		std::stringstream fbuf(std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+		stringstream fbuf(ios::in | ios::out | ios::binary | ios::trunc);
 		size_t w = strtoul(argv[optind + 2], 0, 0), h = strtoul(argv[optind + 3], 0, 0);
 		if (!w || !h) {
-			std::cerr << "Invalid height or width for plane mapping." << std::endl << std::endl;
+			cerr << "Invalid height or width for plane mapping." << endl << endl;
 			return 4;
 		}
 		if (extract) {

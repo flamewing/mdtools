@@ -19,11 +19,9 @@
 #ifndef _DPLCFILE_H_
 #define _DPLCFILE_H_
 
+#include <iosfwd>
 #include <vector>
 #include "framedplc.h"
-
-class istream;
-class ostream;
 
 class dplc_file {
 protected:
@@ -34,7 +32,12 @@ public:
 	void print() const;
 	void consolidate(dplc_file const &src);
 	void insert(frame_dplc const &val);
-	frame_dplc const &get_dplc(size_t i) const;
+	frame_dplc const &get_dplc(size_t i) const {
+		return frames[i];
+	}
+	size_t size() const {
+		return frames.size();
+	}
 	size_t size(int ver) const;
 };
 

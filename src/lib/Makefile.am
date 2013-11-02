@@ -3,17 +3,17 @@ lib_LTLIBRARIES = \
 	libmappings.la
 
 libmappings_la_SOURCES = \
-	singledplc.h    \
-	singledplc.cc    \
-	framedplc.h    \
-	framedplc.cc    \
-	dplcfile.h    \
-	dplcfile.cc    \
-	singlemapping.h    \
-	singlemapping.cc    \
-	framemapping.h    \
-	framemapping.cc    \
-	mappingfile.h    \
+	singledplc.h \
+	singledplc.cc \
+	framedplc.h \
+	framedplc.cc \
+	dplcfile.h \
+	dplcfile.cc \
+	singlemapping.h \
+	singlemapping.cc \
+	framemapping.h \
+	framemapping.cc \
+	mappingfile.h \
 	mappingfile.cc
 
 libmappings_la_LIBADD =

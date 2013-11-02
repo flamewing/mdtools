@@ -22,14 +22,17 @@
 #include <cstring>
 #include <cstdlib>
 
-#include "getopt.h"
+#include <getopt.h>
+
 #include <mdcomp/kosinski.h>
 #include <mdcomp/nemesis.h>
 
+using namespace std;
+
 static void usage() {
-	std::cerr << "Usage: recolor-art [-o|--format {unc|nem|kos}] [-m|--moduled] {-clr1 clr2}+ {input_art} {output_art}" << std::endl;
-	std::cerr << "\tRecolors the art file, changing palette index clr1 to clr2. Both are assumed to be an hex digit." << std::endl
-	          << "\tYou can specify as many colors to remap as you want, but each source color can appear only once." << std::endl << std::endl;
+	cerr << "Usage: recolor-art [-o|--format {unc|nem|kos}] [-m|--moduled] {-clr1 clr2}+ {input_art} {output_art}" << endl;
+	cerr << "\tRecolors the art file, changing palette index clr1 to clr2. Both are assumed to be an hex digit." << endl
+	     << "\tYou can specify as many colors to remap as you want, but each source color can appear only once." << endl << endl;
 }
 
 enum Formats {
@@ -40,7 +43,7 @@ enum Formats {
 
 struct Tile {
 	unsigned char tiledata[64];
-	bool read(std::istream &in) {
+	bool read(istream &in) {
 		for (size_t i = 0; i < sizeof(tiledata); i += 2) {
 			size_t col = in.get();
 			if (!in.good())
@@ -60,13 +63,13 @@ struct Tile {
 		for (size_t i = 0; i < sizeof(tiledata); i++)
 			tiledata[i] = colormap[tiledata[i]];
 	}
-	void write(std::ostream &out) {
+	void write(ostream &out) {
 		for (size_t i = 0; i < sizeof(tiledata); i += 2)
 			out.put(tiledata[i] | (tiledata[i + 1] << 4));
 	}
 };
 
-void recolor(std::istream &in, std::ostream &out, int const *colormap) {
+void recolor(istream &in, ostream &out, int const *colormap) {
 	Tile tile;
 	while (true) {
 		if (!tile.read(in))
@@ -77,24 +80,26 @@ void recolor(std::istream &in, std::ostream &out, int const *colormap) {
 }
 
 int main(int argc, char *argv[]) {
-	static struct option long_options[] = {
+	static option long_options[] = {
 		{"format"      , required_argument, 0, 'o'},
 		{"moduled"     , optional_argument, 0, 'm'},
 		{0, 0, 0, 0}
 	};
 
 	bool moduled = false;
-	std::streamsize modulesize = 0x1000;
+	streamsize modulesize = 0x1000;
 	// Identity map.
-	int colormap[16] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
-	                    0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF
-	                   };
+	int colormap[16] = {
+		0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+		0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF
+	};
 	unsigned numcolors = 0;
 	Formats fmt = eUncompressed;
 
 	while (true) {
 		int option_index = 0;
-		int c = getopt_long(argc, argv, "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
+		int c = getopt_long(argc, argv,
+		                    "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
 		                    long_options, &option_index);
 		if (c == -1)
 			break;
@@ -107,11 +112,11 @@ int main(int argc, char *argv[]) {
 				if (!optarg) {
 					usage();
 					return 1;
-				} else if (!std::strcmp(optarg, "unc"))
+				} else if (!strcmp(optarg, "unc"))
 					fmt = eUncompressed;
-				else if (!std::strcmp(optarg, "nem"))
+				else if (!strcmp(optarg, "nem"))
 					fmt = eNemesis;
-				else if (!std::strcmp(optarg, "kos"))
+				else if (!strcmp(optarg, "kos"))
 					fmt = eKosinski;
 				else {
 					usage();
@@ -141,7 +146,7 @@ int main(int argc, char *argv[]) {
 			case 'd':
 			case 'e':
 			case 'f': {
-				if (!optarg || std::strlen(optarg) != 1) {
+				if (!optarg || strlen(optarg) != 1) {
 					usage();
 					return 1;
 				}
@@ -175,14 +180,14 @@ int main(int argc, char *argv[]) {
 		return 2;
 	}
 
-	std::ifstream fin(argv[optind], std::ios::in | std::ios::binary);
+	ifstream fin(argv[optind], ios::in | ios::binary);
 	if (!fin.good()) {
-		std::cerr << "Input file '" << argv[optind] << "' could not be opened." << std::endl << std::endl;
+		cerr << "Input file '" << argv[optind] << "' could not be opened." << endl << endl;
 		return 3;
 	}
 
-	std::stringstream sin(std::ios::in | std::ios::out | std::ios::binary),
-	    sout(std::ios::in | std::ios::out | std::ios::binary);
+	stringstream sin(ios::in | ios::out | ios::binary),
+	             sout(ios::in | ios::out | ios::binary);
 
 	fin.seekg(0);
 	if (fmt == eUncompressed)
@@ -196,9 +201,9 @@ int main(int argc, char *argv[]) {
 	sin.seekg(0);
 	recolor(sin, sout, colormap);
 
-	std::fstream fout(argv[optind + 1], std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+	fstream fout(argv[optind + 1], ios::in | ios::out | ios::binary | ios::trunc);
 	if (!fout.good()) {
-		std::cerr << "Output file '" << argv[optind + 1] << "' could not be opened." << std::endl << std::endl;
+		cerr << "Output file '" << argv[optind + 1] << "' could not be opened." << endl << endl;
 		return 4;
 	}
 

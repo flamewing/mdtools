@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <tr1/memory>
+#include <memory>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -29,14 +29,14 @@
 #include <set>
 #include <vector>
 
-#include "getopt.h"
+#include <getopt.h>
+
+#include <mdcomp/saxman.h>
 #include "bigendian_io.h"
 #include "songtrack.h"
 #include "fmvoice.h"
 
-extern void PrintMacro(std::ostream &out, char const *macro);
-extern void PrintHex2(std::ostream &out, unsigned char c, bool last);
-extern void PrintHex4(std::ostream &out, unsigned short c, bool last);
+using namespace std;
 
 struct S1IO {
 	template <typename T>
@@ -65,12 +65,12 @@ struct S1IO {
 	}
 
 	template <typename T>
-	static inline int read_pointer(T &in, int base) {
+	static inline int read_pointer(T &in, int UNUSED(base)) {
 		int ptr = int(in.tellg()) + 1;
 		return static_cast<short>(Read2(in)) + ptr;
 	}
 
-	static inline int int2headerpointer(int val, int base) {
+	static inline int int2headerpointer(int val, int UNUSED(base)) {
 		return static_cast<unsigned short>(val);
 	}
 };
@@ -111,41 +111,41 @@ struct SNIO {
 	}
 };
 
-static inline std::string make_label_code(int code) {
+static inline string make_label_code(int code) {
 	char buf[20];
-	std::sprintf(buf, "%02X", code);
-	return std::string(buf);
+	sprintf(buf, "%02X", code);
+	return string(buf);
 }
 
-static inline std::string need_call_label() {
+static inline string need_call_label() {
 	static int calllbl = 0;
-	std::string ret("_Call");
+	string ret("_Call");
 	ret += make_label_code(calllbl++);
 	return ret;
 }
 
-static inline std::string need_jump_label() {
+static inline string need_jump_label() {
 	static int jumplbl = 0;
-	std::string ret("_Jump");
+	string ret("_Jump");
 	ret += make_label_code(jumplbl++);
 	return ret;
 }
 
-static inline std::string need_loop_label() {
+static inline string need_loop_label() {
 	static int looplbl = 0;
-	std::string ret("_Loop");
+	string ret("_Loop");
 	ret += make_label_code(looplbl++);
 	return ret;
 }
 
 template<typename IO>
-BaseNote *BaseNote::read(std::istream &in, int sonicver, int offset,
-                         std::string const &projname, LocTraits::LocType tracktype,
-                         std::multimap<int, std::string>& labels,
+BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
+                         string const &projname, LocTraits::LocType tracktype,
+                         multimap<int, string> &labels,
                          int &last_voc) {
 	unsigned char byte = Read1(in);
 	// Initialize to invalid 32-bit address.
-	if (byte >= 0 && byte < 0x80)
+	if (byte < 0x80)
 		return new Duration(byte);
 	else if (byte < 0xe0) {
 		switch (tracktype) {
@@ -197,9 +197,9 @@ BaseNote *BaseNote::read(std::istream &in, int sonicver, int offset,
 			case 0xf7: { // Loop
 				unsigned char index = Read1(in), repeats = Read1(in);
 				int ptr = IO::read_pointer(in, offset);
-				std::multimap<int, std::string>::iterator it = labels.find(ptr);
+				multimap<int, string>::iterator it = labels.find(ptr);
 				if (it == labels.end())
-					labels.insert(std::make_pair(ptr, projname + need_loop_label()));
+					labels.insert(make_pair(ptr, projname + need_loop_label()));
 				return new CoordFlagPointer2ParamBytes<false>(byte, index, repeats, ptr);
 			}
 			case 0xf0:  // Start modulation
@@ -212,16 +212,16 @@ BaseNote *BaseNote::read(std::istream &in, int sonicver, int offset,
 			case 0xf8:  // Call
 			case 0xfc: { // Continuous loop
 				int ptr = IO::read_pointer(in, offset);
-				std::multimap<int, std::string>::iterator it = labels.find(ptr);
+				multimap<int, string>::iterator it = labels.find(ptr);
 				if (it == labels.end()) {
-					std::string lbl;
+					string lbl;
 					if (byte == 0xf6)
 						lbl = need_jump_label();
 					else if (byte == 0xf8)
 						lbl = need_call_label();
 					else
 						lbl = need_loop_label();
-					labels.insert(std::make_pair(ptr, projname + lbl));
+					labels.insert(make_pair(ptr, projname + lbl));
 				}
 				if (byte == 0xf6)
 					return new CoordFlagPointerParam<true>(byte, ptr);
@@ -231,9 +231,9 @@ BaseNote *BaseNote::read(std::istream &in, int sonicver, int offset,
 			case 0xeb: { // Conditional jump
 				unsigned char index = Read1(in);
 				int ptr = IO::read_pointer(in, offset);
-				std::multimap<int, std::string>::iterator it = labels.find(ptr);
+				multimap<int, string>::iterator it = labels.find(ptr);
 				if (it == labels.end())
-					labels.insert(std::make_pair(ptr, projname + need_jump_label()));
+					labels.insert(make_pair(ptr, projname + need_jump_label()));
 
 				return new CoordFlagPointer1ParamByte<false>(byte, index, ptr);
 			}
@@ -292,9 +292,9 @@ BaseNote *BaseNote::read(std::istream &in, int sonicver, int offset,
 			case 0xf7: { // Loop
 				unsigned char index = Read1(in), repeats = Read1(in);
 				int ptr = IO::read_pointer(in, offset);
-				std::multimap<int, std::string>::iterator it = labels.find(ptr);
+				multimap<int, string>::iterator it = labels.find(ptr);
 				if (it == labels.end())
-					labels.insert(std::make_pair(ptr, projname + need_loop_label()));
+					labels.insert(make_pair(ptr, projname + need_loop_label()));
 				return new CoordFlagPointer2ParamBytes<false>(byte, index, repeats, ptr);
 			}
 			case 0xf0: { // Start modulation
@@ -305,9 +305,9 @@ BaseNote *BaseNote::read(std::istream &in, int sonicver, int offset,
 			case 0xf6:  // Jump
 			case 0xf8: { // Call
 				int ptr = IO::read_pointer(in, offset);
-				std::multimap<int, std::string>::iterator it = labels.find(ptr);
+				multimap<int, string>::iterator it = labels.find(ptr);
 				if (it == labels.end())
-					labels.insert(std::make_pair(ptr, projname + (byte == 0xf6 ? need_jump_label()
+					labels.insert(make_pair(ptr, projname + (byte == 0xf6 ? need_jump_label()
 					                             : need_call_label())));
 				if (byte == 0xf6)
 					return new CoordFlagPointerParam<true>(byte, ptr);
@@ -358,33 +358,34 @@ BaseNote *BaseNote::read(std::istream &in, int sonicver, int offset,
 
 template<typename IO>
 class DumpSmps {
-	std::istream &in;
-	std::ostream &out;
-	std::string const &projname;
+	istream &in;
+	ostream &out;
+	string const &projname;
 	int sonicver, startloc, offset, len;
 	bool sfx, s3kmode;
 public:
-	DumpSmps(std::istream &i, std::ostream &o, int s, int off, std::string const &nm, bool tf, bool s3km)
-		: in(i), out(o), sonicver(s), offset(off), projname(nm), sfx(tf), s3kmode(s3km) {
+	DumpSmps(istream &i, ostream &o, int s, int off,
+	         string const &nm, bool tf, bool s3km)
+		: in(i), out(o), projname(nm), sonicver(s), offset(off), sfx(tf), s3kmode(s3km) {
 		startloc = in.tellg();
-		in.seekg(0, std::ios::end);
+		in.seekg(0, ios::end);
 		len = in.tellg();
 		in.seekg(startloc);
 	}
 	void dump_smps() {
 		// Set up data structures for exploratory disassembly.
-		std::priority_queue<LocTraits> todo;
-		std::map<int, LocTraits::LocType> explored;
-		std::map<int, std::tr1::shared_ptr<BaseNote> > trackdata;
+		priority_queue<LocTraits> todo;
+		map<int, LocTraits::LocType> explored;
+		map<int, shared_ptr<BaseNote> > trackdata;
 
 		// This will hold the labels of each location.
-		std::multimap<int, std::string> labels;
-		std::set<std::string> tracklabels;
+		multimap<int, string> labels;
+		set<string> tracklabels;
 
 		// Start with music conversion header.
-		out << projname << "_Header:" << std::endl;
+		out << projname << "_Header:" << endl;
 		PrintMacro(out, "smpsHeaderStartSong");
-		out << (sonicver > 3 ? 3 : sonicver) << std::endl;
+		out << (sonicver > 3 ? 3 : sonicver) << endl;
 
 		// Now for voice pointer; this is the first piece of data in both
 		// songs and SFX.
@@ -397,18 +398,18 @@ public:
 		if (!vocptr) {
 			// Null voice bank.
 			ext_vocs = true;
-			out << "\tsmpsHeaderVoiceNull" << std::endl;
+			out << "\tsmpsHeaderVoiceNull" << endl;
 			todo.push(LocTraits(vocptr, LocTraits::eExtVoices));
 		} else if (uses_uvb) {
 			// Universal voice bank in S3/SK/S3D.
 			ext_vocs = true;
-			out << "\tsmpsHeaderVoiceUVB" << std::endl;
+			out << "\tsmpsHeaderVoiceUVB" << endl;
 			todo.push(LocTraits(vocptr, LocTraits::eExtVoices));
 		} else {
 			vocptr = IO::int2headerpointer(vocptr, offset);
 			ext_vocs = (vocptr >= len) || (vocptr < 0);
 			PrintMacro(out, "smpsHeaderVoice");
-			out << projname << "_Voices" << std::endl;
+			out << projname << "_Voices" << endl;
 
 			// An external voice bank will be printed as a note at the end;
 			// the other type of voice bank will be extracted based on the
@@ -426,14 +427,14 @@ public:
 			// Output tempo header; it will deal with main tempo conversion.
 			PrintMacro(out, "smpsHeaderTempoSFX");
 			PrintHex2(out, tempodiv, true);
-			out << std::endl;
+			out << endl;
 
 			// Number of FM+PSG channels.
 			int nchan = Read1(in);
 			// Output channel setup header.
 			PrintMacro(out, "smpsHeaderChanSFX");
 			PrintHex2(out, nchan, true);
-			out << std::endl << std::endl;
+			out << endl << endl;
 
 			// Time to output headers for all tracks then queue uptheir data
 			// for exploration.
@@ -446,13 +447,13 @@ public:
 				if (playctrl != 0x80) {
 					out << ";\tOriginal SFX playback control byte was ";
 					PrintHex2(out, playctrl, true);
-					std::cerr << "Original SFX playback control byte was ";
-					PrintHex2(std::cerr, playctrl, true);
+					cerr << "Original SFX playback control byte was ";
+					PrintHex2(cerr, playctrl, true);
 				}
 				PrintMacro(out, "smpsHeaderSFXChannel");
 
 				// Create track label and channel assignmend constant for header.
-				std::string lbl = projname;
+				string lbl = projname;
 				switch (chanid) {
 					case 0x80:
 					case 0xA0:
@@ -486,21 +487,21 @@ public:
 
 					default:
 						PrintHex2(out, chanid , false);
-						std::cerr << "Invalid SFX channel ID." << std::endl;
+						cerr << "Invalid SFX channel ID." << endl;
 						exit(6);
 						break;
 				}
 				out << lbl << ",\t";
 				PrintHex2(out, keydisp , false);
 				PrintHex2(out, initvol , true);
-				out << std::endl;
+				out << endl;
 
 				// Add to queue/label list.
 				if ((chanid & 0x80) != 0)
 					todo.push(LocTraits(trackptr, LocTraits::ePSGInit));
 				else
 					todo.push(LocTraits(trackptr, LocTraits::eFMInit));
-				labels.insert(std::make_pair(trackptr, lbl));
+				labels.insert(make_pair(trackptr, lbl));
 				tracklabels.insert(lbl);
 			}
 		} else {
@@ -510,7 +511,7 @@ public:
 			PrintMacro(out, "smpsHeaderChan");
 			PrintHex2(out, nfm , false);
 			PrintHex2(out, npsg, true);
-			out << std::endl;
+			out << endl;
 
 			// Tempo dividing timing, main tempo modifier.
 			int tempodiv = Read1(in), tempomod = Read1(in);
@@ -518,19 +519,19 @@ public:
 			PrintMacro(out, "smpsHeaderTempo");
 			PrintHex2(out, tempodiv, false);
 			PrintHex2(out, tempomod, true);
-			out << std::endl << std::endl;
+			out << endl << endl;
 
 			// First come the DAC and FM channels.
 			for (int i = 0; i < nfm; i++) {
 				int ptr = IO::read_header_pointer(in, offset),
 				    pitch = Read1(in), vol = Read1(in);
 
-				std::string lbl = projname;
+				string lbl = projname;
 				LocTraits::LocType type;
 				if (i == 0) {
 					// DAC is always first.
 					lbl += "_DAC";
-					labels.insert(std::make_pair(ptr, lbl));
+					labels.insert(make_pair(ptr, lbl));
 					tracklabels.insert(lbl);
 					PrintMacro(out, "smpsHeaderDAC");
 					if (pitch || vol) {
@@ -538,20 +539,20 @@ public:
 						PrintHex2(out, pitch, false);
 						PrintHex2(out, vol, true);
 					}
-					out << lbl << std::endl;
+					out << lbl << endl;
 					type = LocTraits::eDACInit;
 				} else {
 					// Now come FM channels.
 					char c = i + '0';
 					lbl += "_FM";
 					lbl += c;
-					labels.insert(std::make_pair(ptr, lbl));
+					labels.insert(make_pair(ptr, lbl));
 					tracklabels.insert(lbl);
 					PrintMacro(out, "smpsHeaderFM");
 					out << lbl << ",\t";
 					PrintHex2(out, pitch, false);
 					PrintHex2(out, vol, true);
-					out << std::endl;
+					out << endl;
 					type = LocTraits::eFMInit;
 				}
 
@@ -565,11 +566,11 @@ public:
 				    pitch   = Read1(in), vol  = Read1(in),
 				    modctrl = Read1(in), tone = Read1(in);
 
-				std::string lbl = projname;
+				string lbl = projname;
 				char c = i + '1';
 				lbl += "_PSG";
 				lbl += c;
-				labels.insert(std::make_pair(ptr, lbl));
+				labels.insert(make_pair(ptr, lbl));
 				tracklabels.insert(lbl);
 				PrintMacro(out, "smpsHeaderPSG");
 				out << lbl << ",\t";
@@ -577,7 +578,7 @@ public:
 				PrintHex2(out, vol    , false);
 				PrintHex2(out, modctrl, false);
 				BaseNote::print_psg_tone(out, tone, sonicver, true);
-				out << std::endl;
+				out << endl;
 
 				// Add to queue.
 				todo.push(LocTraits(ptr, LocTraits::ePSGInit));
@@ -585,8 +586,8 @@ public:
 		}
 
 		// Mark all contents so far as having been explored.
-		for (size_t i = startloc; i < in.tellg(); i++)
-			explored.insert(std::make_pair(i, LocTraits::eHeader));
+		for (size_t i = startloc; i < size_t(in.tellg()); i++)
+			explored.insert(make_pair(i, LocTraits::eHeader));
 
 		while (todo.size() > 1) {
 			LocTraits next_loc = todo.top();
@@ -617,24 +618,24 @@ public:
 				continue;
 
 			if (next_loc.loc < 0 || next_loc.loc >= len) {
-				std::multimap<int, std::string>::iterator it = labels.lower_bound(next_loc.loc),
-				                                          end = labels.upper_bound(next_loc.loc);
+				multimap<int, string>::iterator it = labels.lower_bound(next_loc.loc),
+				                                end = labels.upper_bound(next_loc.loc);
 
 				if (it != end)
 					BaseNote::force_linebreak(out, true);
 
-				out << "; The following track data was present at " << std::dec
+				out << "; The following track data was present at " << dec
 				    << next_loc.loc << " bytes from the start of the song."
-				    << std::endl;
+				    << endl;
 				for (; it != end; ++it) {
 
-					std::string lbl = it->second;
+					string lbl = it->second;
 					if (tracklabels.find(lbl) != tracklabels.end())
-						out << "; " << lbl.substr(lbl.rfind('_') + 1) << " Data" << std::endl;
-					out << it->second << ":" << std::endl;
+						out << "; " << lbl.substr(lbl.rfind('_') + 1) << " Data" << endl;
+					out << it->second << ":" << endl;
 				}
 
-				explored.insert(std::make_pair(next_loc.loc, next_loc.type));
+				explored.insert(make_pair(next_loc.loc, next_loc.type));
 				continue;
 			}
 
@@ -644,11 +645,11 @@ public:
 
 			while (true) {
 				int lastloc = in.tellg();
-				std::tr1::shared_ptr<BaseNote> note =
-				    std::tr1::shared_ptr<BaseNote>(BaseNote::read<IO>(in, sonicver,
-				                                   offset, projname, next_loc.type,
-				                                   labels, last_voc));
-				trackdata.insert(std::make_pair(lastloc, note));
+				shared_ptr<BaseNote> note =
+				    shared_ptr<BaseNote>(BaseNote::read<IO>(in, sonicver,
+				                         offset, projname, next_loc.type,
+				                         labels, last_voc));
+				trackdata.insert(make_pair(lastloc, note));
 
 				// If the data includes a jump target, add it to queue.
 				if (note->has_pointer())
@@ -656,7 +657,7 @@ public:
 
 				// Add in freshly explored data to list.
 				for (int i = lastloc; i < in.tellg(); i++)
-					explored.insert(std::make_pair(i, next_loc.type));
+					explored.insert(make_pair(i, next_loc.type));
 
 				// If we reach track end, or if we reached the end of file,
 				// break from loop.
@@ -675,74 +676,71 @@ public:
 		} else if (last_voc < 0) {
 			// There are no voices in use; so we insert a comment saying so and
 			// add a dummy label for the voice pointer.
-			std::stringstream str(std::ios::in | std::ios::out);
-			str << "; Song seems to not use any FM voices" << std::endl;
+			stringstream str(ios::in | ios::out);
+			str << "; Song seems to not use any FM voices" << endl;
 			str << projname << "_Voices";
-			labels.insert(std::make_pair(voices.loc, str.str()));
-			std::tr1::shared_ptr<BaseNote> note =
-			    std::tr1::shared_ptr<BaseNote>(new NullNote());
-			trackdata.insert(std::make_pair(voices.loc, note));
+			labels.insert(make_pair(voices.loc, str.str()));
+			shared_ptr<BaseNote> note(new NullNote());
+			trackdata.insert(make_pair(voices.loc, note));
 		} else if (ext_vocs || voices.type == LocTraits::eExtVoices) {
 			// The voices were not in the file. Print a comment with their
 			// location and a dummy label.
-			std::stringstream str(std::ios::in | std::ios::out);
+			stringstream str(ios::in | ios::out);
 			str << "; Voices were not within the file: they are the first "
-			    << (last_voc + 1) << " voices located at " << std::dec << voices.loc
-			    << " bytes from the start of the song." << std::endl;
+			    << (last_voc + 1) << " voices located at " << dec << voices.loc
+			    << " bytes from the start of the song." << endl;
 			str << "; The following label is a dummy label and should be moved to the correct location.";
-			str << std::endl << projname << "_Voices";
-			labels.insert(std::make_pair(voices.loc, str.str()));
-			labels.insert(std::make_pair(voices.loc, str.str()));
-			std::tr1::shared_ptr<BaseNote> note =
-			    std::tr1::shared_ptr<BaseNote>(new NullNote());
-			trackdata.insert(std::make_pair(voices.loc, note));
+			str << endl << projname << "_Voices";
+			labels.insert(make_pair(voices.loc, str.str()));
+			labels.insert(make_pair(voices.loc, str.str()));
+			shared_ptr<BaseNote> note(new NullNote());
+			trackdata.insert(make_pair(voices.loc, note));
 		} else if (last_voc >= 0) {
 			in.clear();
 			in.seekg(voices.loc);
-			labels.insert(std::make_pair(voices.loc, projname + "_Voices"));
+			labels.insert(make_pair(voices.loc, projname + "_Voices"));
 
 			// Read each voice in turn.
 			for (int i = 0; i <= last_voc; i++) {
-				if (in.tellg() + std::streamoff(25) > len) {
+				if (in.tellg() + streamoff(25) > len) {
 					// End of file reached in the middle of a voice.
-					std::cerr << "Broken voice! The end-of-file was reached in the middle of an FM voice used by the song." << std::endl;
+					cerr << "Broken voice! The end-of-file was reached in the middle of an FM voice used by the song." << endl;
 					break;
 				}
 
 				int lastloc = in.tellg();
-				std::tr1::shared_ptr<BaseNote> voc =
-				    std::tr1::shared_ptr<BaseNote>(new FMVoice(in, sonicver, i));
-				trackdata.insert(std::make_pair(lastloc, voc));
+				shared_ptr<BaseNote> voc(new FMVoice(in, sonicver, i));
+				trackdata.insert(make_pair(lastloc, voc));
 
 				// Add in freshly explored data to list.
 				for (int i = lastloc; i < in.tellg(); i++)
-					explored.insert(std::make_pair(i, LocTraits::eVoices));
+					explored.insert(make_pair(i, LocTraits::eVoices));
 			}
 		}
 
 		int lastlabel = -1;
-		for (std::map<int, std::tr1::shared_ptr<BaseNote> >::iterator it = trackdata.begin();
+		for (map<int, shared_ptr<BaseNote> >::iterator it = trackdata.begin();
 		        it != trackdata.end(); ++it) {
 			int off = it->first;
-			std::tr1::shared_ptr<BaseNote> note = it->second;
+			shared_ptr<BaseNote> note = it->second;
 			if (off > lastlabel) {
-				std::multimap<int, std::string>::iterator it = labels.upper_bound(lastlabel),
-				                                          end = labels.upper_bound(off);
+				multimap<int, string>::iterator it = labels.upper_bound(lastlabel),
+				                                end = labels.upper_bound(off);
 
 				if (it != end)
 					BaseNote::force_linebreak(out, true);
 
 				for (; it != end; ++it) {
-					std::string lbl = it->second;
+					string lbl = it->second;
 					if (tracklabels.find(lbl) != tracklabels.end())
-						out << "; " << lbl.substr(lbl.rfind('_') + 1) << " Data" << std::endl;
-					out << it->second << ":" << std::endl;
+						out << "; " << lbl.substr(lbl.rfind('_') + 1) << " Data" << endl;
+					out << it->second << ":" << endl;
 				}
 
 				lastlabel = off;
 			}
 
-			std::map<int, LocTraits::LocType>::iterator ty = explored.find(off);
+			map<int, LocTraits::LocType>::iterator ty = explored.find(off);
 			//assert(ty != explored.end());
 			if (ty != explored.end())
 				note->print(out, sonicver, ty->second, labels, s3kmode);
@@ -756,15 +754,15 @@ public:
 		{
 		    // There are no voices in use; so we insert a comment saying so and
 		    // add a dummy label for the voice pointer.
-		    out << std::endl << std::endl << "; Song seems to not use any FM voices" << std::endl;
-		    out << projname << "_Voices:" << std::endl;
+		    out << endl << endl << "; Song seems to not use any FM voices" << endl;
+		    out << projname << "_Voices:" << endl;
 		    return;
 		}
 		else if (todo.empty())
 		{
 		    // This should be impossible.
-		    out << std::endl << "; FM voices used by the song were not within the file; moreover,"
-		        << std::endl << "; due to an unknown error, this software could not locate them." << std::endl;
+		    out << endl << "; FM voices used by the song were not within the file; moreover,"
+		        << endl << "; due to an unknown error, this software could not locate them." << endl;
 		    return;
 		}
 
@@ -776,26 +774,26 @@ public:
 		{
 		    // The voices were not in the file. Print a comment with their
 		    // location and a dummy label.
-		    out << std::endl << std::endl << "; Voices were not within the file: they are the first "
-		        << (last_voc + 1) << " voices located at " << std::dec << voices.loc
-		        << " bytes from the start of the song." << std::endl;
+		    out << endl << endl << "; Voices were not within the file: they are the first "
+		        << (last_voc + 1) << " voices located at " << dec << voices.loc
+		        << " bytes from the start of the song." << endl;
 		    out << "; The following label is a dummy label and should be moved to the correct location.";
-		    out << std::endl << projname << "_Voices:" << std::endl;
+		    out << endl << projname << "_Voices:" << endl;
 		    return;
 		}
 
 		// Clear errors and reposition stream.
 		in.clear();
 		in.seekg(voices.loc);
-		out << std::endl << std::endl << projname << "_Voices:" << std::endl;
+		out << endl << endl << projname << "_Voices:" << endl;
 
 		// Print each voice in turn.
 		for (int i = 0; i <= last_voc; i++)
 		{
-		    if (in.tellg() + std::streamoff(25) > len)
+		    if (in.tellg() + streamoff(25) > len)
 		    {
 		        // End of file reached in the middle of a voice.
-		        std::cerr << "Broken voice! The end-of-file was reached in the middle of an FM voice used by the song." << std::endl;
+		        cerr << "Broken voice! The end-of-file was reached in the middle of an FM voice used by the song." << endl;
 		        break;
 		    }
 
@@ -809,55 +807,108 @@ public:
 };
 
 static void usage() {
-	std::cerr << "Usage: smps2asm [-x|--extract [{pointer}]] [-u|--saxman] [-o|--offset {offsetval}] [-s|--sfx]" << std::endl
-	          << "                {-v|--sonicver} {version} [-3|--s3kmode] {input_filename} {output_filename} {projname}" << std::endl;
-	std::cerr << std::endl;
-	std::cerr << "\t-s,--sfx     \tFile is SFX, not music." << std::endl;
-	std::cerr << "\t-u,--saxman  \tNot implemented yet; once it is, it will work as follows:" << std::endl
-	          << "\t             \tAssume Music file is Saxman-compressed. In most cases, this" << std::endl
-	          << "\t             \tshould be combined with --offset 0x1380 --sonicver 2." << std::endl;
-	std::cerr << "\t-x,--extract \tExtract from {pointer} address in file. This should never be" << std::endl
-	          << "\t             \tcombined with --offset unless --saxman is also used." << std::endl;
-	std::cerr << "\t-o,--offset  \tAssumes starting pointer for music/sfx within its sound bank" << std::endl
-	          << "\t             \tis {offsetval}. Ignored if used with --sonicver 1." << std::endl;
-	std::cerr << "\t-v,--sonicver\tSets Sonic version to {version}. This also sets underlying" << std::endl
-	          << "\t             \tSMPS type. {version} can be '1' Sonic 1, '2' for Sonic 2 or" << std::endl
-	          << "\t             \t'3' for Sonic 3, '4' for Sonic & Knuckles, or '5' for Sonic" << std::endl
-	          << "\t             \t3D Blast." << std::endl;
-	std::cerr << "\t-3,--s3kmode \tThis flag is valid for Sonic 1 and Sonic 2 only; this will" << std::endl
-	          << "\t             \tcause all sequences of durations after a rest to be printed" << std::endl
-	          << "\t             \twith the rests shown explicitly." << std::endl
-	          << "\t             \tWARNING: A smpsCall is assumed to set the note to something." << std::endl
-	          << "\t             \tother than a rest; this assumption turns out to be correct" << std::endl
-	          << "\t             \tfor all Sonic 1 and Sonic 2 songs and SFX, but it could be" << std::endl
-	          << "\t             \twrong for another game with a compatible SMPS implementation." << std::endl
-	          << "\t             \tUse with care." << std::endl << std::endl;
+	cerr << "Usage: smps2asm [-b|--bank {ptrtable} [-x|--extract [{pointer}]] [-u|--saxman] [-o|--offset {offsetval}] [-s|--sfx]" << endl
+	     << "                {-v|--sonicver} {version} [-3|--s3kmode] {input_filename} {output_filename} {projname}" << endl;
+	cerr << endl;
+	cerr << "\t-s,--sfx     \tFile is SFX, not music." << endl;
+	cerr << "\t-b,--bank    \tExtracts an entire z80 bank whose pointer table is at ptrtable." << endl
+	     << "\t             \tThe pointer table must reside in the bank, and this option cannot" << endl
+	     << "\t             \tbe combined with --extract or with --saxman." << endl
+	     << "\t             \tSince this is for extracting z80 banks, it is not compatible with" << endl
+	     << "\t             \t--sonicver 1. If missing, ptrtable is assumed to be zero." << endl;
+	cerr << "\t-u,--saxman  \tAssume music file is Saxman-compressed. In most cases, this" << endl
+	     << "\t             \tshould be combined with --offset 0x1380 --sonicver 2." << endl;
+	cerr << "\t-x,--extract \tExtract from {pointer} address in file. This should never be" << endl
+	     << "\t             \tcombined with --offset unless --saxman is also used." << endl;
+	cerr << "\t-o,--offset  \tAssumes starting pointer for music/sfx within its sound bank" << endl
+	     << "\t             \tis {offsetval}. Ignored if used with --sonicver 1." << endl;
+	cerr << "\t-v,--sonicver\tSets Sonic version to {version}. This also sets underlying" << endl
+	     << "\t             \tSMPS type. {version} can be '1' Sonic 1, '2' for Sonic 2 or" << endl
+	     << "\t             \t'3' for Sonic 3, '4' for Sonic & Knuckles, or '5' for Sonic" << endl
+	     << "\t             \t3D Blast." << endl;
+	cerr << "\t-3,--s3kmode \tThis flag is valid for Sonic 1 and Sonic 2 only; this will" << endl
+	     << "\t             \tcause all sequences of durations after a rest to be printed" << endl
+	     << "\t             \twith the rests shown explicitly." << endl
+	     << "\t             \tWARNING: A smpsCall is assumed to set the note to something." << endl
+	     << "\t             \tother than a rest; this assumption turns out to be correct" << endl
+	     << "\t             \tfor all Sonic 1 and Sonic 2 songs and SFX, but it could be" << endl
+	     << "\t             \twrong for another game with a compatible SMPS implementation." << endl
+	     << "\t             \tUse with care." << endl << endl;
+}
+
+void dump_single_entry
+(
+ istream &in, ostream &out, string const &projname,
+ int pointer, int offset, int sonicver, bool saxman, bool sfx, bool s3kmode
+) {
+
+	if (pointer) {
+		if (saxman)
+			offset = -offset;
+		else {
+			offset = pointer;
+			if (sonicver != 1)
+				offset &= ~0x7fff;
+		}
+	} else if (sonicver != 1)
+		offset = -offset;
+	else
+		offset = 0;
+
+	istream *src;
+	stringstream sin(ios::in | ios::out | ios::binary);
+
+	in.seekg(0);
+	if (!saxman) {
+		src = &in;
+		in.seekg(pointer);
+	} else {
+		src = &sin;
+		saxman::decode(in, sin, pointer, false);
+		sin.seekg(0);
+	}
+
+	if (sonicver == 1) {
+		DumpSmps<S1IO> smps(*src, out, sonicver, offset, projname, sfx, s3kmode);
+		smps.dump_smps();
+	} else {
+		DumpSmps<SNIO> smps(*src, out, sonicver, offset, projname, sfx, s3kmode);
+		smps.dump_smps();
+	}
 }
 
 int main(int argc, char *argv[]) {
-	static struct option long_options[] = {
-		{"extract", required_argument, 0, 'x'},
-		{"saxman",  no_argument      , 0, 'u'},
-		{"offset",  required_argument, 0, 'o'},
+	static option long_options[] = {
+		{"bank"    , optional_argument, 0, 'b'},
+		{"extract" , optional_argument, 0, 'x'},
+		{"saxman"  , no_argument      , 0, 'u'},
+		{"offset"  , required_argument, 0, 'o'},
 		{"sonicver", required_argument, 0, 'v'},
-		{"sfx",     no_argument      , 0, 's'},
-		{"s3kmode", no_argument      , 0, '3'},
+		{"sfx"     , no_argument      , 0, 's'},
+		{"s3kmode" , no_argument      , 0, '3'},
 		{0, 0, 0, 0}
 	};
 
-	bool sfx = false, saxman = false, s3kmode = false;
-	int pointer = 0, offset = 0, sonicver = -1;
+	bool sfx = false, saxman = false, s3kmode = false, bankmode = false;
+	int pointer = 0, offset = 0, ptrtable = 0, sonicver = -1;
 
 	while (true) {
 		int option_index = 0;
-		int c = getopt_long(argc, argv, "x:uo:v:s3",
+		int c = getopt_long(argc, argv, "b::x::uo:v:s3",
 		                    long_options, &option_index);
 		if (c == -1)
 			break;
 
 		switch (c) {
+			case 'b':
+				if (optarg)
+					ptrtable = strtoul(optarg, 0, 0);
+				bankmode = true;
+				break;
+
 			case 'x':
-				pointer = strtoul(optarg, 0, 0);
+				if (optarg)
+					pointer = strtoul(optarg, 0, 0);
 				break;
 
 			case 'u':
@@ -884,57 +935,61 @@ int main(int argc, char *argv[]) {
 
 	if (argc - optind < 3 || sonicver < 1 || sonicver > 5
 	        || (!saxman && pointer != 0 && offset != 0)
+	        || (bankmode && (pointer != 0 || saxman || sonicver == 1))
 	        || (s3kmode && sonicver > 2)) {
 		usage();
 		return 1;
 	}
 
-	if (pointer) {
-		if (saxman)
-			offset = -offset;
-		else {
-			offset = pointer;
-			if (sonicver != 1)
-				offset &= ~0x7fff;
-		}
-	} else if (sonicver != 1)
-		offset = -offset;
-	else
-		offset = 0;
 
-	std::ifstream fin(argv[optind + 0], std::ios::in | std::ios::binary);
+	ifstream fin(argv[optind + 0], ios::in | ios::binary);
 	if (!fin.good()) {
-		std::cerr << "Input file '" << argv[optind + 0] << "' could not be opened." << std::endl << std::endl;
+		cerr << "Input file '" << argv[optind + 0] << "' could not be opened." << endl << endl;
 		return 2;
 	}
 
-	std::istream *src;
-	std::stringstream sin(std::ios::in | std::ios::out | std::ios::binary);
-
-	fin.seekg(0);
-	if (!saxman) {
-		src = &fin;
-		//sin << fin.rdbuf();
-		fin.seekg(pointer);
-	} else {
-		//saxman::decode(fin, sin, 0, false);
-		src = &sin;
-		std::cerr << "Sorry, Saxman decompression not supported yet." << std::endl;
-		return 4;
-	}
-
-	std::ofstream fout(argv[optind + 1], std::ios::out | std::ios::binary);
+	ofstream fout(argv[optind + 1], ios::out | ios::binary);
 	if (!fout.good()) {
-		std::cerr << "Output file '" << argv[optind + 1] << "' could not be opened." << std::endl << std::endl;
+		cerr << "Output file '" << argv[optind + 1] << "' could not be opened." << endl << endl;
 		return 3;
 	}
 
-	std::string projname(argv[optind + 2]);
-	if (sonicver == 1) {
-		DumpSmps<S1IO> smps(*src, fout, sonicver, offset, projname, sfx, s3kmode);
-		smps.dump_smps();
+	string projname(argv[optind + 2]);
+
+	if (bankmode) {
+		fin.seekg(ptrtable);
+		vector<int> ptrtable;
+		int leastptr = 0xFFFF;
+		ptrtable.reserve(128);
+
+		while (fin.good() && fin.tellg() < (leastptr & 0x7FFF)) {
+			int ptr = LittleEndian::Read2(fin);
+			if (ptr < 0x8000) {
+				break;
+			} else if (ptr < leastptr) {
+				leastptr = ptr;
+			}
+			ptrtable.push_back(ptr);
+		}
+
+		char const *fmt;
+		if (ptrtable.size() < 256) {
+			fmt = "%02X";
+		} else {
+			fmt = "%04X";
+		}
+		char buf[10];
+
+		for (unsigned ii = 0; ii < ptrtable.size(); ii++) {
+			snprintf(buf, sizeof(buf), fmt, ii);
+			dump_single_entry(fin, fout, projname + buf, ptrtable[ii] & 0x7FFF,
+			                  0, sonicver, saxman, sfx, s3kmode);
+			if (ii + 1 < ptrtable.size()) {
+				fout << endl;
+			}
+		}
 	} else {
-		DumpSmps<SNIO> smps(*src, fout, sonicver, offset, projname, sfx, s3kmode);
-		smps.dump_smps();
+		dump_single_entry(fin, fout, projname, pointer, offset, sonicver,
+		                  saxman, sfx, s3kmode);
 	}
 }

@@ -22,7 +22,9 @@
 
 #include "singlemapping.h"
 
-void single_mapping::read(std::istream &in, int ver) {
+using namespace std;
+
+void single_mapping::read(istream &in, int ver) {
 	yy = static_cast<signed char>(Read1(in));
 	sx = Read1(in);
 	sy = ((sx & 0xc) >> 2) + 1;
@@ -38,7 +40,7 @@ void single_mapping::read(std::istream &in, int ver) {
 		xx = BigEndian::Read2(in);
 }
 
-void single_mapping::write(std::ostream &out, int ver) const {
+void single_mapping::write(ostream &out, int ver) const {
 	Write1(out, static_cast<unsigned char>(yy));
 	Write1(out, ((sy - 1) << 2) | (sx - 1));
 	BigEndian::Write2(out, (flags << 8) | tile);
@@ -51,41 +53,41 @@ void single_mapping::write(std::ostream &out, int ver) const {
 }
 
 void single_mapping::print() const {
-	std::cout << std::nouppercase << "\t\tPosition: (x,y) = (";
-	std::cout << std::dec << std::setfill(' ') << std::setw(4) << static_cast<short>(xx);
-	std::cout << ",";
-	std::cout << std::dec << std::setfill(' ') << std::setw(4) << static_cast<short>(yy);
-	std::cout << ")\tSize: (x,y) = (";
-	std::cout << std::dec << std::setfill(' ') << std::setw(4) << static_cast<short>(sx);
-	std::cout << ",";
-	std::cout << std::dec << std::setfill(' ') << std::setw(4) << static_cast<short>(sy);
-	std::cout << ")" << std::endl;
-	std::cout << std::nouppercase << "\t\tFirst tile: $";
-	std::cout << std::uppercase   << std::hex << std::setfill('0') << std::setw(4) << tile;
-	std::cout << std::nouppercase << "\tLast tile: $";
-	std::cout << std::uppercase   << std::hex << std::setfill('0') << std::setw(4) << (tile + sx * sy - 1);
-	std::cout << std::nouppercase << "\tFlags: ";
+	cout << nouppercase << "\t\tPosition: (x,y) = (";
+	cout << dec << setfill(' ') << setw(4) << static_cast<short>(xx);
+	cout << ",";
+	cout << dec << setfill(' ') << setw(4) << static_cast<short>(yy);
+	cout << ")\tSize: (x,y) = (";
+	cout << dec << setfill(' ') << setw(4) << static_cast<short>(sx);
+	cout << ",";
+	cout << dec << setfill(' ') << setw(4) << static_cast<short>(sy);
+	cout << ")" << endl;
+	cout << nouppercase << "\t\tFirst tile: $";
+	cout << uppercase   << hex << setfill('0') << setw(4) << tile;
+	cout << nouppercase << "\tLast tile: $";
+	cout << uppercase   << hex << setfill('0') << setw(4) << (tile + sx * sy - 1);
+	cout << nouppercase << "\tFlags: ";
 	if ((flags & 0x80u) != 0) {
-		std::cout << "foreground";
+		cout << "foreground";
 		if ((flags & 0x78u) != 0)
-			std::cout << "|";
+			cout << "|";
 	}
 	if ((flags & 0x60u) != 0) {
-		std::cout << "palette+" << std::dec << ((flags & 0x60u) >> 5u);
+		cout << "palette+" << dec << ((flags & 0x60u) >> 5u);
 		if ((flags & 0x18u) != 0)
-			std::cout << "|";
+			cout << "|";
 	}
 	if ((flags & 0x08u) != 0) {
-		std::cout << "flip_x";
+		cout << "flip_x";
 		if ((flags & 0x10u) != 0)
-			std::cout << "|";
+			cout << "|";
 	}
 	if ((flags & 0x10u) != 0)
-		std::cout << "flip_y";
-	std::cout << std::endl;
+		cout << "flip_y";
+	cout << endl;
 }
 
-void single_mapping::split(single_mapping const &src, single_dplc &dplc, std::map<size_t, size_t>& vram_map) {
+void single_mapping::split(single_mapping const &src, single_dplc &dplc, map<size_t, size_t> &vram_map) {
 	xx = src.xx;
 	yy = src.yy;
 	sx = src.sx;
@@ -96,7 +98,7 @@ void single_mapping::split(single_mapping const &src, single_dplc &dplc, std::ma
 	dplc.set_tile(src.tile);
 }
 
-void single_mapping::merge(single_mapping const &src, std::map<size_t, size_t>& vram_map) {
+void single_mapping::merge(single_mapping const &src, map<size_t, size_t> &vram_map) {
 	xx = src.xx;
 	yy = src.yy;
 	sx = src.sx;

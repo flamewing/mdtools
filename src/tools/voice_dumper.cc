@@ -20,22 +20,25 @@
 #include <fstream>
 #include <cstdlib>
 
-#include "getopt.h"
+#include <getopt.h>
+
 #include "bigendian_io.h"
 #include "fmvoice.h"
 
+using namespace std;
+
 static void usage() {
-	std::cerr << "Usage: voice_dumper [-x|--extract [{pointer}]] {-v|--sonicver} {version} {input_filename} {num_voices}" << std::endl;
-	std::cerr << std::endl;
-	std::cerr << "\t-x,--extract \tExtract {num_voices} from {pointer} address in {input_filename}." << std::endl
-	          << "\t             \tIf ommitted, {pointer} is assumed to be zero." << std::endl;
-	std::cerr << "\t-v,--sonicver\tSets Sonic version to {version}. This also sets underlying" << std::endl
-	          << "\t             \tSMPS type. {version} can be '1' Sonic 1, '2' for Sonic 2 or" << std::endl
-	          << "\t             \t'3' for Sonic 3 or Sonic & Knuckles, or '4' for Sonic 3D Blast." << std::endl << std::endl;
+	cerr << "Usage: voice_dumper [-x|--extract [{pointer}]] {-v|--sonicver} {version} {input_filename} {num_voices}" << endl;
+	cerr << endl;
+	cerr << "\t-x,--extract \tExtract {num_voices} from {pointer} address in {input_filename}." << endl
+	     << "\t             \tIf ommitted, {pointer} is assumed to be zero." << endl;
+	cerr << "\t-v,--sonicver\tSets Sonic version to {version}. This also sets underlying" << endl
+	     << "\t             \tSMPS type. {version} can be '1' Sonic 1, '2' for Sonic 2 or" << endl
+	     << "\t             \t'3' for Sonic 3 or Sonic & Knuckles, or '4' for Sonic 3D Blast." << endl << endl;
 }
 
 int main(int argc, char *argv[]) {
-	static struct option long_options[] = {
+	static option long_options[] = {
 		{"extract", required_argument, 0, 'x'},
 		{"sonicver", required_argument, 0, 'v'},
 		{0, 0, 0, 0}
@@ -66,28 +69,28 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	std::ifstream fin(argv[optind + 0], std::ios::in | std::ios::binary);
+	ifstream fin(argv[optind + 0], ios::in | ios::binary);
 	if (!fin.good()) {
-		std::cerr << "Input file '" << argv[optind + 0] << "' could not be opened." << std::endl << std::endl;
+		cerr << "Input file '" << argv[optind + 0] << "' could not be opened." << endl << endl;
 		return 2;
 	}
 
 	numvoices = strtoul(argv[optind + 1], 0, 0);
-	fin.seekg(0, std::ios::end);
+	fin.seekg(0, ios::end);
 	int len = fin.tellg();
 	fin.seekg(pointer);
 
 	for (int i = 0; i < numvoices; i++) {
-		if (fin.tellg() + std::streamoff(25) > len) {
+		if (fin.tellg() + streamoff(25) > len) {
 			// End of file reached in the middle of a voice.
-			std::cerr << "Broken voice! The end-of-file was reached in the middle of an FM voice." << std::endl;
-			std::cerr << "This voice, and all subsequent ones, were not dumped." << std::endl;
+			cerr << "Broken voice! The end-of-file was reached in the middle of an FM voice." << endl;
+			cerr << "This voice, and all subsequent ones, were not dumped." << endl;
 			break;
 		}
 
 		// Print the voice.
 		fm_voice voc;
 		voc.read(fin, sonicver);
-		voc.print(std::cout, sonicver, i);
+		voc.print(cout, sonicver, i);
 	}
 }

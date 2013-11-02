@@ -19,12 +19,10 @@
 #ifndef _FRAMEMAPPING_H_
 #define _FRAMEMAPPING_H_
 
+#include <iosfwd>
 #include <vector>
 #include "singlemapping.h"
 #include "framedplc.h"
-
-class istream;
-class ostream;
 
 class frame_mapping {
 protected:
@@ -36,6 +34,9 @@ public:
 	void split(frame_mapping const &src, frame_dplc &dplc);
 	void merge(frame_mapping const &src, frame_dplc const &dplc);
 	void change_pal(int srcpal, int dstpal);
+	single_mapping const &get_maps(size_t i) const {
+		return maps[i];
+	}
 	size_t size() const {
 		return maps.size();
 	}

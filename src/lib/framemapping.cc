@@ -24,7 +24,9 @@
 
 #include "framemapping.h"
 
-void frame_mapping::read(std::istream &in, int ver) {
+using namespace std;
+
+void frame_mapping::read(istream &in, int ver) {
 	size_t cnt = ver == 1 ? Read1(in) : BigEndian::Read2(in);
 	for (size_t i = 0; i < cnt; i++) {
 		single_mapping sd;
@@ -33,38 +35,38 @@ void frame_mapping::read(std::istream &in, int ver) {
 	}
 }
 
-void frame_mapping::write(std::ostream &out, int ver) const {
+void frame_mapping::write(ostream &out, int ver) const {
 	if (ver == 1)
 		Write1(out, maps.size());
 	else
 		BigEndian::Write2(out, maps.size());
-	for (std::vector<single_mapping>::const_iterator it = maps.begin();
-	        it != maps.end(); ++it)
+	for (vector<single_mapping>::const_iterator it = maps.begin();
+	     it != maps.end(); ++it)
 		it->write(out, ver);
 }
 
 void frame_mapping::print() const {
 	for (size_t i = 0; i < maps.size(); i++) {
-		std::cout << "\tPiece $";
-		std::cout << std::uppercase   << std::hex << std::setfill('0') << std::setw(4) << i;
-		std::cout << std::nouppercase   << ":" << std::endl;
+		cout << "\tPiece $";
+		cout << uppercase   << hex << setfill('0') << setw(4) << i;
+		cout << nouppercase   << ":" << endl;
 		maps[i].print();
 	}
 }
 
 void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
-	std::map<size_t, size_t> vram_map;
-	for (std::vector<single_mapping>::const_iterator it = src.maps.begin();
-	        it != src.maps.end(); ++it) {
+	map<size_t, size_t> vram_map;
+	for (vector<single_mapping>::const_iterator it = src.maps.begin();
+	     it != src.maps.end(); ++it) {
 		single_mapping const &sd = *it;
 		size_t ss = sd.get_tile(), sz = sd.get_sx() * sd.get_sy();
 		for (size_t i = ss; i < ss + sz; i++)
 			if (vram_map.find(i) == vram_map.end())
-				vram_map.insert(std::pair<size_t, size_t>(i, vram_map.size()));
+				vram_map.insert(pair<size_t, size_t>(i, vram_map.size()));
 	}
 
-	std::set<size_t> loaded_tiles;
-	for (std::vector<single_mapping>::const_iterator it = src.maps.begin();
+	set<size_t> loaded_tiles;
+	for (vector<single_mapping>::const_iterator it = src.maps.begin();
 	        it != src.maps.end(); ++it) {
 		single_mapping const &sd = *it;
 		single_mapping nn;
@@ -88,11 +90,11 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 }
 
 void frame_mapping::merge(frame_mapping const &src, frame_dplc const &dplc) {
-	std::map<size_t, size_t> vram_map;
+	map<size_t, size_t> vram_map;
 	dplc.build_vram_map(vram_map);
 
-	for (std::vector<single_mapping>::const_iterator it = src.maps.begin();
-	        it != src.maps.end(); ++it) {
+	for (vector<single_mapping>::const_iterator it = src.maps.begin();
+	     it != src.maps.end(); ++it) {
 		single_mapping const &sd = *it;
 		single_mapping nn;
 		nn.merge(sd, vram_map);
@@ -101,8 +103,8 @@ void frame_mapping::merge(frame_mapping const &src, frame_dplc const &dplc) {
 }
 
 void frame_mapping::change_pal(int srcpal, int dstpal) {
-	for (std::vector<single_mapping>::iterator it = maps.begin();
-	        it != maps.end(); ++it)
+	for (vector<single_mapping>::iterator it = maps.begin();
+	     it != maps.end(); ++it)
 		it->change_pal(srcpal, dstpal);
 }
 

@@ -24,35 +24,37 @@
 
 #include "bigendian_io.h"
 
-void PrintMacro(std::ostream &out, char const *macro) {
-	out << "\t" << std::setw(19) << std::setfill(' ') << std::left << macro << std::right << " ";
+using namespace std;
+
+void PrintMacro(ostream &out, char const *macro) {
+	out << "\t" << setw(19) << setfill(' ') << left << macro << right << " ";
 }
 
-void PrintHex2(std::ostream &out, unsigned char c, bool last) {
-	out << "$" << std::hex << std::setw(2) << std::setfill('0') << std::uppercase << (unsigned int)c << std::nouppercase;
+void PrintHex2(ostream &out, unsigned char c, bool last) {
+	out << "$" << hex << setw(2) << setfill('0') << uppercase << static_cast<unsigned int>(c) << nouppercase;
 	if (!last)
 		out << ", ";
 }
 
-void PrintHex2Pre(std::ostream &out, unsigned char c, bool first) {
+void PrintHex2Pre(ostream &out, unsigned char c, bool first) {
 	if (!first)
 		out << ", ";
-	out << "$" << std::hex << std::setw(2) << std::setfill('0') << std::uppercase << (unsigned int)c << std::nouppercase;
+	out << "$" << hex << setw(2) << setfill('0') << uppercase << static_cast<unsigned int>(c) << nouppercase;
 }
 
-void PrintName(std::ostream &out, std::string s, bool first) {
+void PrintName(ostream &out, string s, bool first) {
 	if (!first)
 		out << ", ";
 	out << s;
 }
 
-void PrintHex4(std::ostream &out, unsigned short c, bool last) {
-	out << "$" << std::hex << std::setw(4) << std::setfill('0') << std::uppercase << (unsigned int)c << std::nouppercase;
+void PrintHex4(ostream &out, unsigned short c, bool last) {
+	out << "$" << hex << setw(4) << setfill('0') << uppercase << static_cast<unsigned int>(c) << nouppercase;
 	if (!last)
 		out << ", ";
 }
 
-void fm_voice::read(std::istream &in, int sonicver) {
+void fm_voice::read(istream &in, int sonicver) {
 	unsigned char c = Read1(in);
 	vcUnusedBits = (c >> 6) & 3;
 	vcFeedback   = (c >> 3) & 7;
@@ -85,7 +87,7 @@ void fm_voice::read(std::istream &in, int sonicver) {
 		vcTL[indices[i]] = Read1(in);
 }
 
-void fm_voice::write(std::ostream &out, int sonicver) const {
+void fm_voice::write(ostream &out, int sonicver) const {
 	Write1(out, (vcUnusedBits << 6) | (vcFeedback << 3) | vcAlgorithm);
 	static int s2_indices[4] = {3, 1, 2, 0}, normal_indices[4] = {3, 2, 1, 0};
 	int *indices = sonicver == 2 ? s2_indices : normal_indices;
@@ -103,14 +105,14 @@ void fm_voice::write(std::ostream &out, int sonicver) const {
 		Write1(out, vcTL[indices[i]]);
 }
 
-void fm_voice::print(std::ostream &out, int sonicver, int id) const {
+void fm_voice::print(ostream &out, int sonicver, int id) const {
 	out << ";\tVoice ";
 	PrintHex2(out, id, true);
-	out << std::endl << ";\t";
+	out << endl << ";\t";
 	PrintHex2(out, (vcUnusedBits << 6) | (vcFeedback << 3) | vcAlgorithm, true);
 	static int s2_indices[4] = {3, 2, 1, 0}, normal_indices[4] = {3, 2, 1, 0};
 	int *indices = sonicver == 2 ? s2_indices : normal_indices;
-	out << std::endl << ";\t";
+	out << endl << ";\t";
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, (vcDT[indices[i]] << 4) | vcCF[indices[i]], false);
 	out << "\t";
@@ -119,7 +121,7 @@ void fm_voice::print(std::ostream &out, int sonicver, int id) const {
 	out << "\t";
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, (vcAM[indices[i]] << 5) | vcD1R[indices[i]], i == 3);
-	out << std::endl << ";\t";
+	out << endl << ";\t";
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcD2R[indices[i]], false);
 	out << "\t";
@@ -128,67 +130,67 @@ void fm_voice::print(std::ostream &out, int sonicver, int id) const {
 	out << "\t";
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcTL[indices[i]], i == 3);
-	out << std::endl;
+	out << endl;
 
 	PrintMacro(out, "smpsVcAlgorithm");
 	PrintHex2(out, vcAlgorithm, true);
-	out << std::endl;
+	out << endl;
 
 	PrintMacro(out, "smpsVcFeedback");
 	PrintHex2(out, vcFeedback, true);
-	out << std::endl;
+	out << endl;
 
 	PrintMacro(out, "smpsVcUnusedBits");
 	PrintHex2(out, vcUnusedBits, true);
-	out << std::endl;
+	out << endl;
 
 	PrintMacro(out, "smpsVcDetune");
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcDT[i], i == 3);
-	out << std::endl;
+	out << endl;
 	PrintMacro(out, "smpsVcCoarseFreq");
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcCF[i], i == 3);
-	out << std::endl;
+	out << endl;
 
 	PrintMacro(out, "smpsVcRateScale");
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcRS[i], i == 3);
-	out << std::endl;
+	out << endl;
 	PrintMacro(out, "smpsVcAttackRate");
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcAR[i], i == 3);
-	out << std::endl;
+	out << endl;
 
 	PrintMacro(out, "smpsVcAmpMod");
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcAM[i], i == 3);
-	out << std::endl;
+	out << endl;
 	PrintMacro(out, "smpsVcDecayRate1");
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcD1R[i], i == 3);
-	out << std::endl;
+	out << endl;
 
 	PrintMacro(out, "smpsVcDecayRate2");
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcD2R[i], i == 3);
-	out << std::endl;
+	out << endl;
 
 	PrintMacro(out, "smpsVcDecayLevel");
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcDL[i], i == 3);
-	out << std::endl;
+	out << endl;
 	PrintMacro(out, "smpsVcReleaseRate");
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, vcRR[i], i == 3);
-	out << std::endl;
+	out << endl;
 
 	PrintMacro(out, "smpsVcTotalLevel");
 	static int tlmasks[8] = {0x1, 0x1, 0x1, 0x1, 0x5, 0x7, 0x7, 0xf};
 	int mask = tlmasks[vcAlgorithm];
 	for (int i = 0; i < 4; i++)
 		PrintHex2(out, (mask & (1 << i)) != 0 ? vcTL[i] & 0x7f : vcTL[i], i == 3);
-	out << std::endl << std::endl;
+	out << endl << endl;
 }
 
 

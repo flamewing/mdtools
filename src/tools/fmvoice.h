@@ -31,7 +31,7 @@ class fm_voice {
 protected:
 	unsigned char vcFeedback, vcAlgorithm, vcUnusedBits;
 	unsigned char vcDT[4],  vcCF[4], vcRS[4], vcAR[4], vcAM[4], vcD1R[4],
-	         vcD2R[4], vcDL[4], vcRR[4], vcTL[4];
+	              vcD2R[4], vcDL[4], vcRR[4], vcTL[4];
 public:
 	void read(std::istream &in, int sonicver);
 	void write(std::ostream &out, int sonicver) const;
