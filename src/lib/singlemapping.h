@@ -82,21 +82,9 @@ public:
 		sy = t;
 	}
 	bool operator<(single_mapping const &rhs) const {
-		if (flags < rhs.flags)
-			return true;
-		else if (flags > rhs.flags)
-			return false;
 		if (tile < rhs.tile)
 			return true;
 		else if (tile > rhs.tile)
-			return false;
-		if (xx < rhs.xx)
-			return true;
-		else if (xx > rhs.xx)
-			return false;
-		if (yy < rhs.yy)
-			return true;
-		else if (yy > rhs.yy)
 			return false;
 		if (sx < rhs.sx)
 			return true;
@@ -104,7 +92,19 @@ public:
 			return false;
 		if (sy < rhs.sy)
 			return true;
-		else
+		else if (sy > rhs.sy)
+			return false;
+		if (flags < rhs.flags)
+			return true;
+		else if (flags > rhs.flags)
+			return false;
+		if (xx < rhs.xx)
+			return true;
+		else if (xx > rhs.xx)
+			return false;
+		if (yy < rhs.yy)
+			return true;
+		else //if (yy > rhs.yy)
 			return false;
 	}
 	bool operator==(single_mapping const &rhs) const {

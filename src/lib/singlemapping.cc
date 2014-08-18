@@ -26,9 +26,9 @@ using namespace std;
 
 void single_mapping::read(istream &in, int ver) {
 	yy = static_cast<signed char>(Read1(in));
-	sx = Read1(in);
-	sy = ((sx & 0xc) >> 2) + 1;
-	sx = (sx & 0x3) + 1;
+	sy = Read1(in);
+	sx = ((sy & 0xc) >> 2) + 1;
+	sy = (sy & 0x3) + 1;
 	tile = BigEndian::Read2(in);
 	flags = ((tile & 0xf800u) >> 8u);
 	tile &= 0x07ffu;
@@ -42,7 +42,7 @@ void single_mapping::read(istream &in, int ver) {
 
 void single_mapping::write(ostream &out, int ver) const {
 	Write1(out, static_cast<unsigned char>(yy));
-	Write1(out, ((sy - 1) << 2) | (sx - 1));
+	Write1(out, ((sx - 1) << 2) | (sy - 1));
 	BigEndian::Write2(out, (flags << 8) | tile);
 	if (ver == 2)
 		BigEndian::Write2(out, (flags << 8) | (tile >> 1));

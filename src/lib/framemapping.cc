@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <map>
@@ -54,15 +55,45 @@ void frame_mapping::print() const {
 	}
 }
 
+struct SingleMapCmp {
+	bool operator()(single_mapping const &lhs,single_mapping const &rhs) {
+		return lhs.get_tile() < rhs.get_tile();
+	}
+};
+
 void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
+	frame_mapping srcsort(src);
+	stable_sort(srcsort.maps.begin(), srcsort.maps.end(), SingleMapCmp());
+
 	map<size_t, size_t> vram_map;
-	for (vector<single_mapping>::const_iterator it = src.maps.begin();
-	     it != src.maps.end(); ++it) {
+	for (vector<single_mapping>::const_iterator it = srcsort.maps.begin();
+	     it != srcsort.maps.end(); ++it) {
 		single_mapping const &sd = *it;
 		size_t ss = sd.get_tile(), sz = sd.get_sx() * sd.get_sy();
 		for (size_t i = ss; i < ss + sz; i++)
 			if (vram_map.find(i) == vram_map.end())
 				vram_map.insert(pair<size_t, size_t>(i, vram_map.size()));
+	}
+	// Terminator that should never match anything.
+	vram_map.insert(pair<size_t, size_t>(~0ull, ~0ull));
+
+	// Build DPLC
+	unsigned last = ~0u, size = 0;
+	for (map<size_t, size_t>::const_iterator it = vram_map.begin();
+	     it != vram_map.end(); ++it) {
+		if (last == ~0u) {
+			last = it->first;
+			size = 1;
+		} else if (it->first == last + 1) {
+			size++;
+		} else {
+			single_dplc nd;
+			nd.set_tile(last);
+			nd.set_cnt(size);
+			dplc.insert(nd);
+			last = it->first;
+			size = 1;
+		}
 	}
 
 	set<size_t> loaded_tiles;
@@ -73,19 +104,6 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 		single_dplc dd;
 		nn.split(sd, dd, vram_map);
 		maps.push_back(nn);
-		size_t ss = dd.get_tile(), sz = dd.get_cnt();
-		for (size_t i = ss; i < ss + sz; i++) {
-			size_t j = i;
-			while ((j < ss + sz) && (loaded_tiles.find(j) == loaded_tiles.end()))
-				loaded_tiles.insert(j++);
-			if (j != i) {
-				single_dplc nd;
-				nd.set_tile(i);
-				nd.set_cnt(j - i);
-				dplc.insert(nd);
-				i = j;
-			}
-		}
 	}
 }
 
