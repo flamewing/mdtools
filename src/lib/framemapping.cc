@@ -62,17 +62,50 @@ struct SingleMapCmp {
 };
 
 void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
-	frame_mapping srcsort(src);
-	stable_sort(srcsort.maps.begin(), srcsort.maps.end(), SingleMapCmp());
-
-	map<size_t, size_t> vram_map;
-	for (vector<single_mapping>::const_iterator it = srcsort.maps.begin();
-	     it != srcsort.maps.end(); ++it) {
+	// Coalesce the mappings tiles into tile ranges, reodering adjacent DPLCs
+	// that are neighbours in art to coalesce the ranges as needed.
+	vector<pair<size_t, size_t>> ranges;
+	for (vector<single_mapping>::const_iterator it = src.maps.begin();
+	     it != src.maps.end(); ++it) {
 		single_mapping const &sd = *it;
 		size_t ss = sd.get_tile(), sz = sd.get_sx() * sd.get_sy();
-		for (size_t i = ss; i < ss + sz; i++)
-			if (vram_map.find(i) == vram_map.end())
+		if (ranges.empty()) {
+			// Happens only once. Hopefully, the compiler will pull this out of
+			// the loop, as it happens right at the start of the loop.
+			ranges.push_back(make_pair(ss, sz));
+		} else {
+			pair<size_t, size_t> &last = ranges.back();
+			if (last.first == ss + sz) {
+				// Last DPLC comes right after us on the art file.
+				// Coalesce ranges and set new start.
+				last.first = ss;
+				last.second += sz;
+			} else if (last.first + last.second == ss) {
+				// Last DPLC comes right before us on the art file.
+				// Coalesce ranges, keeping old start.
+				last.second += sz;
+			} else {
+				// Disjoint DPLCs. Add new one.
+				ranges.push_back(make_pair(ss, sz));
+			}
+		}
+	}
+	// TODO: maybe make multiple passes coalescing two entries of the above
+	// vector in a similar fashion until nothing more changes. This would be
+	// equivalent to sorting all sprite pieces by tile order for the DPLCs, but
+	// with smaller overhead for mappings; in practice, this can only be useful
+	// if the art was not sorted by tile order, a 1-click operation in SonMapEd.
+
+	// Build VRAM map for coalesced ranges.
+	map<size_t, size_t> vram_map;
+	for (vector<pair<size_t, size_t>>::const_iterator it = ranges.begin();
+	     it != ranges.end(); ++it) {
+		size_t ss = it->first, sz = it->second;
+		for (size_t i = ss; i < ss + sz; i++) {
+			if (vram_map.find(i) == vram_map.end()) {
 				vram_map.insert(pair<size_t, size_t>(i, vram_map.size()));
+			}
+		}
 	}
 	// Terminator that should never match anything.
 	vram_map.insert(pair<size_t, size_t>(~0ull, ~0ull));
