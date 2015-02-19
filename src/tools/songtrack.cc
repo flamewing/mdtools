@@ -66,7 +66,7 @@ void Duration::print(ostream &out,
 }
 
 FMVoice::FMVoice(istream &in, int sonicver, int n)
-	: BaseNote(0x00), id(n) {
+	: BaseNote(0, 0), id(n) {
 	voc.read(in, sonicver);
 }
 
@@ -184,24 +184,28 @@ void FMPSGNote::print(ostream &out,
 		out << "\tdc.b\t";
 
 	static string fmpsglut[] = {
-		"nRst", "nC0" , "nCs0", "nD0" , "nEb0", "nE0" , "nF0" , "nFs0", "nG0" ,
-		"nAb0", "nA0" , "nBb0", "nB0" , "nC1" , "nCs1", "nD1" , "nEb1", "nE1" ,
-		"nF1" , "nFs1", "nG1" , "nAb1", "nA1" , "nBb1", "nB1" , "nC2" , "nCs2",
-		"nD2" , "nEb2", "nE2" , "nF2" , "nFs2", "nG2" , "nAb2", "nA2" , "nBb2",
-		"nB2" , "nC3" , "nCs3", "nD3" , "nEb3", "nE3" , "nF3" , "nFs3", "nG3" ,
-		"nAb3", "nA3" , "nBb3", "nB3" , "nC4" , "nCs4", "nD4" , "nEb4", "nE4" ,
-		"nF4" , "nFs4", "nG4" , "nAb4", "nA4" , "nBb4", "nB4" , "nC5" , "nCs5",
-		"nD5" , "nEb5", "nE5" , "nF5" , "nFs5", "nG5" , "nAb5", "nA5" , "nBb5",
-		"nB5" , "nC6" , "nCs6", "nD6" , "nEb6", "nE6" , "nF6" , "nFs6", "nG6" ,
-		"nAb6", "nA6" , "nBb6", "nB6" , "nC7" , "nCs7", "nD7" , "nEb7", "nE7" ,
-		"nF7" , "nFs7", "nG7" , "nAb7", "nA7" , "nBb7", "nMaxPSG", "nMaxPSG2"
+		"nRst",
+		"nC0" , "nCs0", "nD0" , "nEb0", "nE0" , "nF0" , "nFs0", "nG0" , "nAb0", "nA0" , "nBb0", "nB0" ,
+		"nC1" , "nCs1", "nD1" , "nEb1", "nE1" , "nF1" , "nFs1", "nG1" , "nAb1", "nA1" , "nBb1", "nB1" ,
+		"nC2" , "nCs2", "nD2" , "nEb2", "nE2" , "nF2" , "nFs2", "nG2" , "nAb2", "nA2" , "nBb2", "nB2" ,
+		"nC3" , "nCs3", "nD3" , "nEb3", "nE3" , "nF3" , "nFs3", "nG3" , "nAb3", "nA3" , "nBb3", "nB3" ,
+		"nC4" , "nCs4", "nD4" , "nEb4", "nE4" , "nF4" , "nFs4", "nG4" , "nAb4", "nA4" , "nBb4", "nB4" ,
+		"nC5" , "nCs5", "nD5" , "nEb5", "nE5" , "nF5" , "nFs5", "nG5" , "nAb5", "nA5" , "nBb5", "nB5" ,
+		"nC6" , "nCs6", "nD6" , "nEb6", "nE6" , "nF6" , "nFs6", "nG6" , "nAb6", "nA6" , "nBb6", "nB6" ,
+		"nC7" , "nCs7", "nD7" , "nEb7", "nE7" , "nF7" , "nFs7", "nG7" , "nAb7", "nA7" , "nBb7",
+		"nMaxPSG", "nMaxPSG1", "nMaxPSG2"
 	};
 
 	size_t note = val - 0x80;
-	if (note >= sizeof(fmpsglut) / sizeof(fmpsglut[0]))
+	if (note >= sizeof(fmpsglut) / sizeof(fmpsglut[0])) {
 		PrintHex2Pre(out, val, notesprinted == 0);
-	else
+	} else if (val >= 0xE0 && keydisp != 0) {
+		char buf[30];
+		snprintf(buf, sizeof(buf), "-$%X)&$FF", static_cast<unsigned>(keydisp));
+		PrintName(out, "(" + fmpsglut[note] + buf, notesprinted == 0);
+	} else {
 		PrintName(out, fmpsglut[note], notesprinted == 0);
+	}
 
 	if (++notesprinted == 12) {
 		out << endl;
@@ -221,57 +225,57 @@ void CoordFlagNoParams<noret>::print(ostream &out,
 	if (sonicver >= 3) {
 		switch (val) {
 			case 0xe2:
-				s = "smpsFade"       ;
+				s = "smpsFade";
 				break;   // For $E2, $FF
 			case 0xe3:
-				s = "smpsStopFM"     ;
+				s = "smpsStopFM";
 				break;
 			case 0xe7:
-				s = "smpsNoAttack"   ;
-				notelike = true ;
+				s = "smpsNoAttack";
+				notelike = true;
 				break;
 			case 0xe9:
 				s = "smpsSpindashRev";
 				break;
 			case 0xf2:
-				s = "smpsStop"       ;
+				s = "smpsStop";
 				break;
 			case 0xf9:
-				s = "smpsReturn"     ;
+				s = "smpsReturn";
 				break;
 			case 0xfa:
-				s = "smpsModOff"     ;
+				s = "smpsModOff";
 				break;
 		}
 	} else {
 		switch (val) {
 			case 0xe3:
-				s = "smpsReturn"     ;
+				s = "smpsReturn";
 				break;
 			case 0xe4:
-				s = "smpsFade"       ;
+				s = "smpsFade";
 				break;
 			case 0xe7:
-				s = "smpsNoAttack"   ;
-				notelike = true ;
+				s = "smpsNoAttack";
+				notelike = true;
 				break;
 			case 0xed:
-				s = "smpsClearPush"  ;
+				s = "smpsClearPush";
 				break;   // Sonic 1 version
 			case 0xee:
 				if (sonicver == 1) s = "smpsStopSpecial";
 				break;
 			case 0xf1:
-				s = "smpsModOn"      ;
+				s = "smpsModOn";
 				break;
 			case 0xf2:
-				s = "smpsStop"       ;
+				s = "smpsStop";
 				break;
 			case 0xf4:
-				s = "smpsModOff"     ;
+				s = "smpsModOff";
 				break;
 			case 0xf9:
-				s = "smpsWeirdD1LRR" ;
+				s = "smpsWeirdD1LRR";
 				break;
 		}
 	}
@@ -338,46 +342,46 @@ void CoordFlag1ParamByte<noret>::print(ostream &out,
 	if (sonicver >= 3) {
 		switch (val) {
 			case 0xe0:
-				s = "smpsPan"          ;
+				s = "smpsPan"  ;
 				break;
 			case 0xe1:
-				s = "smpsAlterNote"    ;
+				s = "smpsAlterNote";
 				break;
 			case 0xe2:
-				s = "smpsFade"         ;
+				s = "smpsFade" ;
 				break;   // For $E2, XX with XX != $FF
 			case 0xe4:
-				s = "smpsSetVol"       ;
+				s = "smpsSetVol";
 				break;
 			case 0xe6:
-				s = "smpsFMAlterVol"   ;
+				s = "smpsFMAlterVol";
 				break;
 			case 0xe8:
-				s = "smpsNoteFill"     ;
+				s = "smpsNoteFill";
 				break;
 			case 0xea:
 				s = "smpsPlayDACSample";
 				break;
 			case 0xec:
-				s = "smpsPSGAlterVol"  ;
+				s = "smpsPSGAlterVol";
 				break;
 			case 0xed:
-				s = "smpsSetNote"      ;
+				s = "smpsSetNote";
 				break;
 			case 0xef:
-				s = "smpsSetvoice"     ;
+				s = "smpsSetvoice";
 				break;   // Case with param >= 0
 			case 0xf3:
-				s = "smpsPSGform"      ;
+				s = "smpsPSGform";
 				break;
 			case 0xf4:
-				s = "smpsModChange"    ;
+				s = "smpsModChange";
 				break;
 			case 0xf5:
-				s = "smpsPSGvoice"     ;
+				s = "smpsPSGvoice";
 				break;
 			case 0xfb:
-				s = "smpsAlterPitch"   ;
+				s = "smpsAlterPitch";
 				break;
 			case 0xfd:
 				s = "smpsAlternameSMPS";
@@ -386,7 +390,7 @@ void CoordFlag1ParamByte<noret>::print(ostream &out,
 				metacf = true;
 				switch (param) {
 					case 0x02:
-						s = "smpsHaltMusic"       ;
+						s = "smpsHaltMusic";
 						break;
 					case 0x07:
 						s = "smpsResetSpindashRev";
@@ -397,45 +401,45 @@ void CoordFlag1ParamByte<noret>::print(ostream &out,
 	} else {
 		switch (val) {
 			case 0xe0:
-				s = "smpsPan"         ;
+				s = "smpsPan" ;
 				break;
 			case 0xe1:
-				s = "smpsAlterNote"   ;
+				s = "smpsAlterNote";
 				break;
 			case 0xe2:
-				s = "smpsNop"         ;
+				s = "smpsNop" ;
 				break;
 			case 0xe5:
 				s = "smpsChanTempoDiv";
 				break;
 			case 0xe6:
-				s = "smpsAlterVol"    ;
+				s = "smpsAlterVol";
 				break;
 			case 0xe8:
-				s = "smpsNoteFill"    ;
+				s = "smpsNoteFill";
 				break;
 			case 0xe9:
-				s = "smpsAlterPitch"  ;
+				s = "smpsAlterPitch";
 				break;
 			case 0xea:
-				s = "smpsSetTempoMod" ;
+				s = "smpsSetTempoMod";
 				break;
 			case 0xeb:
-				s = "smpsSetTempoDiv" ;
+				s = "smpsSetTempoDiv";
 				break;
 			case 0xec:
-				s = "smpsPSGAlterVol" ;
+				s = "smpsPSGAlterVol";
 				break;
 			case 0xef:
-				s = "smpsSetvoice"    ;
+				s = "smpsSetvoice";
 				break;
 			case 0xf3:
-				s = "smpsPSGform"     ;
+				s = "smpsPSGform";
 				break;
 			case 0xf5:
-				s = "smpsPSGvoice"    ;
+				s = "smpsPSGvoice";
 				break;
-				//case 0xed:  s = ""                ; break;  // Sonic 2 version
+				//case 0xed:  s = ""        ; break;  // Sonic 2 version
 		}
 	}
 
@@ -476,6 +480,19 @@ void CoordFlag1ParamByte<noret>::print(ostream &out,
 	out << endl;
 }
 
+void CoordFlagChgKeydisp::print(ostream &out,
+                                int UNUSED(sonicver),
+                                LocTraits::LocType UNUSED(tracktype),
+                                multimap<int, string> &UNUSED(labels),
+                                bool UNUSED(s3kmode)) const {
+	if (notesprinted != 0)
+		out << endl;
+	notesprinted = 0;
+	PrintMacro(out, "smpsAlterPitch");
+	PrintHex2(out, param, true);
+	out << endl;
+}
+
 template<bool noret>
 void CoordFlag2ParamBytes<noret>::print(ostream &out,
                                         int sonicver,
@@ -491,28 +508,28 @@ void CoordFlag2ParamBytes<noret>::print(ostream &out,
 	if (sonicver >= 3) {
 		switch (val) {
 			case 0xe5:
-				s = "smpsFMAlterVol"   ;
+				s = "smpsFMAlterVol";
 				break;
 			case 0xee:
-				s = "smpsFMICommand"   ;
+				s = "smpsFMICommand";
 				break;
 			case 0xef:
-				s = "smpsSetvoice"     ;
+				s = "smpsSetvoice";
 				break;   // Case with param < 0
 			case 0xf1:
-				s = "smpsModChange2"   ;
+				s = "smpsModChange2";
 				break;
 			case 0xff:
 				metacf = true;
 				switch (param1) {
 					case 0x00:
-						s = "smpsSetTempoMod"     ;
+						s = "smpsSetTempoMod";
 						break;
 					case 0x01:
-						s = "smpsPlaySound"       ;
+						s = "smpsPlaySound";
 						break;
 					case 0x04:
-						s = "smpsSetTempoDiv"     ;
+						s = "smpsSetTempoDiv";
 						break;
 				}
 				break;
@@ -550,7 +567,7 @@ void CoordFlag3ParamBytes<noret>::print(ostream &out,
 				metacf = true;
 				switch (param1) {
 					case 0x06:
-						s = "smpsFMFlutter"       ;
+						s = "smpsFMVolEnv";
 						break;
 				}
 				break;
@@ -586,7 +603,7 @@ void CoordFlag4ParamBytes<noret>::print(ostream &out,
 	if (sonicver >= 3) {
 		switch (val) {
 			case 0xf0:
-				s = "smpsModSet"        ;
+				s = "smpsModSet";
 				break;
 			case 0xfe:
 				s = "smpsFM3SpecialMode";
@@ -595,7 +612,7 @@ void CoordFlag4ParamBytes<noret>::print(ostream &out,
 	} else {
 		switch (val) {
 			case 0xf0:
-				s = "smpsModSet"       ;
+				s = "smpsModSet";
 				break;
 		}
 	}
@@ -633,7 +650,7 @@ void CoordFlag5ParamBytes<noret>::print(ostream &out,
 				metacf = true;
 				switch (param1) {
 					case 0x05:
-						s = "smpsSSGEG"           ;
+						s = "smpsSSGEG"   ;
 						break;
 				}
 				break;
@@ -726,13 +743,13 @@ void CoordFlagPointer2ParamBytes<noret>::print(ostream &out,
 	if (sonicver >= 3) {
 		switch (val) {
 			case 0xf7:
-				s = "smpsLoop"          ;
+				s = "smpsLoop"  ;
 				break;
 			case 0xff:
 				metacf = true;
 				switch (param1) {
 					case 0x03:
-						s = "smpsCopyData"        ;
+						s = "smpsCopyData";
 						break;
 				}
 				break;
@@ -740,7 +757,7 @@ void CoordFlagPointer2ParamBytes<noret>::print(ostream &out,
 	} else {
 		switch (val) {
 			case 0xf7:
-				s = "smpsLoop"          ;
+				s = "smpsLoop"  ;
 				break;
 		}
 	}
@@ -772,24 +789,24 @@ void CoordFlagPointer2ParamBytes<noret>::print(ostream &out,
 #include <iostream>
 void InstantiateTemplates() {
 	multimap<int, string> labels;
-	CoordFlagNoParams<true > ft0(0);
-	CoordFlagNoParams<false> ff0(0);
-	CoordFlag1ParamByte<true > ft1(0, 0);
-	CoordFlag1ParamByte<false> ff1(0, 0);
-	CoordFlag2ParamBytes<true > ft2(0, 0, 0);
-	CoordFlag2ParamBytes<false> ff2(0, 0, 0);
-	CoordFlag3ParamBytes<true > ft3(0, 0, 0, 0);
-	CoordFlag3ParamBytes<false> ff3(0, 0, 0, 0);
-	CoordFlag4ParamBytes<true > ft4(0, 0, 0, 0, 0);
-	CoordFlag4ParamBytes<false> ff4(0, 0, 0, 0, 0);
-	CoordFlag5ParamBytes<true > ft5(0, 0, 0, 0, 0, 0);
-	CoordFlag5ParamBytes<false> ff5(0, 0, 0, 0, 0, 0);
-	CoordFlagPointerParam<true > ftp0(0, 0);
-	CoordFlagPointerParam<false> ffp0(0, 0);
-	CoordFlagPointer1ParamByte<true > ftp1(0, 0, 0);
-	CoordFlagPointer1ParamByte<false> ffp1(0, 0, 0);
-	CoordFlagPointer2ParamBytes<true > ftp2(0, 0, 0, 0);
-	CoordFlagPointer2ParamBytes<false> ffp2(0, 0, 0, 0);
+	CoordFlagNoParams<true > ft0(0, 0);
+	CoordFlagNoParams<false> ff0(0, 0);
+	CoordFlag1ParamByte<true > ft1(0, 0, 0);
+	CoordFlag1ParamByte<false> ff1(0, 0, 0);
+	CoordFlag2ParamBytes<true > ft2(0, 0, 0, 0);
+	CoordFlag2ParamBytes<false> ff2(0, 0, 0, 0);
+	CoordFlag3ParamBytes<true > ft3(0, 0, 0, 0, 0);
+	CoordFlag3ParamBytes<false> ff3(0, 0, 0, 0, 0);
+	CoordFlag4ParamBytes<true > ft4(0, 0, 0, 0, 0, 0);
+	CoordFlag4ParamBytes<false> ff4(0, 0, 0, 0, 0, 0);
+	CoordFlag5ParamBytes<true > ft5(0, 0, 0, 0, 0, 0, 0);
+	CoordFlag5ParamBytes<false> ff5(0, 0, 0, 0, 0, 0, 0);
+	CoordFlagPointerParam<true > ftp0(0, 0, 0);
+	CoordFlagPointerParam<false> ffp0(0, 0, 0);
+	CoordFlagPointer1ParamByte<true > ftp1(0, 0, 0, 0);
+	CoordFlagPointer1ParamByte<false> ffp1(0, 0, 0, 0);
+	CoordFlagPointer2ParamBytes<true > ftp2(0, 0, 0, 0, 0);
+	CoordFlagPointer2ParamBytes<false> ffp2(0, 0, 0, 0, 0);
 	ft0.print(cout, 1, LocTraits::eHeader, labels, false);
 	ff0.print(cout, 1, LocTraits::eHeader, labels, false);
 	ft1.print(cout, 1, LocTraits::eHeader, labels, false);

@@ -142,27 +142,30 @@ template<typename IO>
 BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
                          string const &projname, LocTraits::LocType tracktype,
                          multimap<int, string> &labels,
-                         int &last_voc) {
+                         int &last_voc, unsigned char keydisp) {
 	unsigned char byte = Read1(in);
 	// Initialize to invalid 32-bit address.
 	if (byte < 0x80)
-		return new Duration(byte);
+		return new Duration(byte, keydisp);
 	else if (byte < 0xe0) {
 		switch (tracktype) {
 			case LocTraits::eFMInit:
 			case LocTraits::eFMTrack:
-				return new FMPSGNote(byte);
+				return new FMPSGNote(byte, keydisp);
 			case LocTraits::ePSGInit:
-			case LocTraits::ePSGTrack:
-				if (sonicver >= 3 && (byte == 0xd2 || byte == 0xd3))
-					byte = 0xe0 + (byte & 1);
-				else if (sonicver <= 2 && byte == 0xc5)
+			case LocTraits::ePSGTrack: {
+				unsigned char newbyte = byte + keydisp;
+				if (sonicver >= 3 && (newbyte == 0xd3 || newbyte == 0xd4)) {
+					byte = 0xe1 + (newbyte == 0xd4 ? 1 : 0);
+				} else if (sonicver <= 2 && newbyte == 0xc6) {
 					byte = 0xe0;
-				return new FMPSGNote(byte);
+				}
+				return new FMPSGNote(byte, keydisp);
+			}
 			case LocTraits::eDACInit:
 			case LocTraits::eDACTrack:
 			default:
-				return new DACNote(byte);
+				return new DACNote(byte, keydisp);
 		}
 	}
 
@@ -173,23 +176,23 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				switch (spec) {
 					case 0x02:
 					case 0x07:
-						return new CoordFlag1ParamByte<false>(byte, spec);
+						return new CoordFlag1ParamByte<false>(byte, keydisp, spec);
 					case 0x00:
 					case 0x01:
 					case 0x04:
-						return new CoordFlag2ParamBytes<false>(byte, spec,
+						return new CoordFlag2ParamBytes<false>(byte, keydisp, spec,
 						                                       Read1(in));
 					case 0x06:
-						return new CoordFlag3ParamBytes<false>(byte, spec,
+						return new CoordFlag3ParamBytes<false>(byte, keydisp, spec,
 						                                       Read1(in), Read1(in));
 					case 0x05:
-						return new CoordFlag5ParamBytes<false>(byte, spec,
+						return new CoordFlag5ParamBytes<false>(byte, keydisp, spec,
 						                                       Read1(in), Read1(in),
 						                                       Read1(in), Read1(in));
 					case 0x03: {
 						int ptr = IO::read_pointer(in, offset);
 						unsigned char cnt = Read1(in);
-						return new CoordFlagPointer2ParamBytes<false>(byte, spec,
+						return new CoordFlagPointer2ParamBytes<false>(byte, keydisp, spec,
 						        cnt, ptr);
 					}
 				}
@@ -200,13 +203,13 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				multimap<int, string>::iterator it = labels.find(ptr);
 				if (it == labels.end())
 					labels.insert(make_pair(ptr, projname + need_loop_label()));
-				return new CoordFlagPointer2ParamBytes<false>(byte, index, repeats, ptr);
+				return new CoordFlagPointer2ParamBytes<false>(byte, keydisp, index, repeats, ptr);
 			}
 			case 0xf0:  // Start modulation
 			case 0xfe: { // FM3 Special mode
 				unsigned char p1 = Read1(in), p2 = Read1(in),
 				              p3 = Read1(in), p4 = Read1(in);
-				return new CoordFlag4ParamBytes<false>(byte, p1, p2, p3, p4);
+				return new CoordFlag4ParamBytes<false>(byte, keydisp, p1, p2, p3, p4);
 			}
 			case 0xf6:  // Jump
 			case 0xf8:  // Call
@@ -224,9 +227,9 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 					labels.insert(make_pair(ptr, projname + lbl));
 				}
 				if (byte == 0xf6)
-					return new CoordFlagPointerParam<true>(byte, ptr);
+					return new CoordFlagPointerParam<true>(byte, keydisp, ptr);
 				else
-					return new CoordFlagPointerParam<false>(byte, ptr);
+					return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
 			}
 			case 0xeb: { // Conditional jump
 				unsigned char index = Read1(in);
@@ -235,13 +238,13 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				if (it == labels.end())
 					labels.insert(make_pair(ptr, projname + need_jump_label()));
 
-				return new CoordFlagPointer1ParamByte<false>(byte, index, ptr);
+				return new CoordFlagPointer1ParamByte<false>(byte, keydisp, index, ptr);
 			}
 
 			case 0xe5:
 			case 0xee:
 			case 0xf1:
-				return new CoordFlag2ParamBytes<false>(byte, Read1(in), Read1(in));
+				return new CoordFlag2ParamBytes<false>(byte, keydisp, Read1(in), Read1(in));
 
 			case 0xef: {
 				signed char voc = Read1(in);
@@ -251,9 +254,9 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 					unsigned char id = Read1(in) - 0x81;
 					if (tracktype == LocTraits::eFMTrack)
 						voc &= 0x7f;
-					return new CoordFlag2ParamBytes<false>(byte, voc, id);
+					return new CoordFlag2ParamBytes<false>(byte, keydisp, voc, id);
 				} else
-					return new CoordFlag1ParamByte<false>(byte, voc);
+					return new CoordFlag1ParamByte<false>(byte, keydisp, voc);
 			}
 
 			case 0xe0:
@@ -267,25 +270,27 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 			case 0xf3:
 			case 0xf4:
 			case 0xf5:
-			case 0xfb:
 			case 0xfd:
-				return new CoordFlag1ParamByte<false>(byte, Read1(in));
+				return new CoordFlag1ParamByte<false>(byte, keydisp, Read1(in));
+
+			case 0xfb:
+				return new CoordFlagChgKeydisp(byte, keydisp, Read1(in));
 
 			case 0xe2: { // Fade to previous
 				unsigned char c = Read1(in);
 				if (c == 0xff)
-					return new CoordFlagNoParams<false>(byte);
+					return new CoordFlagNoParams<false>(byte, keydisp);
 				else
-					return new CoordFlag1ParamByte<false>(byte, c);
+					return new CoordFlag1ParamByte<false>(byte, keydisp, c);
 			}
 
 			case 0xe3:
 			case 0xf2:
 			case 0xf9:
-				return new CoordFlagNoParams<true>(byte);
+				return new CoordFlagNoParams<true>(byte, keydisp);
 
 			default:
-				return new CoordFlagNoParams<false>(byte);
+				return new CoordFlagNoParams<false>(byte, keydisp);
 		}
 	} else {
 		switch (byte) {
@@ -295,12 +300,12 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				multimap<int, string>::iterator it = labels.find(ptr);
 				if (it == labels.end())
 					labels.insert(make_pair(ptr, projname + need_loop_label()));
-				return new CoordFlagPointer2ParamBytes<false>(byte, index, repeats, ptr);
+				return new CoordFlagPointer2ParamBytes<false>(byte, keydisp, index, repeats, ptr);
 			}
 			case 0xf0: { // Start modulation
 				unsigned char wait   = Read1(in), speed = Read1(in),
 				              change = Read1(in), steps = Read1(in);
-				return new CoordFlag4ParamBytes<false>(byte, wait, speed, change, steps);
+				return new CoordFlag4ParamBytes<false>(byte, keydisp, wait, speed, change, steps);
 			}
 			case 0xf6:  // Jump
 			case 0xf8: { // Call
@@ -310,25 +315,25 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 					labels.insert(make_pair(ptr, projname + (byte == 0xf6 ? need_jump_label()
 					                             : need_call_label())));
 				if (byte == 0xf6)
-					return new CoordFlagPointerParam<true>(byte, ptr);
+					return new CoordFlagPointerParam<true>(byte, keydisp, ptr);
 				else
-					return new CoordFlagPointerParam<false>(byte, ptr);
+					return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
 			}
-			case 0xed:  // S1: celar push flag; S2: eat byte
+			case 0xed:  // S1: clear push flag; S2: eat byte
 				if (sonicver == 1)
-					return new CoordFlagNoParams<false>(byte);
+					return new CoordFlagNoParams<false>(byte, keydisp);
 				else
-					return new CoordFlag1ParamByte<false>(byte, Read1(in));
+					return new CoordFlag1ParamByte<false>(byte, keydisp, Read1(in));
 			case 0xee:  // S1: Stop special FM4; S2: nop
 				if (sonicver == 1)
-					return new CoordFlagNoParams<true>(byte);
+					return new CoordFlagNoParams<true>(byte, keydisp);
 				else
-					return new CoordFlagNoParams<false>(byte);
+					return new CoordFlagNoParams<false>(byte, keydisp);
 			case 0xef: { // Set FM voice
 				int voc = Read1(in);
 				if (voc > last_voc)
 					last_voc = voc;
-				return new CoordFlag1ParamByte<false>(byte, voc);
+				return new CoordFlag1ParamByte<false>(byte, keydisp, voc);
 			}
 
 			case 0xe0:
@@ -337,21 +342,23 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 			case 0xe5:
 			case 0xe6:
 			case 0xe8:
-			case 0xe9:
 			case 0xea:
 			case 0xeb:
 			case 0xec:
 			case 0xf3:
 			case 0xf5:
-				return new CoordFlag1ParamByte<false>(byte, Read1(in));
+				return new CoordFlag1ParamByte<false>(byte, keydisp, Read1(in));
+
+			case 0xe9:
+				return new CoordFlagChgKeydisp(byte, keydisp, Read1(in));
 
 			case 0xe3:
 			case 0xe4:
 			case 0xf2:
-				return new CoordFlagNoParams<true>(byte);
+				return new CoordFlagNoParams<true>(byte, keydisp);
 
 			default:
-				return new CoordFlagNoParams<false>(byte);
+				return new CoordFlagNoParams<false>(byte, keydisp);
 		}
 	}
 }
@@ -498,9 +505,9 @@ public:
 
 				// Add to queue/label list.
 				if ((chanid & 0x80) != 0)
-					todo.push(LocTraits(trackptr, LocTraits::ePSGInit));
+					todo.push(LocTraits(trackptr, LocTraits::ePSGInit, keydisp));
 				else
-					todo.push(LocTraits(trackptr, LocTraits::eFMInit));
+					todo.push(LocTraits(trackptr, LocTraits::eFMInit, keydisp));
 				labels.insert(make_pair(trackptr, lbl));
 				tracklabels.insert(lbl);
 			}
@@ -524,7 +531,7 @@ public:
 			// First come the DAC and FM channels.
 			for (int i = 0; i < nfm; i++) {
 				int ptr = IO::read_header_pointer(in, offset),
-				    pitch = Read1(in), vol = Read1(in);
+				    keydisp = Read1(in), initvol = Read1(in);
 
 				string lbl = projname;
 				LocTraits::LocType type;
@@ -534,12 +541,13 @@ public:
 					labels.insert(make_pair(ptr, lbl));
 					tracklabels.insert(lbl);
 					PrintMacro(out, "smpsHeaderDAC");
-					if (pitch || vol) {
-						out << lbl << ",\t";
-						PrintHex2(out, pitch, false);
-						PrintHex2(out, vol, true);
+					out << lbl;
+					if (keydisp || initvol) {
+						out << ",\t";
+						PrintHex2(out, keydisp, false);
+						PrintHex2(out, initvol, true);
 					}
-					out << lbl << endl;
+					out << endl;
 					type = LocTraits::eDACInit;
 				} else {
 					// Now come FM channels.
@@ -550,20 +558,20 @@ public:
 					tracklabels.insert(lbl);
 					PrintMacro(out, "smpsHeaderFM");
 					out << lbl << ",\t";
-					PrintHex2(out, pitch, false);
-					PrintHex2(out, vol, true);
+					PrintHex2(out, keydisp, false);
+					PrintHex2(out, initvol, true);
 					out << endl;
 					type = LocTraits::eFMInit;
 				}
 
 				// Add to queue.
-				todo.push(LocTraits(ptr, type));
+				todo.push(LocTraits(ptr, type, keydisp));
 			}
 
 			// Time for PSG channels.
 			for (int i = 0; i < npsg; i++) {
 				int ptr     = IO::read_header_pointer(in, offset),
-				    pitch   = Read1(in), vol  = Read1(in),
+				    keydisp = Read1(in), initvol  = Read1(in),
 				    modctrl = Read1(in), tone = Read1(in);
 
 				string lbl = projname;
@@ -574,14 +582,14 @@ public:
 				tracklabels.insert(lbl);
 				PrintMacro(out, "smpsHeaderPSG");
 				out << lbl << ",\t";
-				PrintHex2(out, pitch  , false);
-				PrintHex2(out, vol    , false);
+				PrintHex2(out, keydisp, false);
+				PrintHex2(out, initvol, false);
 				PrintHex2(out, modctrl, false);
 				BaseNote::print_psg_tone(out, tone, sonicver, true);
 				out << endl;
 
 				// Add to queue.
-				todo.push(LocTraits(ptr, LocTraits::ePSGInit));
+				todo.push(LocTraits(ptr, LocTraits::ePSGInit, keydisp));
 			}
 		}
 
@@ -648,12 +656,13 @@ public:
 				shared_ptr<BaseNote> note =
 				    shared_ptr<BaseNote>(BaseNote::read<IO>(in, sonicver,
 				                         offset, projname, next_loc.type,
-				                         labels, last_voc));
+				                         labels, last_voc, next_loc.keydisp));
 				trackdata.insert(make_pair(lastloc, note));
+				next_loc.keydisp = note->get_keydisp();
 
 				// If the data includes a jump target, add it to queue.
 				if (note->has_pointer())
-					todo.push(LocTraits(note->get_pointer(), next_loc.type));
+					todo.push(LocTraits(note->get_pointer(), next_loc.type, next_loc.keydisp));
 
 				// Add in freshly explored data to list.
 				for (int i = lastloc; i < in.tellg(); i++)
@@ -713,8 +722,8 @@ public:
 				trackdata.insert(make_pair(lastloc, voc));
 
 				// Add in freshly explored data to list.
-				for (int i = lastloc; i < in.tellg(); i++)
-					explored.insert(make_pair(i, LocTraits::eVoices));
+				for (int j = lastloc; j < in.tellg(); j++)
+					explored.insert(make_pair(j, LocTraits::eVoices));
 			}
 		}
 
