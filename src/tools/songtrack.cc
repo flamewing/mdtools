@@ -49,7 +49,11 @@ void Duration::print(ostream &out,
                      LocTraits::LocType tracktype,
                      multimap<int, string> &labels,
                      bool s3kmode) const {
-	if (s3kmode && last_note && last_note->is_rest() && need_rest)
+	// Note: DAC tracks, PWM tracks and PCM tracks always store the last
+	// sample played, rests included. It is only FM and PSG tracks that
+	// need this to fix playback of rests when porting from S1/S2 to S3+.
+	if ((tracktype == LocTraits::eFMTrack || tracktype == LocTraits::ePSGTrack)
+	    && s3kmode && last_note && last_note->is_rest() && need_rest)
 		last_note->print(out, sonicver, tracktype, labels, s3kmode);
 
 	need_rest = true;

@@ -41,9 +41,13 @@ struct LocTraits {
 	enum LocType {
 		eHeader = 0,
 		eDACInit,
+		ePCMInit,
+		ePWMInit,
 		eFMInit,
 		ePSGInit,
 		eDACTrack,
+		ePCMTrack,
+		ePWMTrack,
 		eFMTrack,
 		ePSGTrack,
 		eVoices,

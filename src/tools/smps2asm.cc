@@ -154,16 +154,25 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				return new FMPSGNote(byte, keydisp);
 			case LocTraits::ePSGInit:
 			case LocTraits::ePSGTrack: {
-				unsigned char newbyte = byte + keydisp;
-				if (sonicver >= 3 && (newbyte == 0xd3 || newbyte == 0xd4)) {
-					byte = 0xe1 + (newbyte == 0xd4 ? 1 : 0);
-				} else if (sonicver <= 2 && newbyte == 0xc6) {
-					byte = 0xe0;
+				unsigned char newbyte = (byte + keydisp) & 0x7f;
+				if (byte != 0x80) {
+					if (sonicver >= 3 && (newbyte == 0x53 || newbyte == 0x54)) {
+						byte = 0xe1 + (newbyte == 0x54 ? 1 : 0);
+					} else if (sonicver <= 2 && newbyte == 0x46) {
+						byte = 0xe0;
+					} else if (sonicver == 1 && (newbyte & 1) == 0 && newbyte >= 0x4c) {
+						// Workaround for xm2smps/xm3smps/xm4smps songs.
+						byte = 0xe0;
+					}
 				}
 				return new FMPSGNote(byte, keydisp);
 			}
 			case LocTraits::eDACInit:
 			case LocTraits::eDACTrack:
+			case LocTraits::ePCMInit:
+			case LocTraits::ePCMTrack:
+			case LocTraits::ePWMInit:
+			case LocTraits::ePWMTrack:
 			default:
 				return new DACNote(byte, keydisp);
 		}
@@ -608,6 +617,12 @@ public:
 			switch (next_loc.type) {
 				case LocTraits::eDACInit:
 					next_loc.type = LocTraits::eDACTrack;
+					break;
+				case LocTraits::ePCMInit:
+					next_loc.type = LocTraits::ePCMTrack;
+					break;
+				case LocTraits::ePWMInit:
+					next_loc.type = LocTraits::ePWMTrack;
 					break;
 				case LocTraits::eFMInit:
 					next_loc.type = LocTraits::eFMTrack;
