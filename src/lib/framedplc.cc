@@ -83,10 +83,12 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 		} else
 			size += sd.get_cnt();
 	}
-	single_dplc nn;
-	nn.set_tile(start);
-	nn.set_cnt(size);
-	interm.dplc.push_back(nn);
+	if (size != 0) {
+		single_dplc nn;
+		nn.set_tile(start);
+		nn.set_cnt(size);
+		interm.dplc.push_back(nn);
+	}
 
 	dplc.clear();
 	for (vector<single_dplc>::const_iterator it = interm.dplc.begin();

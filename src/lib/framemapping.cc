@@ -61,6 +61,12 @@ struct SingleMapCmp {
 	}
 };
 
+struct SingleDPLCCmp {
+	bool operator()(single_dplc const &lhs,single_dplc const &rhs) {
+		return lhs.get_tile() + lhs.get_cnt() < rhs.get_tile();
+	}
+};
+
 void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 	// Coalesce the mappings tiles into tile ranges, reodering adjacent DPLCs
 	// that are neighbours in art to coalesce the ranges as needed.
@@ -107,27 +113,26 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 			}
 		}
 	}
-	// Terminator that should never match anything.
-	vram_map.insert(pair<size_t, size_t>(~0ull, ~0ull));
 
-	// Build DPLC
-	unsigned last = ~0u, size = 0;
-	for (map<size_t, size_t>::const_iterator it = vram_map.begin();
-	     it != vram_map.end(); ++it) {
-		if (last == ~0u) {
-			last = it->first;
-			size = 1;
-		} else if (it->first == last + 1) {
-			size++;
-		} else {
-			single_dplc nd;
-			nd.set_tile(last);
-			nd.set_cnt(size);
-			dplc.insert(nd);
-			last = it->first;
-			size = 1;
+	// Build DPLCs from VRAM map and coalesced ranges.
+	set<single_dplc, SingleDPLCCmp> uniquedplcs;
+	frame_dplc newdplc;
+	for (vector<pair<size_t, size_t>>::const_iterator it = ranges.begin();
+	     it != ranges.end(); ++it) {
+		size_t ss = it->first, sz = 1;
+		while (vram_map.find(ss + sz) != vram_map.end()) {
+			sz++;
+		}
+		single_dplc nd;
+		nd.set_tile(ss);
+		nd.set_cnt(sz);
+		set<single_dplc>::iterator sit = uniquedplcs.find(nd);
+		if (sit == uniquedplcs.end()) {
+			newdplc.insert(nd);
+			uniquedplcs.insert(nd);
 		}
 	}
+	dplc.consolidate(newdplc);
 
 	set<size_t> loaded_tiles;
 	for (vector<single_mapping>::const_iterator it = src.maps.begin();
