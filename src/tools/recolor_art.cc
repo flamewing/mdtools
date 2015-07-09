@@ -214,7 +214,7 @@ int main(int argc, char *argv[]) {
 	else if (fmt == eNemesis)
 		nemesis::encode(sout, fout);
 	else // if (fmt == eKosinski)
-		kosinski::encode(sout, fout, 8192, 256, moduled, modulesize);
+		kosinski::encode(sout, fout, moduled, modulesize);
 
 	fout.close();
 }
