@@ -51,6 +51,7 @@ Makefile.in
 /src/tools/smps2asm
 /src/tools/split_art
 /src/tools/voice_dumper
+/src/tools/ssdraw
 
 # Debug files
 *.dSYM/
