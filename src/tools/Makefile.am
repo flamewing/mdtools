@@ -8,6 +8,7 @@ bin_PROGRAMS = \
 	chunk_census \
 	split_art \
 	enitool \
+	chunk_splitter \
 	ssdraw
 
 voice_dumper_SOURCES = \
@@ -32,6 +33,11 @@ split_art_CXXFLAGS = -I$(srcdir)/../lib
 
 split_art_LDFLAGS = -lcomper -lkosinski \
 	$(builddir)/../lib/libmappings.la
+
+chunk_splitter_SOURCES =  \
+	chunk_splitter.cc
+
+chunk_splitter_CXXFLAGS = -I$(srcdir)/../lib 
 
 ssdraw_SOURCES =  \
 	ssexpand.cc
