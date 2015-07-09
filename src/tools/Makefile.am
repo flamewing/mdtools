@@ -7,7 +7,8 @@ bin_PROGRAMS = \
 	voice_dumper \
 	chunk_census \
 	split_art \
-	enitool
+	enitool \
+	chunk_splitter
 
 voice_dumper_SOURCES = \
 	fmvoice.cc    \
@@ -31,6 +32,11 @@ split_art_CXXFLAGS = -I$(srcdir)/../lib
 
 split_art_LDFLAGS = -lcomper -lkosinski \
 	$(builddir)/../lib/libmappings.la
+
+chunk_splitter_SOURCES =  \
+	chunk_splitter.cc
+
+chunk_splitter_CXXFLAGS = -I$(srcdir)/../lib 
 
 smps2asm_SOURCES = \
 	smps2asm.cc\
