@@ -20,6 +20,7 @@
 
 #include <istream>
 #include <ostream>
+#include <iostream>
 #include <iomanip>
 #include <cstdio>
 
@@ -176,7 +177,7 @@ void DACNote::print(ostream &out,
 }
 
 void FMPSGNote::print(ostream &out,
-                      int UNUSED(sonicver),
+                      int sonicver,
                       LocTraits::LocType UNUSED(tracktype),
                       multimap<int, string> &UNUSED(labels),
                       bool UNUSED(s3kmode)) const {
@@ -206,6 +207,16 @@ void FMPSGNote::print(ostream &out,
 	} else if (val >= 0xE0 && keydisp != 0) {
 		char buf[30];
 		snprintf(buf, sizeof(buf), "-$%X)&$FF", static_cast<unsigned>(keydisp));
+		if (sonicver == 1) {
+			cerr << "Converting PSG noise note from xm*smps with broken transposition '$"
+				 << hex << setw(2) << setfill('0') << uppercase << static_cast<int>(keydisp)
+				 << nouppercase << "' to '(" << fmpsglut[note] << buf << "'" << endl;
+			if ((val - keydisp) >= 0xE0 || (val - keydisp) <= 0x80) {
+				cerr << "Error: however, this conversion will result in an invalid note.\n"
+					 << "You must edit the channel's transposition and the above note\n"
+					 << "manually in order to fix this. Blame Tweaker, not me." << endl;
+			}
+		}
 		PrintName(out, "(" + fmpsglut[note] + buf, notesprinted == 0);
 	} else {
 		PrintName(out, fmpsglut[note], notesprinted == 0);
@@ -283,6 +294,7 @@ void CoordFlagNoParams<noret>::print(ostream &out,
 				break;
 		}
 	}
+	need_rest = true;
 
 	if (notelike) {
 		// Print durations.
@@ -340,6 +352,7 @@ void CoordFlag1ParamByte<noret>::print(ostream &out,
 	if (notesprinted != 0)
 		out << endl;
 	notesprinted = 0;
+	need_rest = true;
 
 	string s;
 	bool metacf = false;
@@ -492,6 +505,7 @@ void CoordFlagChgKeydisp::print(ostream &out,
 	if (notesprinted != 0)
 		out << endl;
 	notesprinted = 0;
+	need_rest = true;
 	PrintMacro(out, "smpsAlterPitch");
 	PrintHex2(out, param, true);
 	out << endl;
@@ -506,6 +520,7 @@ void CoordFlag2ParamBytes<noret>::print(ostream &out,
 	if (notesprinted != 0)
 		out << endl;
 	notesprinted = 0;
+	need_rest = true;
 
 	string s;
 	bool metacf = false;
@@ -562,6 +577,7 @@ void CoordFlag3ParamBytes<noret>::print(ostream &out,
 	if (notesprinted != 0)
 		out << endl;
 	notesprinted = 0;
+	need_rest = true;
 
 	string s;
 	bool metacf = false;
@@ -601,6 +617,7 @@ void CoordFlag4ParamBytes<noret>::print(ostream &out,
 	if (notesprinted != 0)
 		out << endl;
 	notesprinted = 0;
+	need_rest = true;
 
 	string s;
 	bool metacf = false;
@@ -645,6 +662,7 @@ void CoordFlag5ParamBytes<noret>::print(ostream &out,
 	if (notesprinted != 0)
 		out << endl;
 	notesprinted = 0;
+	need_rest = true;
 
 	string s;
 	bool metacf = false;
@@ -686,6 +704,7 @@ void CoordFlagPointerParam<noret>::print(ostream &out,
 	if (notesprinted != 0)
 		out << endl;
 	notesprinted = 0;
+	need_rest = true;
 
 	if (val == 0xf6)
 		PrintMacro(out, "smpsJump");
@@ -708,6 +727,7 @@ void CoordFlagPointer1ParamByte<noret>::print(ostream &out,
 	if (notesprinted != 0)
 		out << endl;
 	notesprinted = 0;
+	need_rest = true;
 
 	string s;
 	bool metacf = false;
@@ -741,6 +761,7 @@ void CoordFlagPointer2ParamBytes<noret>::print(ostream &out,
 	if (notesprinted != 0)
 		out << endl;
 	notesprinted = 0;
+	need_rest = true;
 
 	string s;
 	bool metacf = false;
