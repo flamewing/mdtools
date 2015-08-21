@@ -6,7 +6,8 @@ bin_PROGRAMS = \
 	smps2asm \
 	voice_dumper \
 	chunk_census \
-	split_art
+	split_art \
+	enitool
 
 voice_dumper_SOURCES = \
 	fmvoice.cc    \
@@ -66,6 +67,14 @@ plane_map_SOURCES = \
 plane_map_LDFLAGS = -lenigma
 
 plane_map_CXXFLAGS = \
+	-I$(srcdir)/../lib
+
+enitool_SOURCES = \
+	enitool.cc
+
+enitool_LDFLAGS = -lenigma
+
+enitool_CXXFLAGS = \
 	-I$(srcdir)/../lib
 
 AM_CXXFLAGS =
