@@ -178,7 +178,7 @@ void DACNote::print(ostream &out,
 
 void FMPSGNote::print(ostream &out,
                       int sonicver,
-                      LocTraits::LocType UNUSED(tracktype),
+                      LocTraits::LocType tracktype,
                       multimap<int, string> &UNUSED(labels),
                       bool UNUSED(s3kmode)) const {
 	last_note = this;
@@ -197,29 +197,51 @@ void FMPSGNote::print(ostream &out,
 		"nC4" , "nCs4", "nD4" , "nEb4", "nE4" , "nF4" , "nFs4", "nG4" , "nAb4", "nA4" , "nBb4", "nB4" ,
 		"nC5" , "nCs5", "nD5" , "nEb5", "nE5" , "nF5" , "nFs5", "nG5" , "nAb5", "nA5" , "nBb5", "nB5" ,
 		"nC6" , "nCs6", "nD6" , "nEb6", "nE6" , "nF6" , "nFs6", "nG6" , "nAb6", "nA6" , "nBb6", "nB6" ,
-		"nC7" , "nCs7", "nD7" , "nEb7", "nE7" , "nF7" , "nFs7", "nG7" , "nAb7", "nA7" , "nBb7",
-		"nMaxPSG", "nMaxPSG1", "nMaxPSG2"
+		"nC7" , "nCs7", "nD7" , "nEb7", "nE7" , "nF7" , "nFs7", "nG7" , "nAb7", "nA7" , "nBb7"
 	};
 
-	size_t note = val - 0x80;
-	if (note >= sizeof(fmpsglut) / sizeof(fmpsglut[0])) {
-		PrintHex2Pre(out, val, notesprinted == 0);
-	} else if (val >= 0xE0 && keydisp != 0) {
-		char buf[30];
-		snprintf(buf, sizeof(buf), "-$%X)&$FF", static_cast<unsigned>(keydisp));
-		if (sonicver == 1) {
-			cerr << "Converting PSG noise note from xm*smps with broken transposition '$"
-				 << hex << setw(2) << setfill('0') << uppercase << static_cast<int>(keydisp)
-				 << nouppercase << "' to '(" << fmpsglut[note] << buf << "'" << endl;
-			if ((val - keydisp) >= 0xE0 || (val - keydisp) <= 0x80) {
-				cerr << "Error: however, this conversion will result in an invalid note.\n"
-					 << "You must edit the channel's transposition and the above note\n"
-					 << "manually in order to fix this. Blame Tweaker, not me." << endl;
-			}
+	string noteName;
+	bool workAround = false;
+	if ((tracktype == LocTraits::ePSGInit || tracktype == LocTraits::ePSGTrack) && val != 0x80) {
+		unsigned char newbyte = (val + keydisp) & 0x7f;
+		if (sonicver >= 3 && (newbyte == 0x53 || newbyte == 0x54)) {
+			noteName = newbyte == 0x54 ? "nMaxPSG2" : "nMaxPSG1";
+		} else if (sonicver <= 2 && newbyte == 0x46) {
+			noteName = "nMaxPSG";
+		} else if (sonicver == 1 && (newbyte & 1) == 0 && newbyte >= 0x4c) {
+			// Workaround for xm2smps/xm3smps/xm4smps songs.
+			workAround = true;
+			noteName = "nMaxPSG";
 		}
-		PrintName(out, "(" + fmpsglut[note] + buf, notesprinted == 0);
+	}
+
+	if (noteName.length() != 0) {
+		if (keydisp != 0) {
+			char buf[30];
+			snprintf(buf, sizeof(buf), "-$%X)&$FF", static_cast<unsigned>(keydisp));
+			if (workAround) {
+				cerr << "Converting PSG noise note $" << hex << setw(2) << setfill('0')
+					 << uppercase << static_cast<int>(val) << nouppercase
+					 << " from xm*smps with broken transposition '$"
+					 << hex << setw(2) << setfill('0') << uppercase << static_cast<int>(keydisp)
+					 << nouppercase << "' to '(" << noteName << buf << "'" << endl;
+				if ((val - keydisp) >= 0xE0 || (val - keydisp) <= 0x80) {
+					cerr << "Error: however, this conversion will result in an invalid note.\n"
+						 << "You must edit the channel's transposition and the above note\n"
+						 << "manually in order to fix this. Blame Tweaker, not me." << endl;
+				}
+			}
+			PrintName(out, "(" + noteName + buf, notesprinted == 0);
+		} else {
+			PrintName(out, noteName, notesprinted == 0);
+		}
 	} else {
-		PrintName(out, fmpsglut[note], notesprinted == 0);
+		size_t note = val - 0x80;
+		if (note >= sizeof(fmpsglut) / sizeof(fmpsglut[0])) {
+			PrintHex2Pre(out, val, notesprinted == 0);
+		} else {
+			PrintName(out, fmpsglut[note], notesprinted == 0);
+		}
 	}
 
 	if (++notesprinted == 12) {
@@ -290,7 +312,7 @@ void CoordFlagNoParams<noret>::print(ostream &out,
 				s = "smpsModOff";
 				break;
 			case 0xf9:
-				s = "smpsWeirdD1LRR";
+				s = "smpsMaxRelRate";
 				break;
 		}
 	}
@@ -362,7 +384,7 @@ void CoordFlag1ParamByte<noret>::print(ostream &out,
 				s = "smpsPan"  ;
 				break;
 			case 0xe1:
-				s = "smpsAlterNote";
+				s = "smpsDetune";
 				break;
 			case 0xe2:
 				s = "smpsFade" ;
@@ -398,7 +420,7 @@ void CoordFlag1ParamByte<noret>::print(ostream &out,
 				s = "smpsPSGvoice";
 				break;
 			case 0xfb:
-				s = "smpsAlterPitch";
+				s = "smpsChangeTransposition";
 				break;
 			case 0xfd:
 				s = "smpsAlternameSMPS";
@@ -421,7 +443,7 @@ void CoordFlag1ParamByte<noret>::print(ostream &out,
 				s = "smpsPan" ;
 				break;
 			case 0xe1:
-				s = "smpsAlterNote";
+				s = "smpsDetune";
 				break;
 			case 0xe2:
 				s = "smpsNop" ;
@@ -436,7 +458,7 @@ void CoordFlag1ParamByte<noret>::print(ostream &out,
 				s = "smpsNoteFill";
 				break;
 			case 0xe9:
-				s = "smpsAlterPitch";
+				s = "smpsChangeTransposition";
 				break;
 			case 0xea:
 				s = "smpsSetTempoMod";
@@ -506,7 +528,7 @@ void CoordFlagChgKeydisp::print(ostream &out,
 		out << endl;
 	notesprinted = 0;
 	need_rest = true;
-	PrintMacro(out, "smpsAlterPitch");
+	PrintMacro(out, "smpsChangeTransposition");
 	PrintHex2(out, param, true);
 	out << endl;
 }

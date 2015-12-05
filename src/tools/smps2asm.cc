@@ -154,17 +154,6 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				return new FMPSGNote(byte, keydisp);
 			case LocTraits::ePSGInit:
 			case LocTraits::ePSGTrack: {
-				unsigned char newbyte = (byte + keydisp) & 0x7f;
-				if (byte != 0x80) {
-					if (sonicver >= 3 && (newbyte == 0x53 || newbyte == 0x54)) {
-						byte = 0xe1 + (newbyte == 0x54 ? 1 : 0);
-					} else if (sonicver <= 2 && newbyte == 0x46) {
-						byte = 0xe0;
-					} else if (sonicver == 1 && (newbyte & 1) == 0 && newbyte >= 0x4c) {
-						// Workaround for xm2smps/xm3smps/xm4smps songs.
-						byte = 0xe0;
-					}
-				}
 				return new FMPSGNote(byte, keydisp);
 			}
 			case LocTraits::eDACInit:
