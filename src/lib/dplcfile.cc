@@ -38,8 +38,9 @@ void dplc_file::read(istream &in, int ver) {
 	off.push_back(term);
 	while (in.tellg() < term) {
 		signed short newterm = static_cast<signed short>(BigEndian::Read2(in));
-		if (newterm > 0 && newterm < term)
+		if (newterm > 0 && newterm < term) {
 			term = newterm;
+		}
 		off.push_back(newterm);
 	}
 
@@ -65,24 +66,24 @@ void dplc_file::write(ostream &out, int ver, bool nullfirst) const {
 		posmap.insert(make_pair(size_t(0), *it));
 	}
 	for (; it != frames.end(); ++it) {
-		map<frame_dplc, size_t>::iterator it2 = mappos.find(*it);
-		if (it2 != mappos.end())
+		auto it2 = mappos.find(*it);
+		if (it2 != mappos.end()) {
 			BigEndian::Write2(out, it2->second);
-		else {
+		} else {
 			mappos.insert(make_pair(*it, sz));
 			posmap.insert(make_pair(sz, *it));
 			BigEndian::Write2(out, sz);
 			sz += it->size(ver);
 		}
 	}
-	for (map<size_t, frame_dplc>::iterator it2 = posmap.begin();
-	        it2 != posmap.end(); ++it2)
-		if (it2->first == size_t(out.tellp()))
-			(it2->second).write(out, ver);
-		else if (it2->first) {
+	for (auto & elem : posmap) {
+		if (elem.first == size_t(out.tellp())) {
+			(elem.second).write(out, ver);
+		} else if (elem.first) {
 			cerr << "Missed write at " << out.tellp() << endl;
-			(it2->second).print();
+			(elem.second).print();
 		}
+	}
 
 }
 
@@ -97,10 +98,9 @@ void dplc_file::print() const {
 }
 
 void dplc_file::consolidate(dplc_file const &src) {
-	for (vector<frame_dplc>::const_iterator it = src.frames.begin();
-	     it != src.frames.end(); ++it) {
+	for (const auto & elem : src.frames) {
 		frame_dplc nn;
-		nn.consolidate(*it);
+		nn.consolidate(elem);
 		frames.push_back(nn);
 	}
 }
@@ -111,9 +111,7 @@ void dplc_file::insert(frame_dplc const &val) {
 
 size_t dplc_file::size(int ver) const {
 	size_t sz = 2 * frames.size();
-	for (vector<frame_dplc>::const_iterator it = frames.begin();
-	     it != frames.end(); ++it) {
-		frame_dplc const &sd = *it;
+	for (const auto & sd : frames) {
 		sz += sd.size(ver);
 	}
 	return sz;

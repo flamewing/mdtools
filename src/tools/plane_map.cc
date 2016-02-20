@@ -26,6 +26,7 @@
 
 #include "bigendian_io.h"
 #include <mdcomp/enigma.h>
+#include "ignore_unused_variable_warning.h"
 
 using namespace std;
 
@@ -52,8 +53,9 @@ static void plane_map(istream &src, ostream &dst, size_t w, size_t h,
 	size_t nframes = sz / (2 * w * h);
 	size_t off = 2 * nframes;
 
-	for (size_t n = 0; n < nframes; n++, off += 2 + 8 * w * h)
+	for (size_t n = 0; n < nframes; n++, off += 2 + 8 * w * h) {
 		BigEndian::Write2(dst, static_cast<unsigned short>(off));
+	}
 
 	for (size_t n = 0; n < nframes; n++, off += 2) {
 		BigEndian::Write2(dst, w * h);
@@ -64,8 +66,9 @@ static void plane_map(istream &src, ostream &dst, size_t w, size_t h,
 				dst.put(static_cast<char>(0x00));
 				unsigned short v = BigEndian::Read2(src);
 				BigEndian::Write2(dst, v);
-				if (sonic2)
+				if (sonic2) {
 					BigEndian::Write2(dst, (v & 0xf800) | ((v & 0x07ff) >> 1));
+				}
 				BigEndian::Write2(dst, static_cast<unsigned short>((i - w / 2) << 3));
 			}
 		}
@@ -84,7 +87,8 @@ typedef pair<Position const, unsigned short> Enigma_entry;
 typedef map<Position, unsigned short> Enigma_map;
 
 static void plane_unmap(istream &src, ostream &dst,
-                        streamsize UNUSED(pointer), bool sonic2) {
+                        streamsize pointer, bool sonic2) {
+	ignore_unused_variable_warning(pointer);
 	streamsize next_loc = src.tellg();
 	streamsize last_loc = BigEndian::Read2(src);
 	src.seekg(0, ios::end);
@@ -95,8 +99,9 @@ static void plane_unmap(istream &src, ostream &dst,
 
 		size_t offset = BigEndian::Read2(src);
 		next_loc = src.tellg();
-		if (next_loc != last_loc)
+		if (next_loc != last_loc) {
 			src.ignore(2);
+		}
 
 		src.seekg(offset);
 
@@ -107,14 +112,15 @@ static void plane_unmap(istream &src, ostream &dst,
 			pos.y = static_cast<signed char>(src.get() & 0xff);
 			src.ignore(1);
 			unsigned short v = BigEndian::Read2(src);
-			if (sonic2)
+			if (sonic2) {
 				src.ignore(2);
+			}
 			pos.x = static_cast<signed short>(BigEndian::Read2(src));
 			engfile.insert(Enigma_entry(pos, v));
 		}
 
-		for (Enigma_map::iterator it = engfile.begin(); it != engfile.end(); ++it) {
-			unsigned short v = it->second;
+		for (auto & elem : engfile) {
+			unsigned short v = elem.second;
 			BigEndian::Write2(dst, v);
 		}
 	}
@@ -123,10 +129,10 @@ static void plane_unmap(istream &src, ostream &dst,
 int main(int argc, char *argv[]) {
 	int sonic2 = 0;
 	static option long_options[] = {
-		{"extract"  , optional_argument, 0, 'x'},
+		{"extract"  , optional_argument, nullptr, 'x'},
 		{"sonic2"   , no_argument      , &sonic2, 1},
-		{"compress" , no_argument      , 0, 'c'},
-		{0, 0, 0, 0}
+		{"compress" , no_argument      , nullptr, 'c'},
+		{nullptr, 0, nullptr, 0}
 	};
 
 	bool extract = false, compress = false, unmap = false;
@@ -136,14 +142,16 @@ int main(int argc, char *argv[]) {
 		int option_index = 0;
 		int c = getopt_long(argc, argv, "ux::c",
 		                    long_options, &option_index);
-		if (c == -1)
+		if (c == -1) {
 			break;
+		}
 
 		switch (c) {
 			case 'x':
 				extract = true;
-				if (optarg)
-					pointer = strtoul(optarg, 0, 0);
+				if (optarg) {
+					pointer = strtoul(optarg, nullptr, 0);
+				}
 				break;
 
 			case 'c':
@@ -178,11 +186,12 @@ int main(int argc, char *argv[]) {
 		if (compress) {
 			plane_unmap(fin, fbuf, 0      , sonic2);
 			enigma::encode(fbuf, fout);
-		} else
+		} else {
 			plane_unmap(fin, fout, pointer, sonic2);
+		}
 	} else {
 		stringstream fbuf(ios::in | ios::out | ios::binary | ios::trunc);
-		size_t w = strtoul(argv[optind + 2], 0, 0), h = strtoul(argv[optind + 3], 0, 0);
+		size_t w = strtoul(argv[optind + 2], nullptr, 0), h = strtoul(argv[optind + 3], nullptr, 0);
 		if (!w || !h) {
 			cerr << "Invalid height or width for plane mapping." << endl << endl;
 			return 4;
@@ -190,8 +199,9 @@ int main(int argc, char *argv[]) {
 		if (extract) {
 			enigma::decode(fin, fbuf, pointer);
 			plane_map(fbuf, fout, w, h, 0      , sonic2);
-		} else
+		} else {
 			plane_map(fin , fout, w, h, pointer, sonic2);
+		}
 	}
 	return 0;
 }

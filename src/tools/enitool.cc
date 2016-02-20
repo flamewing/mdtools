@@ -42,10 +42,10 @@ static void usage(char *prog) {
 
 int main(int argc, char *argv[]) {
 	static option long_options[] = {
-		{"size"     , no_argument      , 0, 's'},
-		{"palette"  , required_argument, 0, 'p'},
-		{"blacklist", required_argument, 0, 'b'},
-		{0, 0, 0, 0}
+		{"size"     , no_argument      , nullptr, 's'},
+		{"palette"  , required_argument, nullptr, 'p'},
+		{"blacklist", required_argument, nullptr, 'b'},
+		{nullptr, 0, nullptr, 0}
 	};
 
 	set<unsigned short> blacklist;
@@ -55,17 +55,20 @@ int main(int argc, char *argv[]) {
 	while (true) {
 		int option_index = 0;
 		int c = getopt_long(argc, argv, "sb:p:", long_options, &option_index);
-		if (c == -1)
+		if (c == -1) {
 			break;
+		}
 
 		switch (c) {
 			case 'p':
-				if (optarg)
-					paldelta = static_cast<unsigned short>((strtoul(optarg, 0, 0) & 3) << 13);
+				if (optarg) {
+					paldelta = static_cast<unsigned short>((strtoul(optarg, nullptr, 0) & 3) << 13);
+				}
 				break;
 			case 'b':
-				if (optarg)
-					blacklist.insert(static_cast<unsigned short>(strtoul(optarg, 0, 0) & 0x7FF));
+				if (optarg) {
+					blacklist.insert(static_cast<unsigned short>(strtoul(optarg, nullptr, 0) & 0x7FF));
+				}
 				break;
 			case 's':
 				sizeOnly = true;
@@ -81,7 +84,7 @@ int main(int argc, char *argv[]) {
 
 	int delta = 0;
 	if (!sizeOnly) {
-		delta = strtol(argv[optind++], 0, 0);
+		delta = strtol(argv[optind++], nullptr, 0);
 		if (!delta && !paldelta) {
 			cerr << "Adding zero to file... aborting." << endl << endl;
 			return 2;
@@ -100,7 +103,7 @@ int main(int argc, char *argv[]) {
 
 	if (sizeOnly) {
 		inbuffer.seekg(0, ios::end);
-		cout << inbuffer.tellg()/2 << endl;
+		cout << inbuffer.tellg() / 2 << endl;
 	} else {
 		ofstream fout(argv[optind], ios::out | ios::binary);
 		if (!fout.good()) {

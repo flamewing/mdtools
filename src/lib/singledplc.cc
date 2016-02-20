@@ -36,10 +36,11 @@ void single_dplc::read(istream &in, int ver) {
 }
 
 void single_dplc::write(ostream &out, int ver) const {
-	if (ver < 4)
+	if (ver < 4) {
 		BigEndian::Write2(out, ((cnt - 1) << 12) | tile);
-	else
+	} else {
 		BigEndian::Write2(out, (tile << 4) | (cnt - 1));
+	}
 }
 
 void single_dplc::print() const {

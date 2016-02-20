@@ -1,6 +1,6 @@
 /* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
 /*
- * Copyright (C) Flamewing 2011-2015 <flamewing.sonic@gmail.com>
+ * Copyright (C) Flamewing 2016 <flamewing.sonic@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -16,29 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_DPLCFILE_H
-#define __LIB_DPLCFILE_H
+#ifndef __LIB_IGNORE_UNUSED_VARIABLE_WARNING_H
+#define __LIB_IGNORE_UNUSED_VARIABLE_WARNING_H
 
-#include <iosfwd>
-#include <vector>
-#include "framedplc.h"
+template <typename T>
+constexpr inline void ignore_unused_variable_warning(T const&) {
+}
 
-class dplc_file {
-protected:
-	std::vector<frame_dplc> frames;
-public:
-	void read(std::istream &in, int ver);
-	void write(std::ostream &out, int ver, bool nullfirst) const;
-	void print() const;
-	void consolidate(dplc_file const &src);
-	void insert(frame_dplc const &val);
-	frame_dplc const &get_dplc(size_t i) const {
-		return frames[i];
-	}
-	size_t size() const {
-		return frames.size();
-	}
-	size_t size(int ver) const;
-};
-
-#endif // __LIB_DPLCFILE_H
+#endif // __LIB_IGNORE_UNUSED_VARIABLE_WARNING_H

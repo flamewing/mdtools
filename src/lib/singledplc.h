@@ -16,21 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SINGLEDPLC_H_
-#define _SINGLEDPLC_H_
+#ifndef __LIB_SINGLEDPLC_H
+#define __LIB_SINGLEDPLC_H
 
 #include <iosfwd>
-
-#ifdef UNUSED
-#elif defined(__GNUC__)
-#	define UNUSED(x) UNUSED_ ## x __attribute__((unused))
-#elif defined(__LCLINT__)
-#	define UNUSED(x) /*@unused@*/ x
-#elif defined(__cplusplus)
-#	define UNUSED(x)
-#else
-#	define UNUSED(x) x
-#endif
+#include "ignore_unused_variable_warning.h"
 
 class single_dplc {
 protected:
@@ -39,7 +29,8 @@ public:
 	void read(std::istream &in, int ver);
 	void write(std::ostream &out, int ver) const;
 	void print() const;
-	static size_t size(int UNUSED(ver)) {
+	static size_t size(int ver) {
+		ignore_unused_variable_warning(ver);
 		return 2;
 	}
 	unsigned short get_cnt() const {
@@ -55,12 +46,14 @@ public:
 		tile = t;
 	}
 	bool operator<(single_dplc const &rhs) const {
-		if (cnt < rhs.cnt)
+		if (cnt < rhs.cnt) {
 			return true;
-		else if (cnt > rhs.cnt)
+		} else if (cnt > rhs.cnt) {
 			return false;
-		if (tile < rhs.tile)
+		}
+		if (tile < rhs.tile) {
 			return true;
+		}
 		return false;
 	}
 	bool operator==(single_dplc const &rhs) const {
@@ -68,4 +61,4 @@ public:
 	}
 };
 
-#endif // _SINGLEDPLC_H_
+#endif // __LIB_SINGLEDPLC_H

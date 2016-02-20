@@ -39,9 +39,9 @@ static void usage() {
 
 int main(int argc, char *argv[]) {
 	static option long_options[] = {
-		{"extract", required_argument, 0, 'x'},
-		{"sonicver", required_argument, 0, 'v'},
-		{0, 0, 0, 0}
+		{"extract", required_argument, nullptr, 'x'},
+		{"sonicver", required_argument, nullptr, 'v'},
+		{nullptr, 0, nullptr, 0}
 	};
 
 	int pointer = 0, sonicver = -1, numvoices;
@@ -50,16 +50,17 @@ int main(int argc, char *argv[]) {
 		int option_index = 0;
 		int c = getopt_long(argc, argv, "x:v:",
 		                    long_options, &option_index);
-		if (c == -1)
+		if (c == -1) {
 			break;
+		}
 
 		switch (c) {
 			case 'x':
-				pointer = strtoul(optarg, 0, 0);
+				pointer = strtoul(optarg, nullptr, 0);
 				break;
 
 			case 'v':
-				sonicver = strtoul(optarg, 0, 0);
+				sonicver = strtoul(optarg, nullptr, 0);
 				break;
 		}
 	}
@@ -75,7 +76,7 @@ int main(int argc, char *argv[]) {
 		return 2;
 	}
 
-	numvoices = strtoul(argv[optind + 1], 0, 0);
+	numvoices = strtoul(argv[optind + 1], nullptr, 0);
 	fin.seekg(0, ios::end);
 	int len = fin.tellg();
 	fin.seekg(pointer);

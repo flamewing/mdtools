@@ -37,8 +37,9 @@ void mapping_file::read(istream &in, int ver) {
 	off.push_back(term);
 	while (in.tellg() < term) {
 		signed short newterm = static_cast<signed short>(BigEndian::Read2(in));
-		if (newterm > 0 && newterm < term)
+		if (newterm > 0 && newterm < term) {
 			term = newterm;
+		}
 		off.push_back(newterm);
 	}
 
@@ -64,24 +65,24 @@ void mapping_file::write(ostream &out, int ver, bool nullfirst) const {
 		posmap.insert(make_pair(size_t(0), *it));
 	}
 	for (; it != frames.end(); ++it) {
-		map<frame_mapping, size_t>::iterator it2 = mappos.find(*it);
-		if (it2 != mappos.end())
+		auto it2 = mappos.find(*it);
+		if (it2 != mappos.end()) {
 			BigEndian::Write2(out, it2->second);
-		else {
+		} else {
 			mappos.insert(make_pair(*it, sz));
 			posmap.insert(make_pair(sz, *it));
 			BigEndian::Write2(out, sz);
 			sz += it->size(ver);
 		}
 	}
-	for (map<size_t, frame_mapping>::iterator it2 = posmap.begin();
-	        it2 != posmap.end(); ++it2)
-		if (it2->first == size_t(out.tellp()))
-			(it2->second).write(out, ver);
-		else if (it2->first) {
+	for (auto & elem : posmap) {
+		if (elem.first == size_t(out.tellp())) {
+			(elem.second).write(out, ver);
+		} else if (elem.first) {
 			cerr << "Missed write at " << out.tellp() << endl;
-			(it2->second).print();
+			(elem.second).print();
 		}
+	}
 }
 
 void mapping_file::print() const {
@@ -95,11 +96,10 @@ void mapping_file::print() const {
 }
 
 void mapping_file::split(mapping_file const &src, dplc_file &dplc) {
-	for (vector<frame_mapping>::const_iterator it = src.frames.begin();
-	     it != src.frames.end(); ++it) {
+	for (const auto & elem : src.frames) {
 		frame_mapping nn;
 		frame_dplc interm, dd;
-		nn.split(*it, interm);
+		nn.split(elem, interm);
 		dd.consolidate(interm);
 		frames.push_back(nn);
 		dplc.insert(dd);
@@ -126,10 +126,11 @@ void mapping_file::optimize(mapping_file const &src, dplc_file const &indplc, dp
 			mm.merge(intmap, intdplc);
 			endmap.split(mm, dd);
 			enddplc.consolidate(dd);
-		} else if (intdplc.size())
+		} else if (intdplc.size()) {
 			enddplc.consolidate(intdplc);
-		else
+		} else {
 			endmap = intmap;
+		}
 
 		frames.push_back(endmap);
 		outdplc.insert(enddplc);
@@ -137,16 +138,16 @@ void mapping_file::optimize(mapping_file const &src, dplc_file const &indplc, dp
 }
 
 void mapping_file::change_pal(int srcpal, int dstpal) {
-	for (vector<frame_mapping>::iterator it = frames.begin();
-	     it != frames.end(); ++it)
-		it->change_pal(srcpal, dstpal);
+	for (auto & elem : frames) {
+		elem.change_pal(srcpal, dstpal);
+	}
 }
 
 size_t mapping_file::size(int ver) const {
 	size_t sz = 2 * frames.size();
-	for (vector<frame_mapping>::const_iterator it = frames.begin();
-	     it != frames.end(); ++it)
-		sz += it->size(ver);
+	for (const auto & elem : frames) {
+		sz += elem.size(ver);
+	}
 	return sz;
 }
 

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _FRAMEMAPPING_H_
-#define _FRAMEMAPPING_H_
+#ifndef __LIB_FRAMEMAPPING_H
+#define __LIB_FRAMEMAPPING_H
 
 #include <iosfwd>
 #include <vector>
@@ -49,4 +49,4 @@ public:
 	}
 };
 
-#endif // _FRAMEMAPPING_H_
+#endif // __LIB_FRAMEMAPPING_H

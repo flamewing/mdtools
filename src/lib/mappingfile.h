@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAPPINGFILE_H_
-#define _MAPPINGFILE_H_
+#ifndef __LIB_MAPPINGFILE_H
+#define __LIB_MAPPINGFILE_H
 
 #include <iosfwd>
 #include <vector>
@@ -44,4 +44,4 @@ public:
 	size_t size(int ver) const;
 };
 
-#endif // _MAPPINGFILE_H_
+#endif // __LIB_MAPPINGFILE_H

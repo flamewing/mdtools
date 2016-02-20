@@ -35,6 +35,7 @@
 #include "bigendian_io.h"
 #include "songtrack.h"
 #include "fmvoice.h"
+#include "ignore_unused_variable_warning.h"
 
 using namespace std;
 
@@ -65,12 +66,14 @@ struct S1IO {
 	}
 
 	template <typename T>
-	static inline int read_pointer(T &in, int UNUSED(base)) {
+	static inline int read_pointer(T &in, int base) {
+		ignore_unused_variable_warning(base);
 		int ptr = int(in.tellg()) + 1;
 		return static_cast<short>(Read2(in)) + ptr;
 	}
 
-	static inline int int2headerpointer(int val, int UNUSED(base)) {
+	static inline int int2headerpointer(int val, int base) {
+		ignore_unused_variable_warning(base);
 		return static_cast<unsigned short>(val);
 	}
 };
@@ -145,9 +148,9 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
                          int &last_voc, unsigned char keydisp) {
 	unsigned char byte = Read1(in);
 	// Initialize to invalid 32-bit address.
-	if (byte < 0x80)
+	if (byte < 0x80) {
 		return new Duration(byte, keydisp);
-	else if (byte < 0xe0) {
+	} else if (byte < 0xe0) {
 		switch (tracktype) {
 			case LocTraits::eFMInit:
 			case LocTraits::eFMTrack:
@@ -198,9 +201,10 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 			case 0xf7: { // Loop
 				unsigned char index = Read1(in), repeats = Read1(in);
 				int ptr = IO::read_pointer(in, offset);
-				multimap<int, string>::iterator it = labels.find(ptr);
-				if (it == labels.end())
+				auto it = labels.find(ptr);
+				if (it == labels.end()) {
 					labels.insert(make_pair(ptr, projname + need_loop_label()));
+				}
 				return new CoordFlagPointer2ParamBytes<false>(byte, keydisp, index, repeats, ptr);
 			}
 			case 0xf0:  // Start modulation
@@ -213,28 +217,31 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 			case 0xf8:  // Call
 			case 0xfc: { // Continuous loop
 				int ptr = IO::read_pointer(in, offset);
-				multimap<int, string>::iterator it = labels.find(ptr);
+				auto it = labels.find(ptr);
 				if (it == labels.end()) {
 					string lbl;
-					if (byte == 0xf6)
+					if (byte == 0xf6) {
 						lbl = need_jump_label();
-					else if (byte == 0xf8)
+					} else if (byte == 0xf8) {
 						lbl = need_call_label();
-					else
+					} else {
 						lbl = need_loop_label();
+					}
 					labels.insert(make_pair(ptr, projname + lbl));
 				}
-				if (byte == 0xf6)
+				if (byte == 0xf6) {
 					return new CoordFlagPointerParam<true>(byte, keydisp, ptr);
-				else
+				} else {
 					return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
+				}
 			}
 			case 0xeb: { // Conditional jump
 				unsigned char index = Read1(in);
 				int ptr = IO::read_pointer(in, offset);
-				multimap<int, string>::iterator it = labels.find(ptr);
-				if (it == labels.end())
+				auto it = labels.find(ptr);
+				if (it == labels.end()) {
 					labels.insert(make_pair(ptr, projname + need_jump_label()));
+				}
 
 				return new CoordFlagPointer1ParamByte<false>(byte, keydisp, index, ptr);
 			}
@@ -246,15 +253,18 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 
 			case 0xef: {
 				signed char voc = Read1(in);
-				if (tracktype == LocTraits::eFMTrack && voc >= 0 && voc > last_voc)
+				if (tracktype == LocTraits::eFMTrack && voc >= 0 && voc > last_voc) {
 					last_voc = voc;
+				}
 				if (voc < 0) {
 					unsigned char id = Read1(in) - 0x81;
-					if (tracktype == LocTraits::eFMTrack)
+					if (tracktype == LocTraits::eFMTrack) {
 						voc &= 0x7f;
+					}
 					return new CoordFlag2ParamBytes<false>(byte, keydisp, voc, id);
-				} else
+				} else {
 					return new CoordFlag1ParamByte<false>(byte, keydisp, voc);
+				}
 			}
 
 			case 0xe0:
@@ -276,10 +286,11 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 
 			case 0xe2: { // Fade to previous
 				unsigned char c = Read1(in);
-				if (c == 0xff)
+				if (c == 0xff) {
 					return new CoordFlagNoParams<false>(byte, keydisp);
-				else
+				} else {
 					return new CoordFlag1ParamByte<false>(byte, keydisp, c);
+				}
 			}
 
 			case 0xe3:
@@ -295,9 +306,10 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 			case 0xf7: { // Loop
 				unsigned char index = Read1(in), repeats = Read1(in);
 				int ptr = IO::read_pointer(in, offset);
-				multimap<int, string>::iterator it = labels.find(ptr);
-				if (it == labels.end())
+				auto it = labels.find(ptr);
+				if (it == labels.end()) {
 					labels.insert(make_pair(ptr, projname + need_loop_label()));
+				}
 				return new CoordFlagPointer2ParamBytes<false>(byte, keydisp, index, repeats, ptr);
 			}
 			case 0xf0: { // Start modulation
@@ -308,29 +320,34 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 			case 0xf6:  // Jump
 			case 0xf8: { // Call
 				int ptr = IO::read_pointer(in, offset);
-				multimap<int, string>::iterator it = labels.find(ptr);
-				if (it == labels.end())
+				auto it = labels.find(ptr);
+				if (it == labels.end()) {
 					labels.insert(make_pair(ptr, projname + (byte == 0xf6 ? need_jump_label()
-					                             : need_call_label())));
-				if (byte == 0xf6)
+					                        : need_call_label())));
+				}
+				if (byte == 0xf6) {
 					return new CoordFlagPointerParam<true>(byte, keydisp, ptr);
-				else
+				} else {
 					return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
+				}
 			}
 			case 0xed:  // S1: clear push flag; S2: eat byte
-				if (sonicver == 1)
+				if (sonicver == 1) {
 					return new CoordFlagNoParams<false>(byte, keydisp);
-				else
+				} else {
 					return new CoordFlag1ParamByte<false>(byte, keydisp, Read1(in));
+				}
 			case 0xee:  // S1: Stop special FM4; S2: nop
-				if (sonicver == 1)
+				if (sonicver == 1) {
 					return new CoordFlagNoParams<true>(byte, keydisp);
-				else
+				} else {
 					return new CoordFlagNoParams<false>(byte, keydisp);
+				}
 			case 0xef: { // Set FM voice
 				int voc = Read1(in);
-				if (voc > last_voc)
+				if (voc > last_voc) {
 					last_voc = voc;
+				}
 				return new CoordFlag1ParamByte<false>(byte, keydisp, voc);
 			}
 
@@ -419,10 +436,11 @@ public:
 			// An external voice bank will be printed as a note at the end;
 			// the other type of voice bank will be extracted based on the
 			// number of referenced voices.
-			if (ext_vocs)
+			if (ext_vocs) {
 				todo.push(LocTraits(vocptr, LocTraits::eExtVoices));
-			else
+			} else {
 				todo.push(LocTraits(vocptr, LocTraits::eVoices));
+			}
 		}
 
 		// Music and SFX differ in the next few headers.
@@ -479,7 +497,7 @@ public:
 					case 0x01:
 					case 0x02:
 						chanid++;
-						// Fall through
+					// Fall through
 					case 0x04:
 					case 0x05:
 					case 0x06: {
@@ -502,10 +520,11 @@ public:
 				out << endl;
 
 				// Add to queue/label list.
-				if ((chanid & 0x80) != 0)
+				if ((chanid & 0x80) != 0) {
 					todo.push(LocTraits(trackptr, LocTraits::ePSGInit, keydisp));
-				else
+				} else {
 					todo.push(LocTraits(trackptr, LocTraits::eFMInit, keydisp));
+				}
 				labels.insert(make_pair(trackptr, lbl));
 				tracklabels.insert(lbl);
 			}
@@ -592,15 +611,17 @@ public:
 		}
 
 		// Mark all contents so far as having been explored.
-		for (size_t i = startloc; i < size_t(in.tellg()); i++)
+		for (size_t i = startloc; i < size_t(in.tellg()); i++) {
 			explored.insert(make_pair(i, LocTraits::eHeader));
+		}
 
 		while (todo.size() > 1) {
 			LocTraits next_loc = todo.top();
 
 			// If we are down to voices, we are done with this loop.
-			if (next_loc.type >= LocTraits::eVoices)
+			if (next_loc.type >= LocTraits::eVoices) {
 				break;
+			}
 
 			// Now remap the init types for simplicity, as they did their job.
 			switch (next_loc.type) {
@@ -626,15 +647,17 @@ public:
 			todo.pop();
 
 			// Don't explore again what has been done already.
-			if (explored.find(next_loc.loc) != explored.end())
+			if (explored.find(next_loc.loc) != explored.end()) {
 				continue;
+			}
 
 			if (next_loc.loc < 0 || next_loc.loc >= len) {
-				multimap<int, string>::iterator it = labels.lower_bound(next_loc.loc),
+				auto it = labels.lower_bound(next_loc.loc),
 				                                end = labels.upper_bound(next_loc.loc);
 
-				if (it != end)
+				if (it != end) {
 					BaseNote::force_linebreak(out, true);
+				}
 
 				out << "; The following track data was present at " << dec
 				    << next_loc.loc << " bytes from the start of the song."
@@ -642,8 +665,9 @@ public:
 				for (; it != end; ++it) {
 
 					string lbl = it->second;
-					if (tracklabels.find(lbl) != tracklabels.end())
+					if (tracklabels.find(lbl) != tracklabels.end()) {
 						out << "; " << lbl.substr(lbl.rfind('_') + 1) << " Data" << endl;
+					}
 					out << it->second << ":" << endl;
 				}
 
@@ -665,17 +689,20 @@ public:
 				next_loc.keydisp = note->get_keydisp();
 
 				// If the data includes a jump target, add it to queue.
-				if (note->has_pointer())
+				if (note->has_pointer()) {
 					todo.push(LocTraits(note->get_pointer(), next_loc.type, next_loc.keydisp));
+				}
 
 				// Add in freshly explored data to list.
-				for (int i = lastloc; i < in.tellg(); i++)
+				for (int i = lastloc; i < in.tellg(); i++) {
 					explored.insert(make_pair(i, next_loc.type));
+				}
 
 				// If we reach track end, or if we reached the end of file,
 				// break from loop.
-				if (note->ends_track() || !in.good())
+				if (note->ends_track() || !in.good()) {
 					break;
+				}
 			}
 		}
 
@@ -726,37 +753,40 @@ public:
 				trackdata.insert(make_pair(lastloc, voc));
 
 				// Add in freshly explored data to list.
-				for (int j = lastloc; j < in.tellg(); j++)
+				for (int j = lastloc; j < in.tellg(); j++) {
 					explored.insert(make_pair(j, LocTraits::eVoices));
+				}
 			}
 		}
 
 		int lastlabel = -1;
-		for (map<int, shared_ptr<BaseNote> >::iterator it = trackdata.begin();
-		        it != trackdata.end(); ++it) {
-			int off = it->first;
-			shared_ptr<BaseNote> note = it->second;
+		for (auto & elem : trackdata) {
+			int off = elem.first;
+			shared_ptr<BaseNote> note = elem.second;
 			if (off > lastlabel) {
-				multimap<int, string>::iterator it = labels.upper_bound(lastlabel),
+				auto it = labels.upper_bound(lastlabel),
 				                                end = labels.upper_bound(off);
 
-				if (it != end)
+				if (it != end) {
 					BaseNote::force_linebreak(out, true);
+				}
 
 				for (; it != end; ++it) {
 					string lbl = it->second;
-					if (tracklabels.find(lbl) != tracklabels.end())
+					if (tracklabels.find(lbl) != tracklabels.end()) {
 						out << "; " << lbl.substr(lbl.rfind('_') + 1) << " Data" << endl;
+					}
 					out << it->second << ":" << endl;
 				}
 
 				lastlabel = off;
 			}
 
-			map<int, LocTraits::LocType>::iterator ty = explored.find(off);
+			auto ty = explored.find(off);
 			//assert(ty != explored.end());
-			if (ty != explored.end())
+			if (ty != explored.end()) {
 				note->print(out, sonicver, ty->second, labels, s3kmode);
+			}
 		}
 
 		/*
@@ -851,22 +881,24 @@ static void usage() {
 
 void dump_single_entry
 (
- istream &in, ostream &out, string const &projname,
- int pointer, int offset, int sonicver, bool saxman, bool sfx, bool s3kmode
+    istream &in, ostream &out, string const &projname,
+    int pointer, int offset, int sonicver, bool saxman, bool sfx, bool s3kmode
 ) {
 
 	if (pointer) {
-		if (saxman)
+		if (saxman) {
 			offset = -offset;
-		else {
+		} else {
 			offset = pointer;
-			if (sonicver != 1)
+			if (sonicver != 1) {
 				offset &= ~0x7fff;
+			}
 		}
-	} else if (sonicver != 1)
+	} else if (sonicver != 1) {
 		offset = -offset;
-	else
+	} else {
 		offset = 0;
+	}
 
 	istream *src;
 	stringstream sin(ios::in | ios::out | ios::binary);
@@ -892,14 +924,14 @@ void dump_single_entry
 
 int main(int argc, char *argv[]) {
 	static option long_options[] = {
-		{"bank"    , optional_argument, 0, 'b'},
-		{"extract" , optional_argument, 0, 'x'},
-		{"saxman"  , no_argument      , 0, 'u'},
-		{"offset"  , required_argument, 0, 'o'},
-		{"sonicver", required_argument, 0, 'v'},
-		{"sfx"     , no_argument      , 0, 's'},
-		{"s3kmode" , no_argument      , 0, '3'},
-		{0, 0, 0, 0}
+		{"bank"    , optional_argument, nullptr, 'b'},
+		{"extract" , optional_argument, nullptr, 'x'},
+		{"saxman"  , no_argument      , nullptr, 'u'},
+		{"offset"  , required_argument, nullptr, 'o'},
+		{"sonicver", required_argument, nullptr, 'v'},
+		{"sfx"     , no_argument      , nullptr, 's'},
+		{"s3kmode" , no_argument      , nullptr, '3'},
+		{nullptr, 0, nullptr, 0}
 	};
 
 	bool sfx = false, saxman = false, s3kmode = false, bankmode = false;
@@ -909,19 +941,22 @@ int main(int argc, char *argv[]) {
 		int option_index = 0;
 		int c = getopt_long(argc, argv, "b::x::uo:v:s3",
 		                    long_options, &option_index);
-		if (c == -1)
+		if (c == -1) {
 			break;
+		}
 
 		switch (c) {
 			case 'b':
-				if (optarg)
-					ptrtable = strtoul(optarg, 0, 0);
+				if (optarg) {
+					ptrtable = strtoul(optarg, nullptr, 0);
+				}
 				bankmode = true;
 				break;
 
 			case 'x':
-				if (optarg)
-					pointer = strtoul(optarg, 0, 0);
+				if (optarg) {
+					pointer = strtoul(optarg, nullptr, 0);
+				}
 				break;
 
 			case 'u':
@@ -929,7 +964,7 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'o':
-				offset = strtoul(optarg, 0, 0);
+				offset = strtoul(optarg, nullptr, 0);
 				break;
 
 			case 's':
@@ -937,7 +972,7 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'v':
-				sonicver = strtoul(optarg, 0, 0);
+				sonicver = strtoul(optarg, nullptr, 0);
 				break;
 
 			case '3':

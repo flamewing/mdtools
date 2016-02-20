@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _FRAMEDPLC_H_
-#define _FRAMEDPLC_H_
+#ifndef __LIB_FRAMEDPLC_H
+#define __LIB_FRAMEDPLC_H
 
 #include <iosfwd>
 #include <map>
@@ -49,4 +49,4 @@ public:
 	}
 };
 
-#endif // _FRAMEDPLC_H_
+#endif // __LIB_FRAMEDPLC_H

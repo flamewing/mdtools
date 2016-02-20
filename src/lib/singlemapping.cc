@@ -32,24 +32,28 @@ void single_mapping::read(istream &in, int ver) {
 	tile = BigEndian::Read2(in);
 	flags = ((tile & 0xf800u) >> 8u);
 	tile &= 0x07ffu;
-	if (ver == 2)
+	if (ver == 2) {
 		in.ignore(2);
-	if (ver == 1)
+	}
+	if (ver == 1) {
 		xx = static_cast<signed char>(Read1(in));
-	else
+	} else {
 		xx = BigEndian::Read2(in);
+	}
 }
 
 void single_mapping::write(ostream &out, int ver) const {
 	Write1(out, static_cast<unsigned char>(yy));
 	Write1(out, ((sx - 1) << 2) | (sy - 1));
 	BigEndian::Write2(out, (flags << 8) | tile);
-	if (ver == 2)
+	if (ver == 2) {
 		BigEndian::Write2(out, (flags << 8) | (tile >> 1));
-	if (ver == 1)
+	}
+	if (ver == 1) {
 		Write1(out, static_cast<unsigned char>(xx));
-	else
+	} else {
 		BigEndian::Write2(out, xx);
+	}
 }
 
 void single_mapping::print() const {
@@ -69,21 +73,25 @@ void single_mapping::print() const {
 	cout << nouppercase << "\tFlags: ";
 	if ((flags & 0x80u) != 0) {
 		cout << "foreground";
-		if ((flags & 0x78u) != 0)
+		if ((flags & 0x78u) != 0) {
 			cout << "|";
+		}
 	}
 	if ((flags & 0x60u) != 0) {
 		cout << "palette+" << dec << ((flags & 0x60u) >> 5u);
-		if ((flags & 0x18u) != 0)
+		if ((flags & 0x18u) != 0) {
 			cout << "|";
+		}
 	}
 	if ((flags & 0x08u) != 0) {
 		cout << "flip_x";
-		if ((flags & 0x10u) != 0)
+		if ((flags & 0x10u) != 0) {
 			cout << "|";
+		}
 	}
-	if ((flags & 0x10u) != 0)
+	if ((flags & 0x10u) != 0) {
 		cout << "flip_y";
+	}
 	cout << endl;
 }
 
@@ -108,6 +116,7 @@ void single_mapping::merge(single_mapping const &src, map<size_t, size_t> &vram_
 }
 
 void single_mapping::change_pal(int srcpal, int dstpal) {
-	if ((flags & 0x60) == srcpal)
+	if ((flags & 0x60) == srcpal) {
 		flags = (flags & 0x9f) | dstpal;
+	}
 }

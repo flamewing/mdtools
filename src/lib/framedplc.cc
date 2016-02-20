@@ -26,12 +26,13 @@ using namespace std;
 
 void frame_dplc::read(istream &in, int ver) {
 	size_t cnt;
-	if (ver == 1)
+	if (ver == 1) {
 		cnt = Read1(in);
-	else if (ver == 4)
+	} else if (ver == 4) {
 		cnt = static_cast<short>(BigEndian::Read2(in)) + 1;
-	else
+	} else {
 		cnt = BigEndian::Read2(in);
+	}
 
 	for (size_t i = 0; i < cnt; i++) {
 		single_dplc sd;
@@ -41,23 +42,23 @@ void frame_dplc::read(istream &in, int ver) {
 }
 
 void frame_dplc::write(ostream &out, int ver) const {
-	if (ver == 1)
+	if (ver == 1) {
 		Write1(out, dplc.size());
-	else if (ver == 4)
+	} else if (ver == 4) {
 		BigEndian::Write2(out, static_cast<unsigned short>(static_cast<short>(dplc.size()) - 1));
-	else
+	} else {
 		BigEndian::Write2(out, dplc.size());
-	for (vector<single_dplc>::const_iterator it = dplc.begin();
-	     it != dplc.end(); ++it)
-		it->write(out, ver);
+	}
+	for (const auto & elem : dplc) {
+		elem.write(out, ver);
+	}
 }
 
 void frame_dplc::print() const {
 	size_t ntiles = 0;
-	for (vector<single_dplc>::const_iterator it = dplc.begin();
-	     it != dplc.end(); ++it) {
-		ntiles += it->get_cnt();
-		it->print();
+	for (const auto & elem : dplc) {
+		ntiles += elem.get_cnt();
+		elem.print();
 	}
 	cout << nouppercase << "\tTile count: $";
 	cout << uppercase   << hex << setfill('0') << setw(4) << ntiles;
@@ -65,14 +66,13 @@ void frame_dplc::print() const {
 }
 
 void frame_dplc::consolidate(frame_dplc const &src) {
-	if (!src.dplc.size())
+	if (!src.dplc.size()) {
 		return;
+	}
 
 	size_t start = src.dplc[0].get_tile(), size = 0;
 	frame_dplc interm;
-	for (vector<single_dplc>::const_iterator it = src.dplc.begin();
-	     it != src.dplc.end(); ++it) {
-		single_dplc const &sd = *it;
+	for (const auto & sd : src.dplc) {
 		if (sd.get_tile() != start + size) {
 			single_dplc nn;
 			nn.set_tile(start);
@@ -80,8 +80,9 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 			interm.dplc.push_back(nn);
 			start = sd.get_tile();
 			size = sd.get_cnt();
-		} else
+		} else {
 			size += sd.get_cnt();
+		}
 	}
 	if (size != 0) {
 		single_dplc nn;
@@ -92,7 +93,7 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 
 	dplc.clear();
 	for (vector<single_dplc>::const_iterator it = interm.dplc.begin();
-	     it != interm.dplc.end(); ++it) {
+	        it != interm.dplc.end(); ++it) {
 		size_t tile = it->get_tile(), sz = it->get_cnt();
 
 		while (sz >= 16) {
@@ -117,25 +118,26 @@ void frame_dplc::insert(single_dplc const &val) {
 }
 
 void frame_dplc::build_vram_map(map<size_t, size_t> &vram_map) const {
-	for (vector<single_dplc>::const_iterator it = dplc.begin();
-	        it != dplc.end(); ++it) {
-		single_dplc const &sd = *it;
+	for (const auto & sd : dplc) {
 		size_t ss = sd.get_tile(), sz = sd.get_cnt();
-		for (size_t i = ss; i < ss + sz; i++)
+		for (size_t i = ss; i < ss + sz; i++) {
 			vram_map.insert(pair<size_t, size_t>(vram_map.size(), i));
+		}
 	}
 }
 
 bool frame_dplc::operator<(frame_dplc const &rhs) const {
-	if (dplc.size() < rhs.dplc.size())
+	if (dplc.size() < rhs.dplc.size()) {
 		return true;
-	else if (dplc.size() > rhs.dplc.size())
+	} else if (dplc.size() > rhs.dplc.size()) {
 		return false;
+	}
 	for (size_t ii = 0; ii < dplc.size(); ii++) {
-		if (dplc[ii] < rhs.dplc[ii])
+		if (dplc[ii] < rhs.dplc[ii]) {
 			return true;
-		else if (rhs.dplc[ii] < dplc[ii])
+		} else if (rhs.dplc[ii] < dplc[ii]) {
 			return false;
+		}
 	}
 	return false;
 }

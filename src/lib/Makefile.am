@@ -14,7 +14,8 @@ libmappings_la_SOURCES = \
 	framemapping.h \
 	framemapping.cc \
 	mappingfile.h \
-	mappingfile.cc
+	mappingfile.cc \
+	ignore_unused_variable_warning.h
 
 libmappings_la_LIBADD =
 

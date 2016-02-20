@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _FMVOICE_H_
-#define _FMVOICE_H_
+#ifndef __TOOLS_FMVOICE_H
+#define __TOOLS_FMVOICE_H
 
 #include <iosfwd>
 
@@ -38,4 +38,4 @@ public:
 	void print(std::ostream &out, int sonicver, int id) const;
 };
 
-#endif // _FMVOICE_H_
+#endif // __TOOLS_FMVOICE_H

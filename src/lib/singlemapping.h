@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SINGLEMAPPING_H_
-#define _SINGLEMAPPING_H_
+#ifndef __LIB_SINGLEMAPPING_H
+#define __LIB_SINGLEMAPPING_H
 
 #include <iosfwd>
 #include <map>
@@ -82,34 +82,40 @@ public:
 		sy = t;
 	}
 	bool operator<(single_mapping const &rhs) const {
-		if (tile < rhs.tile)
+		if (tile < rhs.tile) {
 			return true;
-		else if (tile > rhs.tile)
+		} else if (tile > rhs.tile) {
 			return false;
-		if (sx < rhs.sx)
+		}
+		if (sx < rhs.sx) {
 			return true;
-		else if (sx > rhs.sx)
+		} else if (sx > rhs.sx) {
 			return false;
-		if (sy < rhs.sy)
+		}
+		if (sy < rhs.sy) {
 			return true;
-		else if (sy > rhs.sy)
+		} else if (sy > rhs.sy) {
 			return false;
-		if (flags < rhs.flags)
+		}
+		if (flags < rhs.flags) {
 			return true;
-		else if (flags > rhs.flags)
+		} else if (flags > rhs.flags) {
 			return false;
-		if (xx < rhs.xx)
+		}
+		if (xx < rhs.xx) {
 			return true;
-		else if (xx > rhs.xx)
+		} else if (xx > rhs.xx) {
 			return false;
-		if (yy < rhs.yy)
+		}
+		if (yy < rhs.yy) {
 			return true;
-		else //if (yy > rhs.yy)
+		} else /*if (yy > rhs.yy)*/ {
 			return false;
+		}
 	}
 	bool operator==(single_mapping const &rhs) const {
 		return !(*this < rhs || rhs < *this);
 	}
 };
 
-#endif // _SINGLEMAPPING_H_
+#endif // __LIB_SINGLEMAPPING_H

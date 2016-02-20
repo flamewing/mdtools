@@ -46,34 +46,40 @@ struct Tile {
 	bool read(istream &in) {
 		for (size_t i = 0; i < sizeof(tiledata); i += 2) {
 			size_t col = in.get();
-			if (!in.good())
+			if (!in.good()) {
 				return false;
+			}
 			tiledata[i + 0] = col & 0x0f;
 			tiledata[i + 1] = (col & 0xf0) >> 4;
 		}
 		return true;
 	}
 	bool blacklisted(unsigned char const bll) {
-		for (size_t i = 0; i < sizeof(tiledata); i++)
-			if (tiledata[i] == bll)
+		for (auto & elem : tiledata) {
+			if (elem == bll) {
 				return true;
+			}
+		}
 		return false;
 	}
 	void remap(int const *colormap) {
-		for (size_t i = 0; i < sizeof(tiledata); i++)
-			tiledata[i] = colormap[tiledata[i]];
+		for (auto & elem : tiledata) {
+			elem = colormap[elem];
+		}
 	}
 	void write(ostream &out) {
-		for (size_t i = 0; i < sizeof(tiledata); i += 2)
+		for (size_t i = 0; i < sizeof(tiledata); i += 2) {
 			out.put(tiledata[i] | (tiledata[i + 1] << 4));
+		}
 	}
 };
 
 void recolor(istream &in, ostream &out, int const *colormap) {
 	Tile tile;
 	while (true) {
-		if (!tile.read(in))
+		if (!tile.read(in)) {
 			break;
+		}
 		tile.remap(colormap);
 		tile.write(out);
 	}
@@ -81,9 +87,9 @@ void recolor(istream &in, ostream &out, int const *colormap) {
 
 int main(int argc, char *argv[]) {
 	static option long_options[] = {
-		{"format"      , required_argument, 0, 'o'},
-		{"moduled"     , optional_argument, 0, 'm'},
-		{0, 0, 0, 0}
+		{"format"      , required_argument, nullptr, 'o'},
+		{"moduled"     , optional_argument, nullptr, 'm'},
+		{nullptr, 0, nullptr, 0}
 	};
 
 	bool moduled = false;
@@ -101,24 +107,26 @@ int main(int argc, char *argv[]) {
 		int c = getopt_long(argc, argv,
 		                    "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
 		                    long_options, &option_index);
-		if (c == -1)
+		if (c == -1) {
 			break;
+		}
 
-		if (c >= 'A' && c <= 'F')
+		if (c >= 'A' && c <= 'F') {
 			c += ('a' - 'A');
+		}
 
 		switch (c) {
 			case 'o':
 				if (!optarg) {
 					usage();
 					return 1;
-				} else if (!strcmp(optarg, "unc"))
+				} else if (!strcmp(optarg, "unc")) {
 					fmt = eUncompressed;
-				else if (!strcmp(optarg, "nem"))
+				} else if (!strcmp(optarg, "nem")) {
 					fmt = eNemesis;
-				else if (!strcmp(optarg, "kos"))
+				} else if (!strcmp(optarg, "kos")) {
 					fmt = eKosinski;
-				else {
+				} else {
 					usage();
 					return 1;
 				}
@@ -126,8 +134,9 @@ int main(int argc, char *argv[]) {
 
 			case 'm':
 				moduled = true;
-				if (optarg)
-					modulesize = strtoul(optarg, 0, 0);
+				if (optarg) {
+					modulesize = strtoul(optarg, nullptr, 0);
+				}
 				break;
 
 			case '0':
@@ -151,18 +160,19 @@ int main(int argc, char *argv[]) {
 					return 1;
 				}
 				int c1;
-				if (c >= '0' && c <= '9')
+				if (c >= '0' && c <= '9') {
 					c1 = c - '0';
-				else
+				} else {
 					c1 = c - 'a' + 10;
+				}
 				int d = *optarg;
-				if (d >= '0' && d <= '9')
+				if (d >= '0' && d <= '9') {
 					colormap[c1] = d - '0';
-				else if (d >= 'a' && d <= 'f')
+				} else if (d >= 'a' && d <= 'f') {
 					colormap[c1] = d - 'a' + 10;
-				else if (d >= 'A' && d <= 'F')
+				} else if (d >= 'A' && d <= 'F') {
 					colormap[c1] = d - 'A' + 10;
-				else {
+				} else {
 					usage();
 					return 1;
 				}
@@ -190,12 +200,13 @@ int main(int argc, char *argv[]) {
 	             sout(ios::in | ios::out | ios::binary);
 
 	fin.seekg(0);
-	if (fmt == eUncompressed)
+	if (fmt == eUncompressed) {
 		sin << fin.rdbuf();
-	else if (fmt == eNemesis)
+	} else if (fmt == eNemesis) {
 		nemesis::decode(fin, sin, 0);
-	else // if (fmt == eKosinski)
+	} else { // if (fmt == eKosinski)
 		kosinski::decode(fin, sin, 0, moduled);
+	}
 
 	fin.close();
 	sin.seekg(0);
@@ -209,12 +220,13 @@ int main(int argc, char *argv[]) {
 
 	sout.seekg(0);
 
-	if (fmt == eUncompressed)
+	if (fmt == eUncompressed) {
 		fout << sout.rdbuf();
-	else if (fmt == eNemesis)
+	} else if (fmt == eNemesis) {
 		nemesis::encode(sout, fout);
-	else // if (fmt == eKosinski)
+	} else { // if (fmt == eKosinski)
 		kosinski::encode(sout, fout, moduled, modulesize);
+	}
 
 	fout.close();
 }
