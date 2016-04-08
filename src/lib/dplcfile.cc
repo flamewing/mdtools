@@ -62,16 +62,16 @@ void dplc_file::write(ostream &out, int ver, bool nullfirst) const {
 	it = frames.begin();
 
 	if (nullfirst && ver != 4 && it != frames.end() && it->size() == 0) {
-		mappos.insert(make_pair(*it, size_t(0)));
-		posmap.insert(make_pair(size_t(0), *it));
+		mappos.emplace(*it, 0);
+		posmap.emplace(0, *it);
 	}
 	for (; it != frames.end(); ++it) {
 		auto it2 = mappos.find(*it);
 		if (it2 != mappos.end()) {
 			BigEndian::Write2(out, it2->second);
 		} else {
-			mappos.insert(make_pair(*it, sz));
-			posmap.insert(make_pair(sz, *it));
+			mappos.emplace(*it, sz);
+			posmap.emplace(sz, *it);
 			BigEndian::Write2(out, sz);
 			sz += it->size(ver);
 		}

@@ -77,7 +77,7 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 		if (ranges.empty()) {
 			// Happens only once. Hopefully, the compiler will pull this out of
 			// the loop, as it happens right at the start of the loop.
-			ranges.push_back(make_pair(ss, sz));
+			ranges.emplace_back(ss, sz);
 		} else {
 			pair<size_t, size_t> &last = ranges.back();
 			if (last.first == ss + sz) {
@@ -91,7 +91,7 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 				last.second += sz;
 			} else {
 				// Disjoint DPLCs. Add new one.
-				ranges.push_back(make_pair(ss, sz));
+				ranges.emplace_back(ss, sz);
 			}
 		}
 	}
@@ -108,7 +108,7 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 		size_t ss = it->first, sz = it->second;
 		for (size_t i = ss; i < ss + sz; i++) {
 			if (vram_map.find(i) == vram_map.end()) {
-				vram_map.insert(pair<size_t, size_t>(i, vram_map.size()));
+				vram_map.emplace(i, vram_map.size());
 			}
 		}
 	}

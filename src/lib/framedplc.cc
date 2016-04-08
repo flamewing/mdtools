@@ -121,7 +121,7 @@ void frame_dplc::build_vram_map(map<size_t, size_t> &vram_map) const {
 	for (const auto & sd : dplc) {
 		size_t ss = sd.get_tile(), sz = sd.get_cnt();
 		for (size_t i = ss; i < ss + sz; i++) {
-			vram_map.insert(pair<size_t, size_t>(vram_map.size(), i));
+			vram_map.emplace(vram_map.size(), i);
 		}
 	}
 }

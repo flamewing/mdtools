@@ -203,7 +203,7 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				int ptr = IO::read_pointer(in, offset);
 				auto it = labels.find(ptr);
 				if (it == labels.end()) {
-					labels.insert(make_pair(ptr, projname + need_loop_label()));
+					labels.emplace(ptr, projname + need_loop_label());
 				}
 				return new CoordFlagPointer2ParamBytes<false>(byte, keydisp, index, repeats, ptr);
 			}
@@ -227,7 +227,7 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 					} else {
 						lbl = need_loop_label();
 					}
-					labels.insert(make_pair(ptr, projname + lbl));
+					labels.emplace(ptr, projname + lbl);
 				}
 				if (byte == 0xf6) {
 					return new CoordFlagPointerParam<true>(byte, keydisp, ptr);
@@ -240,7 +240,7 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				int ptr = IO::read_pointer(in, offset);
 				auto it = labels.find(ptr);
 				if (it == labels.end()) {
-					labels.insert(make_pair(ptr, projname + need_jump_label()));
+					labels.emplace(ptr, projname + need_jump_label());
 				}
 
 				return new CoordFlagPointer1ParamByte<false>(byte, keydisp, index, ptr);
@@ -308,7 +308,7 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				int ptr = IO::read_pointer(in, offset);
 				auto it = labels.find(ptr);
 				if (it == labels.end()) {
-					labels.insert(make_pair(ptr, projname + need_loop_label()));
+					labels.emplace(ptr, projname + need_loop_label());
 				}
 				return new CoordFlagPointer2ParamBytes<false>(byte, keydisp, index, repeats, ptr);
 			}
@@ -322,8 +322,9 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 				int ptr = IO::read_pointer(in, offset);
 				auto it = labels.find(ptr);
 				if (it == labels.end()) {
-					labels.insert(make_pair(ptr, projname + (byte == 0xf6 ? need_jump_label()
-					                        : need_call_label())));
+					labels.emplace(ptr, projname + (byte == 0xf6
+					                                ? need_jump_label()
+					                                : need_call_label()));
 				}
 				if (byte == 0xf6) {
 					return new CoordFlagPointerParam<true>(byte, keydisp, ptr);
@@ -525,7 +526,7 @@ public:
 				} else {
 					todo.push(LocTraits(trackptr, LocTraits::eFMInit, keydisp));
 				}
-				labels.insert(make_pair(trackptr, lbl));
+				labels.emplace(trackptr, lbl);
 				tracklabels.insert(lbl);
 			}
 		} else {
@@ -555,7 +556,7 @@ public:
 				if (i == 0) {
 					// DAC is always first.
 					lbl += "_DAC";
-					labels.insert(make_pair(ptr, lbl));
+					labels.emplace(ptr, lbl);
 					tracklabels.insert(lbl);
 					PrintMacro(out, "smpsHeaderDAC");
 					out << lbl;
@@ -571,7 +572,7 @@ public:
 					char c = i + '0';
 					lbl += "_FM";
 					lbl += c;
-					labels.insert(make_pair(ptr, lbl));
+					labels.emplace(ptr, lbl);
 					tracklabels.insert(lbl);
 					PrintMacro(out, "smpsHeaderFM");
 					out << lbl << ",\t";
@@ -595,7 +596,7 @@ public:
 				char c = i + '1';
 				lbl += "_PSG";
 				lbl += c;
-				labels.insert(make_pair(ptr, lbl));
+				labels.emplace(ptr, lbl);
 				tracklabels.insert(lbl);
 				PrintMacro(out, "smpsHeaderPSG");
 				out << lbl << ",\t";
@@ -612,7 +613,7 @@ public:
 
 		// Mark all contents so far as having been explored.
 		for (size_t i = startloc; i < size_t(in.tellg()); i++) {
-			explored.insert(make_pair(i, LocTraits::eHeader));
+			explored.emplace(i, LocTraits::eHeader);
 		}
 
 		while (todo.size() > 1) {
@@ -671,7 +672,7 @@ public:
 					out << it->second << ":" << endl;
 				}
 
-				explored.insert(make_pair(next_loc.loc, next_loc.type));
+				explored.emplace(next_loc.loc, next_loc.type);
 				continue;
 			}
 
@@ -681,11 +682,10 @@ public:
 
 			while (true) {
 				int lastloc = in.tellg();
-				shared_ptr<BaseNote> note =
-				    shared_ptr<BaseNote>(BaseNote::read<IO>(in, sonicver,
+				shared_ptr<BaseNote> note(BaseNote::read<IO>(in, sonicver,
 				                         offset, projname, next_loc.type,
 				                         labels, last_voc, next_loc.keydisp));
-				trackdata.insert(make_pair(lastloc, note));
+				trackdata.emplace(lastloc, note);
 				next_loc.keydisp = note->get_keydisp();
 
 				// If the data includes a jump target, add it to queue.
@@ -695,7 +695,7 @@ public:
 
 				// Add in freshly explored data to list.
 				for (int i = lastloc; i < in.tellg(); i++) {
-					explored.insert(make_pair(i, next_loc.type));
+					explored.emplace(i, next_loc.type);
 				}
 
 				// If we reach track end, or if we reached the end of file,
@@ -719,9 +719,9 @@ public:
 			stringstream str(ios::in | ios::out);
 			str << "; Song seems to not use any FM voices" << endl;
 			str << projname << "_Voices";
-			labels.insert(make_pair(voices.loc, str.str()));
-			shared_ptr<BaseNote> note(new NullNote());
-			trackdata.insert(make_pair(voices.loc, note));
+			labels.emplace(voices.loc, str.str());
+			auto note = make_shared<NullNote>();
+			trackdata.emplace(voices.loc, note);
 		} else if (ext_vocs || voices.type == LocTraits::eExtVoices) {
 			// The voices were not in the file. Print a comment with their
 			// location and a dummy label.
@@ -731,14 +731,14 @@ public:
 			    << " bytes from the start of the song." << endl;
 			str << "; The following label is a dummy label and should be moved to the correct location.";
 			str << endl << projname << "_Voices";
-			labels.insert(make_pair(voices.loc, str.str()));
-			labels.insert(make_pair(voices.loc, str.str()));
-			shared_ptr<BaseNote> note(new NullNote());
-			trackdata.insert(make_pair(voices.loc, note));
+			labels.emplace(voices.loc, str.str());
+			labels.emplace(voices.loc, str.str());
+			auto note = make_shared<NullNote>();
+			trackdata.emplace(voices.loc, note);
 		} else if (last_voc >= 0) {
 			in.clear();
 			in.seekg(voices.loc);
-			labels.insert(make_pair(voices.loc, projname + "_Voices"));
+			labels.emplace(voices.loc, projname + "_Voices");
 
 			// Read each voice in turn.
 			for (int i = 0; i <= last_voc; i++) {
@@ -749,12 +749,12 @@ public:
 				}
 
 				int lastloc = in.tellg();
-				shared_ptr<BaseNote> voc(new FMVoice(in, sonicver, i));
-				trackdata.insert(make_pair(lastloc, voc));
+				auto voc = make_shared<FMVoice>(in, sonicver, i);
+				trackdata.emplace(lastloc, voc);
 
 				// Add in freshly explored data to list.
 				for (int j = lastloc; j < in.tellg(); j++) {
-					explored.insert(make_pair(j, LocTraits::eVoices));
+					explored.emplace(j, LocTraits::eVoices);
 				}
 			}
 		}

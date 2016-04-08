@@ -83,7 +83,6 @@ struct Position {
 	}
 };
 
-typedef pair<Position const, unsigned short> Enigma_entry;
 typedef map<Position, unsigned short> Enigma_map;
 
 static void plane_unmap(istream &src, ostream &dst,
@@ -116,7 +115,7 @@ static void plane_unmap(istream &src, ostream &dst,
 				src.ignore(2);
 			}
 			pos.x = static_cast<signed short>(BigEndian::Read2(src));
-			engfile.insert(Enigma_entry(pos, v));
+			engfile.emplace(pos, v);
 		}
 
 		for (auto & elem : engfile) {
