@@ -111,11 +111,7 @@ public:
 	NullNote() : BaseNote(0, 0) {  }
 	void print(std::ostream &out, int sonicver, LocTraits::LocType tracktype,
 	           std::multimap<int, std::string> &labels, bool s3kmode) const override {
-		ignore_unused_variable_warning(out);
-		ignore_unused_variable_warning(sonicver);
-		ignore_unused_variable_warning(tracktype);
-		ignore_unused_variable_warning(labels);
-		ignore_unused_variable_warning(s3kmode);
+		ignore_unused_variable_warning(out, sonicver, tracktype, labels, s3kmode);
 	}
 };
 
