@@ -43,6 +43,14 @@ Makefile.in
 *.i*86
 *.x86_64
 *.hex
+/src/tools/chunk_census
+/src/tools/enitool
+/src/tools/mapping_tool
+/src/tools/plane_map
+/src/tools/recolor_art
+/src/tools/smps2asm
+/src/tools/split_art
+/src/tools/voice_dumper
 
 # Debug files
 *.dSYM/
