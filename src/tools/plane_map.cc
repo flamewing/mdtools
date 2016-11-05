@@ -196,7 +196,8 @@ int main(int argc, char *argv[]) {
 			return 4;
 		}
 		if (extract) {
-			enigma::decode(fin, fbuf, pointer);
+			fin.seekg(pointer);
+			enigma::decode(fin, fbuf);
 			plane_map(fbuf, fout, w, h, 0      , sonic2);
 		} else {
 			plane_map(fin , fout, w, h, pointer, sonic2);

@@ -909,7 +909,8 @@ void dump_single_entry
 		in.seekg(pointer);
 	} else {
 		src = &sin;
-		saxman::decode(in, sin, pointer, false);
+		in.seekg(pointer);
+		saxman::decode(in, sin, false);
 		sin.seekg(0);
 	}
 

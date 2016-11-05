@@ -203,9 +203,13 @@ int main(int argc, char *argv[]) {
 	if (fmt == eUncompressed) {
 		sin << fin.rdbuf();
 	} else if (fmt == eNemesis) {
-		nemesis::decode(fin, sin, 0);
+		nemesis::decode(fin, sin);
 	} else { // if (fmt == eKosinski)
-		kosinski::decode(fin, sin, 0, moduled);
+		if (moduled) {
+			kosinski::moduled_decode(fin, sin);
+		} else {
+			kosinski::decode(fin, sin);
+		}
 	}
 
 	fin.close();
@@ -225,7 +229,11 @@ int main(int argc, char *argv[]) {
 	} else if (fmt == eNemesis) {
 		nemesis::encode(sout, fout);
 	} else { // if (fmt == eKosinski)
-		kosinski::encode(sout, fout, moduled, modulesize);
+		if (moduled) {
+			kosinski::moduled_encode(sout, fout, modulesize);
+		} else {
+			kosinski::encode(sout, fout);
+		}
 	}
 
 	fout.close();

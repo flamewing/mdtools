@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
 		if (compress == 1) {
 			comper::encode(buffer, fout);
 		} else if (compress == 2) {
-			kosinski::encode(buffer, fout, true, 0x1000);
+			kosinski::moduled_encode(buffer, fout);
 		} else {
 			fout << buffer.rdbuf();
 		}
