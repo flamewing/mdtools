@@ -47,16 +47,6 @@ if test "$HAVE_SAXMAN" = "no"; then
     exit 1
 fi
 
-dnl ***************************************************************************
-dnl Internatinalization
-dnl ***************************************************************************
-IT_PROG_INTLTOOL([0.35.0])
-
-GETTEXT_PACKAGE=mdtools
-AC_SUBST(GETTEXT_PACKAGE)
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [GETTEXT package name])
-AM_GLIB_GNU_GETTEXT
-
 LT_INIT
 
 AC_OUTPUT([
@@ -64,5 +54,5 @@ Makefile
 src/Makefile
 src/lib/Makefile
 src/tools/Makefile
-po/Makefile.in
 ])
+

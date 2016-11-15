@@ -1,30 +1,20 @@
 ## Process this file with automake to produce Makefile.in
 ## Created by Anjuta
 
-SUBDIRS = src po
+ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
+
+SUBDIRS = src
 
 mdtoolsdocdir = ${prefix}/doc/mdtools
 
 mdtoolsdoc_DATA = \
-	README\
-	COPYING\
-	AUTHORS\
-	ChangeLog\
-	INSTALL\
-	NEWS
-
-
-INTLTOOL_FILES = intltool-extract.in \
-	intltool-merge.in \
-	intltool-update.in
+	COPYING \
+	INSTALL
 
 EXTRA_DIST = $(mdtoolsdoc_DATA) \
 	$(INTLTOOL_FILES)
 
-DISTCLEANFILES = intltool-extract \
-	intltool-merge \
-	intltool-update \
-	po/.intltool-merge-cache
+DISTCLEANFILES =
 
 
 # Remove doc directory on uninstall
