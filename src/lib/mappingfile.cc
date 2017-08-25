@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <map>
-#include <iostream>
-#include <iomanip>
-#include "bigendian_io.h"
-
 #include "mappingfile.h"
+
+#include <iomanip>
+#include <iostream>
+#include <map>
+
+#include "bigendian_io.h"
 
 using namespace std;
 

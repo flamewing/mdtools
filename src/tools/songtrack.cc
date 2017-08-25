@@ -18,11 +18,11 @@
 
 #include "songtrack.h"
 
-#include <istream>
-#include <iostream>
-#include <ostream>
-#include <iomanip>
 #include <cstdio>
+#include <iomanip>
+#include <iostream>
+#include <istream>
+#include <ostream>
 
 #include "bigendian_io.h"
 

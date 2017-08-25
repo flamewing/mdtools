@@ -16,26 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cstring>
-#include <cstdlib>
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
+#include <sstream>
 #include <vector>
 
 #include <getopt.h>
 
 #include <mdcomp/saxman.h>
+
 #include "bigendian_io.h"
-#include "songtrack.h"
 #include "fmvoice.h"
 #include "ignore_unused_variable_warning.h"
+#include "songtrack.h"
 
 using namespace std;
 

@@ -16,14 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "framemapping.h"
+
 #include <algorithm>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <map>
 #include <set>
-#include "bigendian_io.h"
 
-#include "framemapping.h"
+#include "bigendian_io.h"
 
 using namespace std;
 

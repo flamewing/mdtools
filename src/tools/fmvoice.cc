@@ -18,8 +18,8 @@
 
 #include "fmvoice.h"
 
-#include <istream>
 #include <iomanip>
+#include <istream>
 #include <ostream>
 
 #include "bigendian_io.h"

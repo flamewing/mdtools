@@ -16,17 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
 #include <cstdlib>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 #include <vector>
 
 #include <getopt.h>
 
 #include <mdcomp/comper.h>
 #include <mdcomp/kosinski.h>
+
 #include "dplcfile.h"
 
 using namespace std;
