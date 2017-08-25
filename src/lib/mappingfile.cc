@@ -61,7 +61,7 @@ void mapping_file::write(ostream &out, int ver, bool nullfirst) const {
 	vector<frame_mapping>::const_iterator it;
 	it = frames.begin();
 
-	if (nullfirst && it != frames.end() && it->size() == 0) {
+	if (nullfirst && it != frames.end() && it->empty()) {
 		mappos.emplace(*it, 0);
 		posmap.emplace(0, *it);
 	}
@@ -121,13 +121,13 @@ void mapping_file::optimize(mapping_file const &src, dplc_file const &indplc, dp
 		frame_dplc    enddplc;
 		frame_mapping const &intmap  = src.frames[i];
 		frame_dplc    const &intdplc = indplc.get_dplc(i);
-		if ((intdplc.size() != 0u) && (intmap.size() != 0u)) {
+		if ((!intdplc.empty()) && (!intmap.empty())) {
 			frame_mapping mm;
 			frame_dplc    dd;
 			mm.merge(intmap, intdplc);
 			endmap.split(mm, dd);
 			enddplc.consolidate(dd);
-		} else if (intdplc.size() != 0u) {
+		} else if (!intdplc.empty()) {
 			enddplc.consolidate(intdplc);
 		} else {
 			endmap = intmap;

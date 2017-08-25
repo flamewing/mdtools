@@ -337,7 +337,7 @@ void CoordFlagNoParams<noret>::print(ostream &out, int sonicver, LocTraits::LocT
 		}
 		notesprinted = 0;
 
-		if (s.size() == 0) {
+		if (s.empty()) {
 			out << "\tdc.b\t";
 			PrintHex2(out, val, false);
 		} else {
@@ -486,7 +486,7 @@ void CoordFlag1ParamByte<noret>::print(ostream &out, int sonicver, LocTraits::Lo
 		}
 	}
 
-	if (s.size() == 0) {
+	if (s.empty()) {
 		out << "\tdc.b\t";
 		PrintHex2(out, val, false);
 	} else if (metacf) {
@@ -581,7 +581,7 @@ void CoordFlag2ParamBytes<noret>::print(ostream &out, int sonicver, LocTraits::L
 		}
 	}
 
-	if (s.size() == 0) {
+	if (s.empty()) {
 		out << "\tdc.b\t";
 		PrintHex2(out, val, false);
 	} else {
@@ -621,7 +621,7 @@ void CoordFlag3ParamBytes<noret>::print(ostream &out, int sonicver, LocTraits::L
 		}
 	}
 
-	if (s.size() == 0) {
+	if (s.empty()) {
 		out << "\tdc.b\t";
 		PrintHex2(out, val, false);
 	} else {
@@ -666,7 +666,7 @@ void CoordFlag4ParamBytes<noret>::print(ostream &out, int sonicver, LocTraits::L
 		}
 	}
 
-	if (s.size() == 0) {
+	if (s.empty()) {
 		out << "\tdc.b\t";
 		PrintHex2(out, val, false);
 	} else {
@@ -708,7 +708,7 @@ void CoordFlag5ParamBytes<noret>::print(ostream &out, int sonicver, LocTraits::L
 		}
 	}
 
-	if (s.size() == 0) {
+	if (s.empty()) {
 		out << "\tdc.b\t";
 		PrintHex2(out, val, false);
 	} else {
@@ -769,7 +769,7 @@ void CoordFlagPointer1ParamByte<noret>::print(ostream &out, int sonicver, LocTra
 		}
 	}
 
-	if (s.size() == 0) {
+	if (s.empty()) {
 		out << "\tdc.b\t";
 		PrintHex2(out, val, false);
 	} else {
@@ -818,7 +818,7 @@ void CoordFlagPointer2ParamBytes<noret>::print(ostream &out, int sonicver, LocTr
 		}
 	}
 
-	if (s.size() == 0) {
+	if (s.empty()) {
 		out << "\tdc.b\t";
 		PrintHex2(out, val, false);
 	} else {

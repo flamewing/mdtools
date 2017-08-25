@@ -37,6 +37,9 @@ public:
 	single_dplc const &get_dplc(size_t i) const {
 		return dplc[i];
 	}
+	bool empty() const {
+		return dplc.empty();
+	}
 	size_t size() const {
 		return dplc.size();
 	}

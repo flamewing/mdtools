@@ -37,6 +37,9 @@ public:
 	single_mapping const &get_maps(size_t i) const {
 		return maps[i];
 	}
+	bool empty() const {
+		return maps.empty();
+	}
 	size_t size() const {
 		return maps.size();
 	}

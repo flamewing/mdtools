@@ -38,6 +38,9 @@ public:
 	frame_mapping const &get_maps(size_t i) const {
 		return frames[i];
 	}
+	bool empty() const {
+		return frames.empty();
+	}
 	size_t size() const {
 		return frames.size();
 	}

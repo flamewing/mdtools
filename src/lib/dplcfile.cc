@@ -62,7 +62,7 @@ void dplc_file::write(ostream &out, int ver, bool nullfirst) const {
 	vector<frame_dplc>::const_iterator it;
 	it = frames.begin();
 
-	if (nullfirst && ver != 4 && it != frames.end() && it->size() == 0) {
+	if (nullfirst && ver != 4 && it != frames.end() && it->empty()) {
 		mappos.emplace(*it, 0);
 		posmap.emplace(0, *it);
 	}

@@ -67,7 +67,7 @@ void frame_dplc::print() const {
 }
 
 void frame_dplc::consolidate(frame_dplc const &src) {
-	if (src.dplc.size() == 0u) {
+	if (src.dplc.empty()) {
 		return;
 	}
 

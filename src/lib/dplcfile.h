@@ -35,6 +35,9 @@ public:
 	frame_dplc const &get_dplc(size_t i) const {
 		return frames[i];
 	}
+	bool empty() const {
+		return frames.empty();
+	}
 	size_t size() const {
 		return frames.size();
 	}
