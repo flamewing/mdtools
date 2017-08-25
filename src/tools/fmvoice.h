@@ -23,9 +23,9 @@
 
 void PrintMacro(std::ostream &out, char const *macro);
 void PrintHex2(std::ostream &out, unsigned char c, bool last);
-void PrintHex2Pre(std::ostream &out, unsigned char c, bool last);
+void PrintHex2Pre(std::ostream &out, unsigned char c, bool first);
 void PrintHex4(std::ostream &out, unsigned short c, bool last);
-void PrintName(std::ostream &out, const std::string& s, bool last);
+void PrintName(std::ostream &out, const std::string& s, bool first);
 
 class fm_voice {
 protected:
