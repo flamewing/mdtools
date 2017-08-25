@@ -385,7 +385,7 @@ template<typename IO>
 class DumpSmps {
 	istream &in;
 	ostream &out;
-	string const &projname;
+	string const projname;
 	int sonicver, startloc, offset, len;
 	bool sfx, s3kmode;
 public:
