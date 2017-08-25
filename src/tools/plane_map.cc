@@ -83,7 +83,7 @@ struct Position {
 	}
 };
 
-typedef map<Position, unsigned short> Enigma_map;
+using Enigma_map = map<Position, unsigned short>;
 
 static void plane_unmap(istream &src, ostream &dst,
                         streamsize pointer, bool sonic2) {
