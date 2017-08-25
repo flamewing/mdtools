@@ -44,7 +44,7 @@ void PrintHex2Pre(ostream &out, unsigned char c, bool first) {
 	out << "$" << hex << setw(2) << setfill('0') << uppercase << static_cast<unsigned int>(c) << nouppercase;
 }
 
-void PrintName(ostream &out, string s, bool first) {
+void PrintName(ostream &out, const string& s, bool first) {
 	if (!first) {
 		out << ", ";
 	}
