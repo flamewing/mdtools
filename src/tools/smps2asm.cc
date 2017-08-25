@@ -28,6 +28,7 @@
 #include <queue>
 #include <set>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include <getopt.h>
@@ -390,8 +391,8 @@ class DumpSmps {
 	bool sfx, s3kmode;
 public:
 	DumpSmps(istream &i, ostream &o, int s, int off,
-	         string const &nm, bool tf, bool s3km)
-		: in(i), out(o), projname(nm), sonicver(s), offset(off), sfx(tf), s3kmode(s3km) {
+	         string nm, bool tf, bool s3km)
+		: in(i), out(o), projname(std::move(nm)), sonicver(s), offset(off), sfx(tf), s3kmode(s3km) {
 		startloc = in.tellg();
 		in.seekg(0, ios::end);
 		len = in.tellg();
