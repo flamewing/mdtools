@@ -18,6 +18,7 @@
 
 #include "fmvoice.h"
 
+#include <cstdint>
 #include <iomanip>
 #include <istream>
 #include <ostream>
@@ -51,7 +52,7 @@ void PrintName(ostream &out, const string& s, bool first) {
 	out << s;
 }
 
-void PrintHex4(ostream &out, unsigned short c, bool last) {
+void PrintHex4(ostream &out, uint16_t c, bool last) {
 	out << "$" << hex << setw(4) << setfill('0') << uppercase << static_cast<unsigned int>(c) << nouppercase;
 	if (!last) {
 		out << ", ";

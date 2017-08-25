@@ -18,6 +18,7 @@
 
 #include "mappingfile.h"
 
+#include <cstdint>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -30,14 +31,14 @@ void mapping_file::read(istream &in, int ver) {
 	in.seekg(0, ios::beg);
 
 	vector<size_t> off;
-	auto term = static_cast<signed short>(BigEndian::Read2(in));
+	auto term = static_cast<int16_t>(BigEndian::Read2(in));
 	while (term == 0) {
 		off.push_back(term);
-		term = static_cast<signed short>(BigEndian::Read2(in));
+		term = static_cast<int16_t>(BigEndian::Read2(in));
 	}
 	off.push_back(term);
 	while (in.tellg() < term) {
-		auto newterm = static_cast<signed short>(BigEndian::Read2(in));
+		auto newterm = static_cast<int16_t>(BigEndian::Read2(in));
 		if (newterm > 0 && newterm < term) {
 			term = newterm;
 		}

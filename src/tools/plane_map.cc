@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -55,7 +56,7 @@ static void plane_map(istream &src, ostream &dst, size_t w, size_t h,
 	size_t off = 2 * nframes;
 
 	for (size_t n = 0; n < nframes; n++, off += 2 + 8 * w * h) {
-		BigEndian::Write2(dst, static_cast<unsigned short>(off));
+		BigEndian::Write2(dst, static_cast<uint16_t>(off));
 	}
 
 	for (size_t n = 0; n < nframes; n++, off += 2) {
@@ -65,26 +66,26 @@ static void plane_map(istream &src, ostream &dst, size_t w, size_t h,
 			for (size_t i = 0; i < w; i++) {
 				dst.put(static_cast<char>(y_pos));
 				dst.put(static_cast<char>(0x00));
-				unsigned short v = BigEndian::Read2(src);
+				uint16_t v = BigEndian::Read2(src);
 				BigEndian::Write2(dst, v);
 				if (sonic2) {
 					BigEndian::Write2(dst, (v & 0xf800) | ((v & 0x07ff) >> 1));
 				}
-				BigEndian::Write2(dst, static_cast<unsigned short>((i - w / 2) << 3));
+				BigEndian::Write2(dst, static_cast<uint16_t>((i - w / 2) << 3));
 			}
 		}
 	}
 }
 
 struct Position {
-	signed short x;
-	signed char y;
+	int16_t x;
+	int8_t y;
 	bool operator<(Position const &other) const {
 		return (y < other.y) || (y == other.y && x < other.x);
 	}
 };
 
-using Enigma_map = map<Position, unsigned short>;
+using Enigma_map = map<Position, uint16_t>;
 
 static void plane_unmap(istream &src, ostream &dst,
                         streamsize pointer, bool sonic2) {
@@ -111,16 +112,16 @@ static void plane_unmap(istream &src, ostream &dst,
 			Position pos;
 			pos.y = static_cast<signed char>(src.get() & 0xff);
 			src.ignore(1);
-			unsigned short v = BigEndian::Read2(src);
+			uint16_t v = BigEndian::Read2(src);
 			if (sonic2) {
 				src.ignore(2);
 			}
-			pos.x = static_cast<signed short>(BigEndian::Read2(src));
+			pos.x = static_cast<int16_t>(BigEndian::Read2(src));
 			engfile.emplace(pos, v);
 		}
 
 		for (auto & elem : engfile) {
-			unsigned short v = elem.second;
+			uint16_t v = elem.second;
 			BigEndian::Write2(dst, v);
 		}
 	}

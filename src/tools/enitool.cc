@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -48,9 +49,9 @@ int main(int argc, char *argv[]) {
 		{nullptr, 0, nullptr, 0}
 	};
 
-	set<unsigned short> blacklist;
+	set<uint16_t> blacklist;
 	bool sizeOnly = false;
-	unsigned short paldelta = 0;
+	uint16_t paldelta = 0;
 
 	while (true) {
 		int option_index = 0;
@@ -62,12 +63,12 @@ int main(int argc, char *argv[]) {
 		switch (c) {
 			case 'p':
 				if (optarg != nullptr) {
-					paldelta = static_cast<unsigned short>((strtoul(optarg, nullptr, 0) & 3) << 13);
+					paldelta = static_cast<uint16_t>((strtoul(optarg, nullptr, 0) & 3) << 13);
 				}
 				break;
 			case 'b':
 				if (optarg != nullptr) {
-					blacklist.insert(static_cast<unsigned short>(strtoul(optarg, nullptr, 0) & 0x7FF));
+					blacklist.insert(static_cast<uint16_t>(strtoul(optarg, nullptr, 0) & 0x7FF));
 				}
 				break;
 			case 's':
@@ -115,13 +116,13 @@ int main(int argc, char *argv[]) {
 		stringstream outbuffer(ios::in | ios::out | ios::binary);
 		size_t cnt = 0;
 		while (true) {
-			unsigned short val = BigEndian::Read2(inbuffer);
+			uint16_t val = BigEndian::Read2(inbuffer);
 			if (!inbuffer.good()) {
 				break;
 			}
-			unsigned short tile = val & 0x7FF;
-			unsigned short pal = val & 0x6000;
-			unsigned short flags = val & 0x9800;
+			uint16_t tile = val & 0x7FF;
+			uint16_t pal = val & 0x6000;
+			uint16_t flags = val & 0x9800;
 			if (blacklist.find(tile) == blacklist.cend()) {
 				val = ((tile + delta) & 0x7FF) | ((pal + paldelta) & 0x6000) | flags;
 			}

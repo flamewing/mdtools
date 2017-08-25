@@ -18,6 +18,7 @@
 
 #include "singlemapping.h"
 
+#include <cstdint>
 #include <iomanip>
 #include <iostream>
 
@@ -59,13 +60,13 @@ void single_mapping::write(ostream &out, int ver) const {
 
 void single_mapping::print() const {
 	cout << nouppercase << "\t\tPosition: (x,y) = (";
-	cout << dec << setfill(' ') << setw(4) << static_cast<short>(xx);
+	cout << dec << setfill(' ') << setw(4) << static_cast<int16_t>(xx);
 	cout << ",";
-	cout << dec << setfill(' ') << setw(4) << static_cast<short>(yy);
+	cout << dec << setfill(' ') << setw(4) << static_cast<int16_t>(yy);
 	cout << ")\tSize: (x,y) = (";
-	cout << dec << setfill(' ') << setw(4) << static_cast<short>(sx);
+	cout << dec << setfill(' ') << setw(4) << static_cast<int16_t>(sx);
 	cout << ",";
-	cout << dec << setfill(' ') << setw(4) << static_cast<short>(sy);
+	cout << dec << setfill(' ') << setw(4) << static_cast<int16_t>(sy);
 	cout << ")" << endl;
 	cout << nouppercase << "\t\tFirst tile: $";
 	cout << uppercase   << hex << setfill('0') << setw(4) << tile;

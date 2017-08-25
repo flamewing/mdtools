@@ -17,6 +17,7 @@
  */
 
 #include <cassert>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -63,19 +64,19 @@ struct S1IO {
 
 	template <typename T>
 	static inline int read_header_pointer(T &in, int base) {
-		return static_cast<unsigned short>(Read2(in)) + base;
+		return static_cast<uint16_t>(Read2(in)) + base;
 	}
 
 	template <typename T>
 	static inline int read_pointer(T &in, int base) {
 		ignore_unused_variable_warning(base);
 		int ptr = int(in.tellg()) + 1;
-		return static_cast<short>(Read2(in)) + ptr;
+		return static_cast<int16_t>(Read2(in)) + ptr;
 	}
 
 	static inline int int2headerpointer(int val, int base) {
 		ignore_unused_variable_warning(base);
-		return static_cast<unsigned short>(val);
+		return static_cast<uint16_t>(val);
 	}
 };
 
@@ -102,16 +103,16 @@ struct SNIO {
 
 	template <typename T>
 	static inline int read_header_pointer(T &in, int base) {
-		return static_cast<unsigned short>(Read2(in) & 0x7fff) + base;
+		return static_cast<uint16_t>(Read2(in) & 0x7fff) + base;
 	}
 
 	template <typename T>
 	static inline int read_pointer(T &in, int base) {
-		return static_cast<unsigned short>(Read2(in) & 0x7fff) + base;
+		return static_cast<uint16_t>(Read2(in) & 0x7fff) + base;
 	}
 
 	static inline int int2headerpointer(int val, int base) {
-		return static_cast<unsigned short>(val & 0x7fff) + base;
+		return static_cast<uint16_t>(val & 0x7fff) + base;
 	}
 };
 

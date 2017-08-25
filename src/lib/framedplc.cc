@@ -18,6 +18,7 @@
 
 #include "framedplc.h"
 
+#include <cstdint>
 #include <iomanip>
 #include <iostream>
 
@@ -30,7 +31,7 @@ void frame_dplc::read(istream &in, int ver) {
 	if (ver == 1) {
 		cnt = Read1(in);
 	} else if (ver == 4) {
-		cnt = static_cast<short>(BigEndian::Read2(in)) + 1;
+		cnt = static_cast<int16_t>(BigEndian::Read2(in)) + 1;
 	} else {
 		cnt = BigEndian::Read2(in);
 	}
@@ -46,7 +47,7 @@ void frame_dplc::write(ostream &out, int ver) const {
 	if (ver == 1) {
 		Write1(out, dplc.size());
 	} else if (ver == 4) {
-		BigEndian::Write2(out, static_cast<unsigned short>(static_cast<short>(dplc.size()) - 1));
+		BigEndian::Write2(out, static_cast<uint16_t>(static_cast<int16_t>(dplc.size()) - 1));
 	} else {
 		BigEndian::Write2(out, dplc.size());
 	}
