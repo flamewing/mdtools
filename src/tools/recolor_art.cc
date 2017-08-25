@@ -75,7 +75,7 @@ struct Tile {
 };
 
 void recolor(istream &in, ostream &out, int const *colormap) {
-	Tile tile;
+	Tile tile{};
 	while (true) {
 		if (!tile.read(in)) {
 			break;

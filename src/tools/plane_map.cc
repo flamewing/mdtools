@@ -109,7 +109,7 @@ static void plane_unmap(istream &src, ostream &dst,
 		size_t count = BigEndian::Read2(src);
 		Enigma_map engfile;
 		for (size_t i = 0; i < count; i++) {
-			Position pos;
+			Position pos{};
 			pos.y = static_cast<signed char>(src.get() & 0xff);
 			src.ignore(1);
 			uint16_t v = BigEndian::Read2(src);

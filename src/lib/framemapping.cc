@@ -31,7 +31,7 @@ using namespace std;
 void frame_mapping::read(istream &in, int ver) {
 	size_t cnt = ver == 1 ? Read1(in) : BigEndian::Read2(in);
 	for (size_t i = 0; i < cnt; i++) {
-		single_mapping sd;
+		single_mapping sd{};
 		sd.read(in, ver);
 		maps.push_back(sd);
 	}
@@ -123,7 +123,7 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 		while (vram_map.find(ss + sz) != vram_map.end()) {
 			sz++;
 		}
-		single_dplc nd;
+		single_dplc nd{};
 		nd.set_tile(ss);
 		nd.set_cnt(sz);
 		auto sit = uniquedplcs.find(nd);
@@ -136,8 +136,8 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 
 	set<size_t> loaded_tiles;
 	for (const auto & sd : src.maps) {
-		single_mapping nn;
-		single_dplc dd;
+		single_mapping nn{};
+		single_dplc dd{};
 		nn.split(sd, dd, vram_map);
 		maps.push_back(nn);
 	}
@@ -148,7 +148,7 @@ void frame_mapping::merge(frame_mapping const &src, frame_dplc const &dplc) {
 	dplc.build_vram_map(vram_map);
 
 	for (const auto & sd : src.maps) {
-		single_mapping nn;
+		single_mapping nn{};
 		nn.merge(sd, vram_map);
 		maps.push_back(nn);
 	}

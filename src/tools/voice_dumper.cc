@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Print the voice.
-		fm_voice voc;
+		fm_voice voc{};
 		voc.read(fin, sonicver);
 		voc.print(cout, sonicver, i);
 	}

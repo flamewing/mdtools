@@ -116,7 +116,7 @@ public:
 };
 
 class FMVoice : public BaseNote {
-	fm_voice voc;
+	fm_voice voc{};
 	int id;
 public:
 	FMVoice(std::istream &in, int sonicver, int n);

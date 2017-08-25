@@ -37,7 +37,7 @@ void frame_dplc::read(istream &in, int ver) {
 	}
 
 	for (size_t i = 0; i < cnt; i++) {
-		single_dplc sd;
+		single_dplc sd{};
 		sd.read(in, ver);
 		dplc.push_back(sd);
 	}
@@ -76,7 +76,7 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 	frame_dplc interm;
 	for (const auto & sd : src.dplc) {
 		if (sd.get_tile() != start + size) {
-			single_dplc nn;
+			single_dplc nn{};
 			nn.set_tile(start);
 			nn.set_cnt(size);
 			interm.dplc.push_back(nn);
@@ -87,7 +87,7 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 		}
 	}
 	if (size != 0) {
-		single_dplc nn;
+		single_dplc nn{};
 		nn.set_tile(start);
 		nn.set_cnt(size);
 		interm.dplc.push_back(nn);
@@ -99,7 +99,7 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 		size_t tile = it->get_tile(), sz = it->get_cnt();
 
 		while (sz >= 16) {
-			single_dplc nn;
+			single_dplc nn{};
 			nn.set_tile(tile);
 			nn.set_cnt(16);
 			dplc.push_back(nn);
@@ -107,7 +107,7 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 			tile += 16;
 		}
 		if (sz != 0u) {
-			single_dplc nn;
+			single_dplc nn{};
 			nn.set_tile(tile);
 			nn.set_cnt(sz);
 			dplc.push_back(nn);
