@@ -29,7 +29,7 @@ void dplc_file::read(istream &in, int ver) {
 	in.seekg(0, ios::beg);
 
 	vector<size_t> off;
-	signed short term = static_cast<signed short>(BigEndian::Read2(in));
+	auto term = static_cast<signed short>(BigEndian::Read2(in));
 	if (ver != 4) {
 		while (term == 0) {
 			off.push_back(term);
@@ -38,7 +38,7 @@ void dplc_file::read(istream &in, int ver) {
 	}
 	off.push_back(term);
 	while (in.tellg() < term) {
-		signed short newterm = static_cast<signed short>(BigEndian::Read2(in));
+		auto newterm = static_cast<signed short>(BigEndian::Read2(in));
 		if (newterm > 0 && newterm < term) {
 			term = newterm;
 		}
