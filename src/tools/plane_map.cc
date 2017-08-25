@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
 		switch (c) {
 			case 'x':
 				extract = true;
-				if (optarg) {
+				if (optarg != nullptr) {
 					pointer = strtoul(optarg, nullptr, 0);
 				}
 				break;
@@ -184,24 +184,24 @@ int main(int argc, char *argv[]) {
 	if (unmap) {
 		stringstream fbuf(ios::in | ios::out | ios::binary | ios::trunc);
 		if (compress) {
-			plane_unmap(fin, fbuf, 0      , sonic2);
+			plane_unmap(fin, fbuf, 0      , sonic2 != 0);
 			enigma::encode(fbuf, fout);
 		} else {
-			plane_unmap(fin, fout, pointer, sonic2);
+			plane_unmap(fin, fout, pointer, sonic2 != 0);
 		}
 	} else {
 		stringstream fbuf(ios::in | ios::out | ios::binary | ios::trunc);
 		size_t w = strtoul(argv[optind + 2], nullptr, 0), h = strtoul(argv[optind + 3], nullptr, 0);
-		if (!w || !h) {
+		if ((w == 0u) || (h == 0u)) {
 			cerr << "Invalid height or width for plane mapping." << endl << endl;
 			return 4;
 		}
 		if (extract) {
 			fin.seekg(pointer);
 			enigma::decode(fin, fbuf);
-			plane_map(fbuf, fout, w, h, 0      , sonic2);
+			plane_map(fbuf, fout, w, h, 0      , sonic2 != 0);
 		} else {
-			plane_map(fin , fout, w, h, pointer, sonic2);
+			plane_map(fin , fout, w, h, pointer, sonic2 != 0);
 		}
 	}
 	return 0;

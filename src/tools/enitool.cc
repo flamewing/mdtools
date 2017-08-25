@@ -61,12 +61,12 @@ int main(int argc, char *argv[]) {
 
 		switch (c) {
 			case 'p':
-				if (optarg) {
+				if (optarg != nullptr) {
 					paldelta = static_cast<unsigned short>((strtoul(optarg, nullptr, 0) & 3) << 13);
 				}
 				break;
 			case 'b':
-				if (optarg) {
+				if (optarg != nullptr) {
 					blacklist.insert(static_cast<unsigned short>(strtoul(optarg, nullptr, 0) & 0x7FF));
 				}
 				break;
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 	int delta = 0;
 	if (!sizeOnly) {
 		delta = strtol(argv[optind++], nullptr, 0);
-		if (!delta && !paldelta) {
+		if ((delta == 0) && (paldelta == 0u)) {
 			cerr << "Adding zero to file... aborting." << endl << endl;
 			return 2;
 		}

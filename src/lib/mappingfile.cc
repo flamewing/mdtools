@@ -79,7 +79,7 @@ void mapping_file::write(ostream &out, int ver, bool nullfirst) const {
 	for (auto & elem : posmap) {
 		if (elem.first == size_t(out.tellp())) {
 			(elem.second).write(out, ver);
-		} else if (elem.first) {
+		} else if (elem.first != 0u) {
 			cerr << "Missed write at " << out.tellp() << endl;
 			(elem.second).print();
 		}
@@ -121,13 +121,13 @@ void mapping_file::optimize(mapping_file const &src, dplc_file const &indplc, dp
 		frame_dplc    enddplc;
 		frame_mapping const &intmap  = src.frames[i];
 		frame_dplc    const &intdplc = indplc.get_dplc(i);
-		if (intdplc.size() && intmap.size()) {
+		if ((intdplc.size() != 0u) && (intmap.size() != 0u)) {
 			frame_mapping mm;
 			frame_dplc    dd;
 			mm.merge(intmap, intdplc);
 			endmap.split(mm, dd);
 			enddplc.consolidate(dd);
-		} else if (intdplc.size()) {
+		} else if (intdplc.size() != 0u) {
 			enddplc.consolidate(intdplc);
 		} else {
 			endmap = intmap;

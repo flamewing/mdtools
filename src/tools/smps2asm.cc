@@ -416,10 +416,10 @@ public:
 		int vocptr = IO::Read2(in);
 		bool ext_vocs;
 		// Also using a hack for null pointer here.
-		bool uses_uvb = (sonicver >= 3 && vocptr == 0x17d8) || !vocptr;
+		bool uses_uvb = (sonicver >= 3 && vocptr == 0x17d8) || (vocptr == 0);
 		int last_voc = -1;
 
-		if (!vocptr) {
+		if (vocptr == 0) {
 			// Null voice bank.
 			ext_vocs = true;
 			out << "\tsmpsHeaderVoiceNull" << endl;
@@ -561,7 +561,7 @@ public:
 					tracklabels.insert(lbl);
 					PrintMacro(out, "smpsHeaderDAC");
 					out << lbl;
-					if (keydisp || initvol) {
+					if ((keydisp != 0) || (initvol != 0)) {
 						out << ",\t";
 						PrintHex2(out, keydisp, false);
 						PrintHex2(out, initvol, true);
@@ -886,7 +886,7 @@ void dump_single_entry
     int pointer, int offset, int sonicver, bool saxman, bool sfx, bool s3kmode
 ) {
 
-	if (pointer) {
+	if (pointer != 0) {
 		if (saxman) {
 			offset = -offset;
 		} else {
@@ -911,7 +911,7 @@ void dump_single_entry
 	} else {
 		src = &sin;
 		in.seekg(pointer);
-		saxman::decode(in, sin, false);
+		saxman::decode(in, sin, 0u);
 		sin.seekg(0);
 	}
 
@@ -949,14 +949,14 @@ int main(int argc, char *argv[]) {
 
 		switch (c) {
 			case 'b':
-				if (optarg) {
+				if (optarg != nullptr) {
 					ptrtable = strtoul(optarg, nullptr, 0);
 				}
 				bankmode = true;
 				break;
 
 			case 'x':
-				if (optarg) {
+				if (optarg != nullptr) {
 					pointer = strtoul(optarg, nullptr, 0);
 				}
 				break;

@@ -56,7 +56,7 @@ void Duration::print(ostream &out,
 	// sample played, rests included. It is only FM and PSG tracks that
 	// need this to fix playback of rests when porting from S1/S2 to S3+.
 	if ((tracktype == LocTraits::eFMTrack || tracktype == LocTraits::ePSGTrack)
-	        && s3kmode && last_note && last_note->is_rest() && need_rest) {
+	        && s3kmode && (last_note != nullptr) && last_note->is_rest() && need_rest) {
 		last_note->print(out, sonicver, tracktype, labels, s3kmode);
 	}
 

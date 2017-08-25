@@ -117,14 +117,14 @@ int main(int argc, char *argv[]) {
 
 		switch (c) {
 			case 'o':
-				if (!optarg) {
+				if (optarg == nullptr) {
 					usage();
 					return 1;
-				} else if (!strcmp(optarg, "unc")) {
+				} else if (strcmp(optarg, "unc") == 0) {
 					fmt = eUncompressed;
-				} else if (!strcmp(optarg, "nem")) {
+				} else if (strcmp(optarg, "nem") == 0) {
 					fmt = eNemesis;
-				} else if (!strcmp(optarg, "kos")) {
+				} else if (strcmp(optarg, "kos") == 0) {
 					fmt = eKosinski;
 				} else {
 					usage();
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
 
 			case 'm':
 				moduled = true;
-				if (optarg) {
+				if (optarg != nullptr) {
 					modulesize = strtoul(optarg, nullptr, 0);
 				}
 				break;
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 			case 'd':
 			case 'e':
 			case 'f': {
-				if (!optarg || strlen(optarg) != 1) {
+				if ((optarg == nullptr) || strlen(optarg) != 1) {
 					usage();
 					return 1;
 				}

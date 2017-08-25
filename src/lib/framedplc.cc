@@ -67,7 +67,7 @@ void frame_dplc::print() const {
 }
 
 void frame_dplc::consolidate(frame_dplc const &src) {
-	if (!src.dplc.size()) {
+	if (src.dplc.size() == 0u) {
 		return;
 	}
 
@@ -105,7 +105,7 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 			sz -= 16;
 			tile += 16;
 		}
-		if (sz) {
+		if (sz != 0u) {
 			single_dplc nn;
 			nn.set_tile(tile);
 			nn.set_cnt(sz);

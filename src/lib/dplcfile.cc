@@ -80,7 +80,7 @@ void dplc_file::write(ostream &out, int ver, bool nullfirst) const {
 	for (auto & elem : posmap) {
 		if (elem.first == size_t(out.tellp())) {
 			(elem.second).write(out, ver);
-		} else if (elem.first) {
+		} else if (elem.first != 0u) {
 			cerr << "Missed write at " << out.tellp() << endl;
 			(elem.second).print();
 		}
