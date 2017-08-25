@@ -342,7 +342,7 @@ void CoordFlagNoParams<noret>::print(ostream &out, int sonicver, LocTraits::LocT
 			PrintHex2(out, val, false);
 		} else {
 			out << "\t";
-			PrintName(out, s.c_str(), true);
+			PrintName(out, s, true);
 		}
 
 		out << endl;
