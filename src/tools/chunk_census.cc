@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 				if (size_t(c) == chunkid) {
 					cnt++;
 					cout << argv[ii] << ": chunk appears on plane "
-					     << (planeA ? "A" : "B") << " @ (0x"
+					     << (planeA ? 'A' : 'B') << " @ (0x"
 					     << hex << setw(4) << setfill('0') << xpos
 					     << ", 0x"
 					     << hex << setw(3) << setfill('0') << ypos

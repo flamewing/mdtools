@@ -64,8 +64,8 @@ void fm_voice::read(istream &in, int sonicver) {
 	vcUnusedBits = (c >> 6) & 3;
 	vcFeedback   = (c >> 3) & 7;
 	vcAlgorithm  = c & 7;
-	static int s2_indices[4] = {3, 1, 2, 0}, normal_indices[4] = {3, 2, 1, 0};
-	int *indices = sonicver == 2 ? s2_indices : normal_indices;
+	constexpr const static int s2_indices[4] = {3, 1, 2, 0}, normal_indices[4] = {3, 2, 1, 0};
+	const int (&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
 	for (int i = 0; i < 4; i++) {
 		c = Read1(in);
 		vcDT[indices[i]] = (c >> 4) & 0xf;
@@ -96,8 +96,8 @@ void fm_voice::read(istream &in, int sonicver) {
 
 void fm_voice::write(ostream &out, int sonicver) const {
 	Write1(out, (vcUnusedBits << 6) | (vcFeedback << 3) | vcAlgorithm);
-	static int s2_indices[4] = {3, 1, 2, 0}, normal_indices[4] = {3, 2, 1, 0};
-	int *indices = sonicver == 2 ? s2_indices : normal_indices;
+	constexpr const static int s2_indices[4] = {3, 1, 2, 0}, normal_indices[4] = {3, 2, 1, 0};
+	const int (&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
 	for (int i = 0; i < 4; i++) {
 		Write1(out, (vcDT[indices[i]] << 4) | vcCF[indices[i]]);
 	}
@@ -123,8 +123,8 @@ void fm_voice::print(ostream &out, int sonicver, int id) const {
 	PrintHex2(out, id, true);
 	out << endl << ";\t";
 	PrintHex2(out, (vcUnusedBits << 6) | (vcFeedback << 3) | vcAlgorithm, true);
-	static int s2_indices[4] = {3, 2, 1, 0}, normal_indices[4] = {3, 2, 1, 0};
-	int *indices = sonicver == 2 ? s2_indices : normal_indices;
+	constexpr const static int s2_indices[4] = {3, 2, 1, 0}, normal_indices[4] = {3, 2, 1, 0};
+	const int (&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
 	out << endl << ";\t";
 	for (int i = 0; i < 4; i++) {
 		PrintHex2(out, (vcDT[indices[i]] << 4) | vcCF[indices[i]], false);

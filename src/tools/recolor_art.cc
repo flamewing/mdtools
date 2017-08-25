@@ -62,7 +62,7 @@ struct Tile {
 		}
 		return false;
 	}
-	void remap(int const *colormap) {
+	void remap(int const (&colormap)[16]) {
 		for (auto & elem : tiledata) {
 			elem = colormap[elem];
 		}
@@ -74,7 +74,7 @@ struct Tile {
 	}
 };
 
-void recolor(istream &in, ostream &out, int const *colormap) {
+void recolor(istream &in, ostream &out, int const (&colormap)[16]) {
 	Tile tile{};
 	while (true) {
 		if (!tile.read(in)) {
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 		int option_index = 0;
 		int c = getopt_long(argc, argv,
 		                    "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
-		                    long_options, &option_index);
+		                    static_cast<option*>(long_options), &option_index);
 		if (c == -1) {
 			break;
 		}
