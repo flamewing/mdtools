@@ -129,7 +129,7 @@ static void plane_unmap(istream &src, ostream &dst,
 
 int main(int argc, char *argv[]) {
 	int sonic2 = 0;
-	static option long_options[] = {
+	option long_options[] = {
 		{"extract"  , optional_argument, nullptr, 'x'},
 		{"sonic2"   , no_argument      , &sonic2, 1},
 		{"compress" , no_argument      , nullptr, 'c'},
