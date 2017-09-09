@@ -13,7 +13,7 @@ before_install:
 
 before_script:
   - export CXX=g++-6
-  - cd `mktemp -d` && git clone --depth 1 https://github.com/flamewing/mdcomp.git && cd mdcomp && ./autogen.sh && make && sudo make install
+  - pushd `mktemp -d` && git clone --depth 1 https://github.com/flamewing/mdcomp.git && cd mdcomp && ./autogen.sh && make && sudo make install && popd
 
 addons:
   apt:
