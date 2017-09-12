@@ -36,7 +36,9 @@ struct Tile {
 	unsigned char tiledata[32];
 	bool read(istream &in) {
 		for (auto & elem : tiledata) {
-			elem = in.get();
+			char cc;
+			in.get(cc);
+			elem = static_cast<unsigned char>(cc);
 		}
 		return true;
 	}
