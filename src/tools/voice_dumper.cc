@@ -77,6 +77,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	numvoices = strtoul(argv[optind + 1], nullptr, 0);
+	if (numvoices == 0u || numvoices > 65535) {
+		cerr << "Invalid number of voices: '" << argv[optind + 1] << "'. Please supply a value between 1 and 65535." << endl << endl;
+		return 3;
+	}
 	fin.seekg(0, ios::end);
 	int len = fin.tellg();
 	fin.seekg(pointer);

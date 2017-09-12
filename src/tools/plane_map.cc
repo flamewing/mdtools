@@ -192,17 +192,18 @@ int main(int argc, char *argv[]) {
 		}
 	} else {
 		stringstream fbuf(ios::in | ios::out | ios::binary | ios::trunc);
-		size_t w = strtoul(argv[optind + 2], nullptr, 0), h = strtoul(argv[optind + 3], nullptr, 0);
-		if ((w == 0u) || (h == 0u)) {
+		size_t ww = strtoul(argv[optind + 2], nullptr, 0),
+		       hh = strtoul(argv[optind + 3], nullptr, 0);
+		if ((ww == 0u || ww > 128u) || (hh == 0u || hh > 128u)) {
 			cerr << "Invalid height or width for plane mapping." << endl << endl;
 			return 4;
 		}
 		if (extract) {
 			fin.seekg(pointer);
 			enigma::decode(fin, fbuf);
-			plane_map(fbuf, fout, w, h, 0      , sonic2 != 0);
+			plane_map(fbuf, fout, ww, hh, 0      , sonic2 != 0);
 		} else {
-			plane_map(fin , fout, w, h, pointer, sonic2 != 0);
+			plane_map(fin , fout, ww, hh, pointer, sonic2 != 0);
 		}
 	}
 	return 0;
