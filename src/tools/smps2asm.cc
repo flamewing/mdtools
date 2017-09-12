@@ -968,6 +968,7 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'o':
+				assert(optarg != nullptr);
 				offset = strtoul(optarg, nullptr, 0);
 				break;
 
@@ -976,6 +977,7 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'v':
+				assert(optarg != nullptr);
 				sonicver = strtoul(optarg, nullptr, 0);
 				break;
 

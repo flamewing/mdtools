@@ -7,4 +7,5 @@ Assorted tools for the Sega Mega Drive
 # TODO
 
 - [ ] Detail tools
+- [ ] Use Boost::ProgramOptions
 - [ ] Finish this readme
