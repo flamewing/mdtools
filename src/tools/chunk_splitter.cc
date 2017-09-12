@@ -387,30 +387,34 @@ int main(int argc, char *argv[]) {
 	set<ChunkS1> uniquechunks;
 
 	for (size_t ii = 0; ii < fgw * fgh; ii++) {
-		unsigned char c = flayoutFG.get();
-		layouts1FG[ii] = c;
-		if ((c & 0x80) != 0) {
-			needremap[c & 0x7F] = true;
-			//usedchunks.insert(remaps[c & 0x7F]);
+		char cc;
+		flayoutFG.get(cc);
+		unsigned char uc = static_cast<unsigned char>(cc);
+		layouts1FG[ii] = uc;
+		if ((uc & 0x80) != 0) {
+			needremap[uc & 0x7F] = true;
+			//usedchunks.insert(remaps[uc & 0x7F]);
 		}
-		usedchunks.insert(c & 0x7F);
-		if ((c & 0x7F) != 0) {
-			uniquechunks.insert(chunkss1[(c & 0x7F) - 1]);
+		usedchunks.insert(uc & 0x7F);
+		if ((uc & 0x7F) != 0) {
+			uniquechunks.insert(chunkss1[(uc & 0x7F) - 1]);
 		}
 	}
 	flayoutFG.close();
 	size_t usedfg = usedchunks.size();
-	
+
 	for (size_t ii = 0; ii < bgw * bgh; ii++) {
-		unsigned char c = flayoutBG.get();
-		layouts1BG[ii] = c;
-		if ((c & 0x80) != 0) {
-			needremap[c & 0x7F] = true;
-			//usedchunks.insert(remaps[c & 0x7F]);
+		char cc;
+		flayoutBG.get(cc);
+		unsigned char uc = static_cast<unsigned char>(cc);
+		layouts1BG[ii] = uc;
+		if ((uc & 0x80) != 0) {
+			needremap[uc & 0x7F] = true;
+			//usedchunks.insert(remaps[uc & 0x7F]);
 		}
-		usedchunks.insert(c & 0x7F);
-		if ((c & 0x7F) != 0) {
-			uniquechunks.insert(chunkss1[(c & 0x7F) - 1]);
+		usedchunks.insert(uc & 0x7F);
+		if ((uc & 0x7F) != 0) {
+			uniquechunks.insert(chunkss1[(uc & 0x7F) - 1]);
 		}
 	}
 	flayoutBG.close();
