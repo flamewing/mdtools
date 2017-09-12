@@ -25,6 +25,8 @@
 #include <ostream>
 #include <vector>
 
+#include <boost/io/ios_state.hpp>
+
 #include "bigendian_io.h"
 
 using namespace std;
@@ -363,8 +365,9 @@ void BaseNote::print_psg_tone(ostream &out, int tone, int sonicver,
 		out << "fTone_";
 	}
 
+	boost::io::ios_all_saver flags(out);
 	out << hex << setw(2) << setfill('0') << uppercase
-	    << tone << nouppercase;
+	    << tone;
 
 	if (!last) {
 		out << ", ";

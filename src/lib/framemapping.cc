@@ -24,6 +24,8 @@
 #include <map>
 #include <set>
 
+#include <boost/io/ios_state.hpp>
+
 #include "bigendian_io.h"
 
 using namespace std;
@@ -51,8 +53,10 @@ void frame_mapping::write(ostream &out, int ver) const {
 void frame_mapping::print() const {
 	for (size_t i = 0; i < maps.size(); i++) {
 		cout << "\tPiece $";
+		boost::io::ios_all_saver flags(cout);
 		cout << uppercase   << hex << setfill('0') << setw(4) << i;
-		cout << nouppercase   << ":" << endl;
+		cout << ":" << endl;
+		flags.restore();
 		maps[i].print();
 	}
 }

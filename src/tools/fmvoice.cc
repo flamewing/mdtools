@@ -23,26 +23,31 @@
 #include <istream>
 #include <ostream>
 
+#include <boost/io/ios_state.hpp>
+
 #include "bigendian_io.h"
 
 using namespace std;
 
 void PrintMacro(ostream &out, char const *macro) {
-	out << "\t" << setw(19) << setfill(' ') << left << macro << right << " ";
+	boost::io::ios_all_saver flags(out);
+	out << "\t" << setw(19) << setfill(' ') << left << macro << " ";
 }
 
 void PrintHex2(ostream &out, unsigned char c, bool last) {
-	out << "$" << hex << setw(2) << setfill('0') << uppercase << static_cast<unsigned int>(c) << nouppercase;
+	boost::io::ios_all_saver flags(out);
+	out << "$" << hex << setw(2) << setfill('0') << uppercase << static_cast<unsigned int>(c);
 	if (!last) {
 		out << ", ";
 	}
 }
 
 void PrintHex2Pre(ostream &out, unsigned char c, bool first) {
+	boost::io::ios_all_saver flags(out);
 	if (!first) {
 		out << ", ";
 	}
-	out << "$" << hex << setw(2) << setfill('0') << uppercase << static_cast<unsigned int>(c) << nouppercase;
+	out << "$" << hex << setw(2) << setfill('0') << uppercase << static_cast<unsigned int>(c);
 }
 
 void PrintName(ostream &out, const string& s, bool first) {
@@ -53,7 +58,8 @@ void PrintName(ostream &out, const string& s, bool first) {
 }
 
 void PrintHex4(ostream &out, uint16_t c, bool last) {
-	out << "$" << hex << setw(4) << setfill('0') << uppercase << static_cast<unsigned int>(c) << nouppercase;
+	boost::io::ios_all_saver flags(out);
+	out << "$" << hex << setw(4) << setfill('0') << uppercase << static_cast<unsigned int>(c);
 	if (!last) {
 		out << ", ";
 	}

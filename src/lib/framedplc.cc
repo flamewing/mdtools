@@ -22,6 +22,8 @@
 #include <iomanip>
 #include <iostream>
 
+#include <boost/io/ios_state.hpp>
+
 #include "bigendian_io.h"
 
 using namespace std;
@@ -62,7 +64,8 @@ void frame_dplc::print() const {
 		ntiles += elem.get_cnt();
 		elem.print();
 	}
-	cout << nouppercase << "\tTile count: $";
+	cout << "\tTile count: $";
+	boost::io::ios_all_saver flags(cout);
 	cout << uppercase   << hex << setfill('0') << setw(4) << ntiles;
 	cout << endl;
 }

@@ -23,6 +23,8 @@
 #include <iostream>
 #include <map>
 
+#include <boost/io/ios_state.hpp>
+
 #include "bigendian_io.h"
 
 using namespace std;
@@ -91,8 +93,10 @@ void mapping_file::print() const {
 	cout << "================================================================================" << endl;
 	for (size_t i = 0; i < frames.size(); i++) {
 		cout << "Mappings for frame $";
+		boost::io::ios_all_saver flags(cout);
 		cout << uppercase << hex << setfill('0') << setw(4) << i;
-		cout << nouppercase << ":" << endl;
+		cout << ":" << endl;
+		flags.restore();
 		frames[i].print();
 	}
 }
