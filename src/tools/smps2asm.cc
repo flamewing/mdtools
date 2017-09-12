@@ -199,6 +199,13 @@ BaseNote *BaseNote::read(istream &in, int sonicver, int offset,
 						return new CoordFlagPointer2ParamBytes<false>(byte, keydisp, spec,
 						        cnt, ptr);
 					}
+					default:
+						cerr << "Invalid meta-coordination flag '";
+						PrintHex2(cerr, 0xff, true);
+						PrintHex2(cerr, byte, false);
+						cerr << "' found at offset " << size_t(in.tellg()) - 2
+						     << "; it will be ignored." << endl;
+						return new NullNote();
 				}
 			}
 			case 0xf7: { // Loop
