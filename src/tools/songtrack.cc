@@ -23,6 +23,7 @@
 #include <iostream>
 #include <istream>
 #include <ostream>
+#include <vector>
 
 #include "bigendian_io.h"
 
@@ -86,13 +87,13 @@ void FMVoice::print(ostream &out, int sonicver, LocTraits::LocType tracktype,
 }
 
 static void print_dac_sample(ostream &out, int val, int sonicver, bool flag) {
-	static string s12daclut[] = {
+	static vector<string> s12daclut{
 		"nRst", "dKick", "dSnare", "dClap", "dScratch", "dTimpani", "dHiTom",
 		"dVLowClap", "dHiTimpani", "dMidTimpani", "dLowTimpani", "dVLowTimpani",
 		"dMidTom", "dLowTom", "dFloorTom", "dHiClap", "dMidClap", "dLowClap"
 	};
 
-	static string s3daclut[] = {
+	static vector<string> s3daclut{
 		"nRst", "dSnareS3", "dHighTom", "dMidTomS3", "dLowTomS3", "dFloorTomS3",
 		"dKickS3", "dMuffledSnare", "dCrashCymbal", "dRideCymbal", "dLowMetalHit",
 		"dMetalHit", "dHighMetalHit", "dHigherMetalHit", "dMidMetalHit",
@@ -112,7 +113,7 @@ static void print_dac_sample(ostream &out, int val, int sonicver, bool flag) {
 		"dLowestPowerKickHit"
 	};
 
-	static string skdaclut[] = {
+	static vector<string> skdaclut{
 		"nRst", "dSnareS3", "dHighTom", "dMidTomS3", "dLowTomS3", "dFloorTomS3",
 		"dKickS3", "dMuffledSnare", "dCrashCymbal", "dRideCymbal", "dLowMetalHit",
 		"dMetalHit", "dHighMetalHit", "dHigherMetalHit", "dMidMetalHit",
@@ -132,7 +133,7 @@ static void print_dac_sample(ostream &out, int val, int sonicver, bool flag) {
 		"dLowestPowerKickHit"
 	};
 
-	static string s3ddaclut[] = {
+	static vector<string> s3ddaclut{
 		"nRst", "dSnareS3", "dHighTom", "dMidTomS3", "dLowTomS3", "dFloorTomS3",
 		"dKickS3", "dMuffledSnare", "dCrashCymbal", "dCrashCymbal2", "dLowMetalHit",
 		"dMetalHit", "dHighMetalHit", "dHigherMetalHit", "dMidMetalHit",
@@ -144,15 +145,15 @@ static void print_dac_sample(ostream &out, int val, int sonicver, bool flag) {
 	};
 
 	size_t note = val - 0x80;
-	if (sonicver == 5 && note <= sizeof(s3ddaclut) / sizeof(s3ddaclut[0])) {
+	if (sonicver == 5 && note < s3ddaclut.size()) {
 		PrintName(out, s3ddaclut[note], flag);
-	} else if (sonicver == 4 && note <= sizeof(skdaclut) / sizeof(skdaclut[0])) {
+	} else if (sonicver == 4 && note < skdaclut.size()) {
 		PrintName(out, skdaclut[note], flag);
-	} else if (sonicver == 3 && note <= sizeof(s3daclut) / sizeof(s3daclut[0])) {
+	} else if (sonicver == 3 && note < s3daclut.size()) {
 		PrintName(out, s3daclut[note], flag);
 	} else if (sonicver == 1 && (note < 0x4 || (note >= 0x8 && note <= 0xb))) {
 		PrintName(out, s12daclut[note], flag);
-	} else if (sonicver == 2 && note <= sizeof(s12daclut) / sizeof(s12daclut[0])) {
+	} else if (sonicver == 2 && note < s12daclut.size()) {
 		PrintName(out, s12daclut[note], flag);
 	} else {
 		PrintHex2Pre(out, val, flag);
