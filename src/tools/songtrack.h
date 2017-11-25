@@ -295,4 +295,24 @@ public:
 	}
 };
 
+// Explicit instantiation of all templates
+template class CoordFlagNoParams<true >;
+template class CoordFlagNoParams<false>;
+template class CoordFlag1ParamByte<true >;
+template class CoordFlag1ParamByte<false>;
+template class CoordFlag2ParamBytes<true >;
+template class CoordFlag2ParamBytes<false>;
+template class CoordFlag3ParamBytes<true >;
+template class CoordFlag3ParamBytes<false>;
+template class CoordFlag4ParamBytes<true >;
+template class CoordFlag4ParamBytes<false>;
+template class CoordFlag5ParamBytes<true >;
+template class CoordFlag5ParamBytes<false>;
+template class CoordFlagPointerParam<true >;
+template class CoordFlagPointerParam<false>;
+template class CoordFlagPointer1ParamByte<true >;
+template class CoordFlagPointer1ParamByte<false>;
+template class CoordFlagPointer2ParamBytes<true >;
+template class CoordFlagPointer2ParamBytes<false>;
+
 #endif // __TOOLS_SONGTRACK_H
