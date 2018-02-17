@@ -220,10 +220,8 @@ void fm_voice::print(ostream &out, int sonicver, int id) const {
 	out << endl;
 
 	PrintMacro(out, "smpsVcTotalLevel");
-	static int tlmasks[8] = {0x1, 0x1, 0x1, 0x1, 0x5, 0x7, 0x7, 0xf};
-	int mask = tlmasks[vcAlgorithm];
 	for (int i = 0; i < 4; i++) {
-		PrintHex2(out, (mask & (1 << i)) != 0 ? vcTL[i] & 0x7f : vcTL[i], i == 3);
+		PrintHex2(out, vcTL[i], i == 3);
 	}
 	out << endl << endl;
 }
