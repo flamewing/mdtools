@@ -40,6 +40,8 @@
 #include "ignore_unused_variable_warning.h"
 #include "songtrack.h"
 
+#define SMPS2ASM_VERSION 1
+
 using namespace std;
 
 struct S1IO {
@@ -418,7 +420,7 @@ public:
 		// Start with music conversion header.
 		out << projname << "_Header:" << endl;
 		PrintMacro(out, "smpsHeaderStartSong");
-		out << (sonicver > 3 ? 3 : sonicver) << endl;
+		out << (sonicver > 3 ? 3 : sonicver) << ", " << SMPS2ASM_VERSION << endl;
 
 		// Now for voice pointer; this is the first piece of data in both
 		// songs and SFX.
