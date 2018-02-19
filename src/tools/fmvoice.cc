@@ -84,7 +84,7 @@ void fm_voice::read(istream &in, int sonicver) {
 	}
 	for (int i = 0; i < 4; i++) {
 		c = Read1(in);
-		vcAM [indices[i]] = (c >> 5) & 0x3;
+		vcAM [indices[i]] = (c >> 7) & 1;
 		vcD1R[indices[i]] = c & 0x1f;
 	}
 	for (int i = 0; i < 4; i++) {
@@ -111,7 +111,7 @@ void fm_voice::write(ostream &out, int sonicver) const {
 		Write1(out, (vcRS[indices[i]] << 6) | vcAR[indices[i]]);
 	}
 	for (int i = 0; i < 4; i++) {
-		Write1(out, (vcAM[indices[i]] << 5) | vcD1R[indices[i]]);
+		Write1(out, (vcAM[indices[i]] << 7) | vcD1R[indices[i]]);
 	}
 	for (int i = 0; i < 4; i++) {
 		Write1(out, vcD2R[indices[i]]);
@@ -141,7 +141,7 @@ void fm_voice::print(ostream &out, int sonicver, int id) const {
 	}
 	out << "\t";
 	for (int i = 0; i < 4; i++) {
-		PrintHex2(out, (vcAM[indices[i]] << 5) | vcD1R[indices[i]], i == 3);
+		PrintHex2(out, (vcAM[indices[i]] << 7) | vcD1R[indices[i]], i == 3);
 	}
 	out << endl << ";\t";
 	for (int i = 0; i < 4; i++) {
