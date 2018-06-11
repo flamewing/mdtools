@@ -33,7 +33,7 @@ private:
 	static std::vector<RLEPattern>   DicLUT_7bit;
 public:
 	SSTrackFrame() noexcept = default;
-	SSTrackFrame(std::istream &in, bool xflip) noexcept;
+	SSTrackFrame(std::istream &in, bool const xflip) noexcept;
 };
 
 #endif // __SSTRACK_H

@@ -29,13 +29,13 @@ protected:
 	short xx, yy;
 	unsigned char sx, sy;
 public:
-	void read(std::istream &in, int ver);
-	void write(std::ostream &out, int ver) const;
+	void read(std::istream &in, int const ver);
+	void write(std::ostream &out, int const ver) const;
 	void print() const;
 	void split(single_mapping const &src, single_dplc &dplc, std::map<size_t, size_t> &vram_map);
 	void merge(single_mapping const &src, std::map<size_t, size_t> &vram_map);
-	void change_pal(int srcpal, int dstpal);
-	static size_t size(int ver) {
+	void change_pal(int const srcpal, int const dstpal);
+	static size_t size(int const ver) {
 		switch (ver) {
 			case 1:
 				return 5;
@@ -63,22 +63,22 @@ public:
 	unsigned char get_sy() const {
 		return sy;
 	}
-	void set_flags(unsigned short t) {
+	void set_flags(unsigned short const t) {
 		flags = t;
 	}
-	void set_tile(unsigned short t) {
+	void set_tile(unsigned short const t) {
 		tile = t;
 	}
-	void set_xx(short t) {
+	void set_xx(short const t) {
 		xx = t;
 	}
-	void set_yy(short t) {
+	void set_yy(short const t) {
 		yy = t;
 	}
-	void set_sx(unsigned char t) {
+	void set_sx(unsigned char const t) {
 		sx = t;
 	}
-	void set_sy(unsigned char t) {
+	void set_sy(unsigned char const t) {
 		sy = t;
 	}
 	bool operator<(single_mapping const &rhs) const {

@@ -28,13 +28,13 @@ class frame_mapping {
 protected:
 	std::vector<single_mapping> maps;
 public:
-	void read(std::istream &in, int ver);
-	void write(std::ostream &out, int ver) const;
+	void read(std::istream &in, int const ver);
+	void write(std::ostream &out, int const ver) const;
 	void print() const;
 	void split(frame_mapping const &src, frame_dplc &dplc);
 	void merge(frame_mapping const &src, frame_dplc const &dplc);
-	void change_pal(int srcpal, int dstpal);
-	single_mapping const &get_maps(size_t i) const {
+	void change_pal(int const srcpal, int const dstpal);
+	single_mapping const &get_maps(size_t const i) const {
 		return maps[i];
 	}
 	bool empty() const {
@@ -43,7 +43,7 @@ public:
 	size_t size() const {
 		return maps.size();
 	}
-	size_t size(int ver) const {
+	size_t size(int const ver) const {
 		return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
 	}
 	bool operator<(frame_mapping const &rhs) const;

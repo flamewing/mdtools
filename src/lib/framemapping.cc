@@ -30,8 +30,8 @@
 
 using namespace std;
 
-void frame_mapping::read(istream &in, int ver) {
-	size_t cnt = ver == 1 ? Read1(in) : BigEndian::Read2(in);
+void frame_mapping::read(istream &in, int const ver) {
+	size_t const cnt = ver == 1 ? Read1(in) : BigEndian::Read2(in);
 	for (size_t i = 0; i < cnt; i++) {
 		single_mapping sd{};
 		sd.read(in, ver);
@@ -39,13 +39,13 @@ void frame_mapping::read(istream &in, int ver) {
 	}
 }
 
-void frame_mapping::write(ostream &out, int ver) const {
+void frame_mapping::write(ostream &out, int const ver) const {
 	if (ver == 1) {
 		Write1(out, maps.size());
 	} else {
 		BigEndian::Write2(out, maps.size());
 	}
-	for (const auto & elem : maps) {
+	for (auto const & elem : maps) {
 		elem.write(out, ver);
 	}
 }
@@ -77,8 +77,8 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 	// Coalesce the mappings tiles into tile ranges, reodering adjacent DPLCs
 	// that are neighbours in art to coalesce the ranges as needed.
 	vector<pair<size_t, size_t>> ranges;
-	for (const auto & sd : src.maps) {
-		size_t ss = sd.get_tile(), sz = sd.get_sx() * sd.get_sy();
+	for (auto const & sd : src.maps) {
+		size_t const ss = sd.get_tile(), sz = sd.get_sx() * sd.get_sy();
 		if (ranges.empty()) {
 			// Happens only once. Hopefully, the compiler will pull this out of
 			// the loop, as it happens right at the start of the loop.
@@ -108,9 +108,8 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 
 	// Build VRAM map for coalesced ranges.
 	map<size_t, size_t> vram_map;
-	for (vector<pair<size_t, size_t>>::const_iterator it = ranges.begin();
-	        it != ranges.end(); ++it) {
-		size_t ss = it->first, sz = it->second;
+	for (auto const & elem : ranges) {
+		size_t const ss = elem.first, sz = elem.second;
 		for (size_t i = ss; i < ss + sz; i++) {
 			if (vram_map.find(i) == vram_map.end()) {
 				vram_map.emplace(i, vram_map.size());
@@ -121,16 +120,16 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 	// Build DPLCs from VRAM map and coalesced ranges.
 	set<single_dplc, SingleDPLCCmp> uniquedplcs;
 	frame_dplc newdplc;
-	for (vector<pair<size_t, size_t>>::const_iterator it = ranges.begin();
-	        it != ranges.end(); ++it) {
-		size_t ss = it->first, sz = 1;
+	for (auto const & elem : ranges) {
+		size_t const ss = elem.first;
+		size_t sz = 1;
 		while (vram_map.find(ss + sz) != vram_map.end()) {
 			sz++;
 		}
 		single_dplc nd{};
 		nd.set_tile(ss);
 		nd.set_cnt(sz);
-		auto sit = uniquedplcs.find(nd);
+		auto const sit = uniquedplcs.find(nd);
 		if (sit == uniquedplcs.end()) {
 			newdplc.insert(nd);
 			uniquedplcs.insert(nd);
@@ -139,7 +138,7 @@ void frame_mapping::split(frame_mapping const &src, frame_dplc &dplc) {
 	dplc.consolidate(newdplc);
 
 	set<size_t> loaded_tiles;
-	for (const auto & sd : src.maps) {
+	for (auto const & sd : src.maps) {
 		single_mapping nn{};
 		single_dplc dd{};
 		nn.split(sd, dd, vram_map);
@@ -151,14 +150,14 @@ void frame_mapping::merge(frame_mapping const &src, frame_dplc const &dplc) {
 	map<size_t, size_t> vram_map;
 	dplc.build_vram_map(vram_map);
 
-	for (const auto & sd : src.maps) {
+	for (auto const & sd : src.maps) {
 		single_mapping nn{};
 		nn.merge(sd, vram_map);
 		maps.push_back(nn);
 	}
 }
 
-void frame_mapping::change_pal(int srcpal, int dstpal) {
+void frame_mapping::change_pal(int const srcpal, int const dstpal) {
 	for (auto & elem : maps) {
 		elem.change_pal(srcpal, dstpal);
 	}

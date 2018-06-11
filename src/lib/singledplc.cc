@@ -25,7 +25,7 @@
 
 using namespace std;
 
-void single_dplc::read(istream &in, int ver) {
+void single_dplc::read(istream &in, int const ver) {
 	tile = BigEndian::Read2(in);
 	if (ver < 4) {
 		cnt  = ((tile & 0xf000u) >> 12) + 1u;
@@ -36,7 +36,7 @@ void single_dplc::read(istream &in, int ver) {
 	}
 }
 
-void single_dplc::write(ostream &out, int ver) const {
+void single_dplc::write(ostream &out, int const ver) const {
 	if (ver < 4) {
 		BigEndian::Write2(out, ((cnt - 1) << 12) | tile);
 	} else {

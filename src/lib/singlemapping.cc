@@ -26,7 +26,7 @@
 
 using namespace std;
 
-void single_mapping::read(istream &in, int ver) {
+void single_mapping::read(istream &in, int const ver) {
 	yy = static_cast<signed char>(Read1(in));
 	sy = Read1(in);
 	sx = ((sy & 0xc) >> 2) + 1;
@@ -44,7 +44,7 @@ void single_mapping::read(istream &in, int ver) {
 	}
 }
 
-void single_mapping::write(ostream &out, int ver) const {
+void single_mapping::write(ostream &out, int const ver) const {
 	Write1(out, static_cast<unsigned char>(yy));
 	Write1(out, ((sx - 1) << 2) | (sy - 1));
 	BigEndian::Write2(out, (flags << 8) | tile);
@@ -117,7 +117,7 @@ void single_mapping::merge(single_mapping const &src, map<size_t, size_t> &vram_
 	tile = vram_map[src.tile];
 }
 
-void single_mapping::change_pal(int srcpal, int dstpal) {
+void single_mapping::change_pal(int const srcpal, int const dstpal) {
 	if ((flags & 0x60) == srcpal) {
 		flags = (flags & 0x9f) | dstpal;
 	}

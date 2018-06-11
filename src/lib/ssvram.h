@@ -38,9 +38,9 @@ public:
 };
 
 std::vector<ShortTile> split_tile(Tile const &tile) noexcept;
-Tile merge_tiles(ShortTile const &tile0, FlipMode flip0,
-                 ShortTile const &tile1, FlipMode flip1,
-                 ShortTile const &tile2, FlipMode flip2,
-                 ShortTile const &tile3, FlipMode flip3) noexcept;
+Tile merge_tiles(ShortTile const &tile0, FlipMode const flip0,
+                 ShortTile const &tile1, FlipMode const flip1,
+                 ShortTile const &tile2, FlipMode const flip2,
+                 ShortTile const &tile3, FlipMode const flip3) noexcept;
 
 #endif // __SSVRAM_H

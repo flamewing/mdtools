@@ -34,7 +34,7 @@ void PrintMacro(ostream &out, char const *macro) {
 	out << "\t" << setw(19) << setfill(' ') << left << macro << " ";
 }
 
-void PrintHex2(ostream &out, unsigned char c, bool last) {
+void PrintHex2(ostream &out, unsigned char const c, bool const last) {
 	boost::io::ios_all_saver flags(out);
 	out << "$" << hex << setw(2) << setfill('0') << uppercase << static_cast<unsigned int>(c);
 	if (!last) {
@@ -42,7 +42,7 @@ void PrintHex2(ostream &out, unsigned char c, bool last) {
 	}
 }
 
-void PrintHex2Pre(ostream &out, unsigned char c, bool first) {
+void PrintHex2Pre(ostream &out, unsigned char const c, bool const first) {
 	boost::io::ios_all_saver flags(out);
 	if (!first) {
 		out << ", ";
@@ -50,14 +50,14 @@ void PrintHex2Pre(ostream &out, unsigned char c, bool first) {
 	out << "$" << hex << setw(2) << setfill('0') << uppercase << static_cast<unsigned int>(c);
 }
 
-void PrintName(ostream &out, const string& s, bool first) {
+void PrintName(ostream &out, string const & s, bool const first) {
 	if (!first) {
 		out << ", ";
 	}
 	out << s;
 }
 
-void PrintHex4(ostream &out, uint16_t c, bool last) {
+void PrintHex4(ostream &out, uint16_t const c, bool const last) {
 	boost::io::ios_all_saver flags(out);
 	out << "$" << hex << setw(4) << setfill('0') << uppercase << static_cast<unsigned int>(c);
 	if (!last) {
@@ -65,25 +65,25 @@ void PrintHex4(ostream &out, uint16_t c, bool last) {
 	}
 }
 
-void fm_voice::read(istream &in, int sonicver) {
-	unsigned char c = Read1(in);
+void fm_voice::read(istream &in, int const sonicver) {
+	unsigned char const c = Read1(in);
 	vcUnusedBits = (c >> 6) & 3;
 	vcFeedback   = (c >> 3) & 7;
 	vcAlgorithm  = c & 7;
-	constexpr const static int s2_indices[4] = {3, 1, 2, 0}, normal_indices[4] = {3, 2, 1, 0};
-	const int (&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
+	constexpr static int const s2_indices[4] = {3, 1, 2, 0}, normal_indices[4] = {3, 2, 1, 0};
+	int const (&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
 	for (int i = 0; i < 4; i++) {
-		c = Read1(in);
+		unsigned char const c = Read1(in);
 		vcDT[indices[i]] = (c >> 4) & 0xf;
 		vcCF[indices[i]] = c & 0xf;
 	}
 	for (int i = 0; i < 4; i++) {
-		c = Read1(in);
+		unsigned char const c = Read1(in);
 		vcRS[indices[i]] = (c >> 6) & 0x3;
 		vcAR[indices[i]] = c & 0x3f;
 	}
 	for (int i = 0; i < 4; i++) {
-		c = Read1(in);
+		unsigned char const c = Read1(in);
 		vcAM [indices[i]] = (c >> 5) & 0x3;
 		vcD1R[indices[i]] = c & 0x1f;
 	}
@@ -91,7 +91,7 @@ void fm_voice::read(istream &in, int sonicver) {
 		vcD2R[indices[i]] = Read1(in);
 	}
 	for (int i = 0; i < 4; i++) {
-		c = Read1(in);
+		unsigned char const c = Read1(in);
 		vcDL[indices[i]] = (c >> 4) & 0xf;
 		vcRR[indices[i]] = c & 0xf;
 	}
@@ -100,10 +100,10 @@ void fm_voice::read(istream &in, int sonicver) {
 	}
 }
 
-void fm_voice::write(ostream &out, int sonicver) const {
+void fm_voice::write(ostream &out, int const sonicver) const {
 	Write1(out, (vcUnusedBits << 6) | (vcFeedback << 3) | vcAlgorithm);
-	constexpr const static int s2_indices[4] = {3, 1, 2, 0}, normal_indices[4] = {3, 2, 1, 0};
-	const int (&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
+	constexpr static int const s2_indices[4] = {3, 1, 2, 0}, normal_indices[4] = {3, 2, 1, 0};
+	int const (&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
 	for (int i = 0; i < 4; i++) {
 		Write1(out, (vcDT[indices[i]] << 4) | vcCF[indices[i]]);
 	}
@@ -124,13 +124,13 @@ void fm_voice::write(ostream &out, int sonicver) const {
 	}
 }
 
-void fm_voice::print(ostream &out, int sonicver, int id) const {
+void fm_voice::print(ostream &out, int const sonicver, int const id) const {
 	out << ";\tVoice ";
 	PrintHex2(out, id, true);
 	out << endl << ";\t";
 	PrintHex2(out, (vcUnusedBits << 6) | (vcFeedback << 3) | vcAlgorithm, true);
-	constexpr const static int s2_indices[4] = {3, 2, 1, 0}, normal_indices[4] = {3, 2, 1, 0};
-	const int (&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
+	constexpr static int const s2_indices[4] = {3, 2, 1, 0}, normal_indices[4] = {3, 2, 1, 0};
+	int const (&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
 	out << endl << ";\t";
 	for (int i = 0; i < 4; i++) {
 		PrintHex2(out, (vcDT[indices[i]] << 4) | vcCF[indices[i]], false);

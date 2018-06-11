@@ -41,7 +41,7 @@ protected:
 
 public:
 	Pattern_Name_Table() noexcept = default;
-	Pattern_Name_Table(std::istream &in, bool compressed) noexcept {
+	Pattern_Name_Table(std::istream &in, bool const compressed) noexcept {
 		std::stringstream sin(std::ios::in | std::ios::out | std::ios::binary);
 		if (compressed) {
 			enigma::decode(in, sin);
@@ -61,8 +61,8 @@ public:
 	}
 	virtual ~Pattern_Name_Table() noexcept {}
 
-	Line const &operator[](size_t n) const noexcept {	return table[n];	}
-	Line       &operator[](size_t n)       noexcept {	return table[n];	}
+	Line const &operator[](size_t const n) const noexcept {	return table[n];	}
+	Line       &operator[](size_t const n)       noexcept {	return table[n];	}
 
 	virtual void write(std::ostream &out) const noexcept {
 		for (typename std::array<Line, height>::const_iterator it = table.begin();

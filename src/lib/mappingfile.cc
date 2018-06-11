@@ -29,7 +29,7 @@
 
 using namespace std;
 
-void mapping_file::read(istream &in, int ver) {
+void mapping_file::read(istream &in, int const ver) {
 	in.seekg(0, ios::beg);
 
 	vector<size_t> off;
@@ -40,15 +40,14 @@ void mapping_file::read(istream &in, int ver) {
 	}
 	off.push_back(term);
 	while (in.tellg() < term) {
-		auto newterm = static_cast<int16_t>(BigEndian::Read2(in));
+		auto const newterm = static_cast<int16_t>(BigEndian::Read2(in));
 		if (newterm > 0 && newterm < term) {
 			term = newterm;
 		}
 		off.push_back(newterm);
 	}
 
-	for (vector<size_t>::const_iterator it = off.begin(); it != off.end(); ++it) {
-		size_t pos = *it;
+	for (auto const pos : off) {
 		in.clear();
 		in.seekg(pos);
 		frame_mapping sd;
@@ -57,7 +56,7 @@ void mapping_file::read(istream &in, int ver) {
 	}
 }
 
-void mapping_file::write(ostream &out, int ver, bool nullfirst) const {
+void mapping_file::write(ostream &out, int const ver, bool const nullfirst) const {
 	map<frame_mapping, size_t> mappos;
 	map<size_t, frame_mapping> posmap;
 	size_t sz = 2 * frames.size();
@@ -69,7 +68,7 @@ void mapping_file::write(ostream &out, int ver, bool nullfirst) const {
 		posmap.emplace(0, *it);
 	}
 	for (; it != frames.end(); ++it) {
-		auto it2 = mappos.find(*it);
+		auto const it2 = mappos.find(*it);
 		if (it2 != mappos.end()) {
 			BigEndian::Write2(out, it2->second);
 		} else {
@@ -79,7 +78,7 @@ void mapping_file::write(ostream &out, int ver, bool nullfirst) const {
 			sz += it->size(ver);
 		}
 	}
-	for (auto & elem : posmap) {
+	for (auto const & elem : posmap) {
 		if (elem.first == size_t(out.tellp())) {
 			(elem.second).write(out, ver);
 		} else if (elem.first != 0u) {
@@ -102,7 +101,7 @@ void mapping_file::print() const {
 }
 
 void mapping_file::split(mapping_file const &src, dplc_file &dplc) {
-	for (const auto & elem : src.frames) {
+	for (auto const & elem : src.frames) {
 		frame_mapping nn;
 		frame_dplc interm, dd;
 		nn.split(elem, interm);
@@ -143,15 +142,15 @@ void mapping_file::optimize(mapping_file const &src, dplc_file const &indplc, dp
 	}
 }
 
-void mapping_file::change_pal(int srcpal, int dstpal) {
+void mapping_file::change_pal(int const srcpal, int const dstpal) {
 	for (auto & elem : frames) {
 		elem.change_pal(srcpal, dstpal);
 	}
 }
 
-size_t mapping_file::size(int ver) const {
+size_t mapping_file::size(int const ver) const {
 	size_t sz = 2 * frames.size();
-	for (const auto & elem : frames) {
+	for (auto const & elem : frames) {
 		sz += elem.size(ver);
 	}
 	return sz;

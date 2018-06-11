@@ -38,7 +38,7 @@ SSVRAM::SSVRAM(istream &pal, istream &art) noexcept : VRAM() {
 	sout.seekg(0);
 	sout.clear();
 
-	unsigned cnt = BigEndian::Read2(sout);
+	unsigned const cnt = BigEndian::Read2(sout);
 	// Now convert it all to tiles.
 	tiles.reserve(cnt);
 
@@ -65,21 +65,21 @@ SSVRAM::SSVRAM(istream &pal, istream &art) noexcept : VRAM() {
 	for (size_t ii = 0; ii < palLen; ii++) {
 		palette[ii] = BigEndian::Read2(pal);
 	}
-	auto const getR = [](uint16_t clr) -> int {
+	auto const getR = [](uint16_t const clr) -> int {
 			return clr & 0xf;
 		};
-	auto const getG = [](uint16_t clr) -> int {
+	auto const getG = [](uint16_t const clr) -> int {
 			return (clr >> 4) & 0xf;
 		};
-	auto const getB = [](uint16_t clr) -> int {
+	auto const getB = [](uint16_t const clr) -> int {
 			return (clr >> 8) & 0xf;
 		};
-	auto const deltaSquare = [](int c1, int c2) -> unsigned {
+	auto const deltaSquare = [](int const c1, int const c2) -> unsigned {
 			return (c1 - c2) * (c1 - c2);
 		};
 	auto const distance =
 		[&deltaSquare, &getR, &getG, &getB]
-		(uint16_t c1, uint16_t c2) -> unsigned {
+		(uint16_t const c1, uint16_t const c2) -> unsigned {
 			return deltaSquare(getR(c1), getR(c2))
 			     + deltaSquare(getG(c1), getG(c2))
 			     + deltaSquare(getB(c1), getB(c2));
@@ -105,17 +105,17 @@ vector<ShortTile> split_tile(Tile const &tile) noexcept {
 	Tile::const_iterator start = tile.begin(NoFlip);
 	for (unsigned ii = 0; ii < Tile::Num_lines / ShortTile::Num_lines; ii++) {
 		// Want to copy 2 lines.
-		Tile::const_iterator finish = start + 2 * ShortTile::Line_size;
+		Tile::const_iterator const finish = start + 2 * ShortTile::Line_size;
 		ret.push_back(ShortTile(start, finish, NoFlip, 1));
 	}
 	return ret;
 }
 
 // Merges the given 4 short (2-line) tiles into a full-sized tile.
-Tile merge_tiles(ShortTile const &tile0, FlipMode flip0,
-                 ShortTile const &tile1, FlipMode flip1,
-                 ShortTile const &tile2, FlipMode flip2,
-                 ShortTile const &tile3, FlipMode flip3) noexcept {
+Tile merge_tiles(ShortTile const &tile0, FlipMode const flip0,
+                 ShortTile const &tile1, FlipMode const flip1,
+                 ShortTile const &tile2, FlipMode const flip2,
+                 ShortTile const &tile3, FlipMode const flip3) noexcept {
 	Tile dest;
 	Tile::iterator it = dest.begin(NoFlip);
 	for (ShortTile::const_iterator src = tile0.begin(flip0) ;

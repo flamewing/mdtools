@@ -26,10 +26,10 @@ class single_dplc {
 protected:
 	unsigned short cnt, tile;
 public:
-	void read(std::istream &in, int ver);
-	void write(std::ostream &out, int ver) const;
+	void read(std::istream &in, int const ver);
+	void write(std::ostream &out, int const ver) const;
 	void print() const;
-	static size_t size(int ver) {
+	static size_t size(int const ver) {
 		ignore_unused_variable_warning(ver);
 		return 2;
 	}
@@ -39,10 +39,10 @@ public:
 	unsigned short get_tile() const {
 		return tile;
 	}
-	void set_cnt(unsigned short c) {
+	void set_cnt(unsigned short const c) {
 		cnt = c;
 	}
-	void set_tile(unsigned short t) {
+	void set_tile(unsigned short const t) {
 		tile = t;
 	}
 	bool operator<(single_dplc const &rhs) const {

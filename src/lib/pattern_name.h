@@ -30,14 +30,14 @@ enum FlipMode {
 };
 
 // Convenience operator for flip modes.
-constexpr inline FlipMode operator^(FlipMode lhs, FlipMode rhs) noexcept {
+constexpr inline FlipMode operator^(FlipMode const lhs, FlipMode const rhs) noexcept {
 	return static_cast<FlipMode>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
 }
 
 // A couple more operations on flip modes: flipping on X, on Y and on both.
-constexpr inline FlipMode flip_x (FlipMode src) noexcept {	return src ^  XFlip;	}
-constexpr inline FlipMode flip_y (FlipMode src) noexcept {	return src ^  YFlip;	}
-constexpr inline FlipMode flip_xy(FlipMode src) noexcept {	return src ^ XYFlip;	}
+constexpr inline FlipMode flip_x (FlipMode const src) noexcept {	return src ^  XFlip;	}
+constexpr inline FlipMode flip_y (FlipMode const src) noexcept {	return src ^  YFlip;	}
+constexpr inline FlipMode flip_xy(FlipMode const src) noexcept {	return src ^ XYFlip;	}
 
 enum PaletteLine {
 	Line0 = 0,
@@ -47,10 +47,10 @@ enum PaletteLine {
 };
 
 // Convenience operators for palette lines.
-constexpr inline PaletteLine operator+(PaletteLine lhs, unsigned rhs) noexcept {
+constexpr inline PaletteLine operator+(PaletteLine const lhs, unsigned const rhs) noexcept {
 	return static_cast<PaletteLine>((static_cast<unsigned>(lhs) + rhs) % 4);
 }
-constexpr inline PaletteLine operator-(PaletteLine lhs, unsigned rhs) noexcept {
+constexpr inline PaletteLine operator-(PaletteLine const lhs, unsigned const rhs) noexcept {
 	return static_cast<PaletteLine>((static_cast<unsigned>(lhs) - rhs) % 4);
 }
 
@@ -89,10 +89,10 @@ public:
 	bool high_priority() const      noexcept {	return (pn & priority_mask) != 0;	}
 
 	// Setters.
-	void set_tile(unsigned short t) noexcept {	pn = (pn & ~tile_mask    ) | (t & tile_mask        );	}
-	void set_flip(FlipMode f)       noexcept {	pn = (pn & ~xyflip_mask  ) | (static_cast<unsigned>(f) << xyflip_shift);	}
-	void set_palette(PaletteLine p) noexcept {	pn = (pn & ~palette_mask ) | (static_cast<unsigned>(p) << palette_shift);	}
-	void set_priority(bool b)       noexcept {	pn = (pn & ~priority_mask) | (b ? priority_mask : 0);	}
+	void set_tile(unsigned short const t) noexcept {	pn = (pn & ~tile_mask    ) | (t & tile_mask        );	}
+	void set_flip(FlipMode const f)       noexcept {	pn = (pn & ~xyflip_mask  ) | (static_cast<unsigned>(f) << xyflip_shift);	}
+	void set_palette(PaletteLine const p) noexcept {	pn = (pn & ~palette_mask ) | (static_cast<unsigned>(p) << palette_shift);	}
+	void set_priority(bool const b)       noexcept {	pn = (pn & ~priority_mask) | (b ? priority_mask : 0);	}
 
 	// Comparison operator for STL containers and algorithms. Only the tile is
 	// important, flip, palette and priority are ignored.
@@ -103,7 +103,7 @@ public:
 	// A few arithmetic operators defined for convenience. They operate only on
 	// the tile part.
 	// Increment tile by given offset. Saturates at tile_mask.
-	Pattern_Name &operator+=(unsigned short delta) noexcept {
+	Pattern_Name &operator+=(unsigned short const delta) noexcept {
 		if (get_tile() + delta <= tile_mask) {
 			set_tile(get_tile() + delta);
 		} else {
@@ -112,12 +112,12 @@ public:
 		return *this;
 	}
 	// Get new pattern name equal to old plus offset. Saturates at tile_mask.
-	Pattern_Name operator+(unsigned short delta) const noexcept {
+	Pattern_Name operator+(unsigned short const delta) const noexcept {
 		Pattern_Name ret(*this);
 		return ret += delta;
 	}
 	// Get new pattern name equal to old plus offset. Saturates at tile_mask.
-	friend Pattern_Name operator+(unsigned short delta, Pattern_Name const &rhs) noexcept {
+	friend Pattern_Name operator+(unsigned short const delta, Pattern_Name const &rhs) noexcept {
 		return rhs + delta;
 	}
 	// Prefix increment pattern name. Saturates at tile_mask.
@@ -131,7 +131,7 @@ public:
 		return ret;
 	}
 	// Decrement tile by given amount. Saturates at 0.
-	Pattern_Name &operator-=(unsigned short delta) noexcept {
+	Pattern_Name &operator-=(unsigned short const delta) noexcept {
 		if (get_tile() >= delta) {
 			set_tile(get_tile() - delta);
 		} else {
@@ -140,7 +140,7 @@ public:
 		return *this;
 	}
 	// Get new pattern name equal to old minus offset. Saturates at 0.
-	Pattern_Name operator-(unsigned short delta) const noexcept {
+	Pattern_Name operator-(unsigned short const delta) const noexcept {
 		Pattern_Name ret(*this);
 		return ret -= delta;
 	}

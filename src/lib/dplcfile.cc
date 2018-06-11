@@ -28,7 +28,7 @@
 
 using namespace std;
 
-void dplc_file::read(istream &in, int ver) {
+void dplc_file::read(istream &in, int const ver) {
 	in.seekg(0, ios::beg);
 
 	vector<size_t> off;
@@ -48,8 +48,7 @@ void dplc_file::read(istream &in, int ver) {
 		off.push_back(newterm);
 	}
 
-	for (vector<size_t>::const_iterator it = off.begin(); it != off.end(); ++it) {
-		size_t pos = *it;
+	for (auto const pos : off) {
 		in.clear();
 		in.seekg(pos);
 		frame_dplc sd;
@@ -58,7 +57,7 @@ void dplc_file::read(istream &in, int ver) {
 	}
 }
 
-void dplc_file::write(ostream &out, int ver, bool nullfirst) const {
+void dplc_file::write(ostream &out, int const ver, bool const nullfirst) const {
 	map<frame_dplc, size_t> mappos;
 	map<size_t, frame_dplc> posmap;
 	size_t sz = 2 * frames.size();
@@ -70,7 +69,7 @@ void dplc_file::write(ostream &out, int ver, bool nullfirst) const {
 		posmap.emplace(0, *it);
 	}
 	for (; it != frames.end(); ++it) {
-		auto it2 = mappos.find(*it);
+		auto const it2 = mappos.find(*it);
 		if (it2 != mappos.end()) {
 			BigEndian::Write2(out, it2->second);
 		} else {
@@ -80,7 +79,7 @@ void dplc_file::write(ostream &out, int ver, bool nullfirst) const {
 			sz += it->size(ver);
 		}
 	}
-	for (auto & elem : posmap) {
+	for (auto const & elem : posmap) {
 		if (elem.first == size_t(out.tellp())) {
 			(elem.second).write(out, ver);
 		} else if (elem.first != 0u) {
@@ -104,7 +103,7 @@ void dplc_file::print() const {
 }
 
 void dplc_file::consolidate(dplc_file const &src) {
-	for (const auto & elem : src.frames) {
+	for (auto const & elem : src.frames) {
 		frame_dplc nn;
 		nn.consolidate(elem);
 		frames.push_back(nn);
@@ -117,7 +116,7 @@ void dplc_file::insert(frame_dplc const &val) {
 
 size_t dplc_file::size(int ver) const {
 	size_t sz = 2 * frames.size();
-	for (const auto & sd : frames) {
+	for (auto const & sd : frames) {
 		sz += sd.size(ver);
 	}
 	return sz;

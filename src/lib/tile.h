@@ -68,7 +68,7 @@ private:
 		// Information about the iteration.
 		unsigned start, finish, loc;
 		// Common logic for add 1/sub 1. No bounds checking!
-		void incr_decr(FlipMode _f) noexcept {
+		void incr_decr(FlipMode const _f) noexcept {
 			// We have to decide how we are going to iterate.
 			switch (_f) {
 				case NoFlip:
@@ -174,7 +174,8 @@ private:
 				_f = flip_xy(f);
 				subtract = true;
 			}
-			unsigned lineoff = delta % lsize, numlines = delta / lsize;
+			unsigned const lineoff = delta % lsize;
+			unsigned numlines = delta / lsize;
 			unsigned atoff = loc % lsize, atline = loc / lsize;
 			// Otherwise, we have to decide how we are going to iterate.
 			switch (_f) {
@@ -295,7 +296,7 @@ private:
 		}
 	protected:
 		// Constructors.
-		tile_iterator(FlipMode _f, value_type *_t, bool ending) noexcept
+		tile_iterator(FlipMode const _f, value_type * const _t, bool const ending) noexcept
 			: tiledata(_t), f(_f) {
 			// The values of start, finish and loc depend on flip mode:
 			switch (f) {
@@ -354,7 +355,7 @@ private:
 			return *this;
 		}
 		// Postfix increment.
-		tile_iterator<T> operator++(int) noexcept {
+		tile_iterator<T> operator++(int const) noexcept {
 			tile_iterator<T> ret(*this);
 			incr();
 			return ret;
@@ -365,32 +366,32 @@ private:
 			return *this;
 		}
 		// Postfix decrement.
-		tile_iterator<T> operator--(int) noexcept {
+		tile_iterator<T> operator--(int const) noexcept {
 			tile_iterator<T> ret(*this);
 			decr();
 			return ret;
 		}
 		// Add amount to iterator. Can add positive or negative values.
-		tile_iterator<T> operator+=(difference_type rhs) noexcept {
+		tile_iterator<T> operator+=(difference_type const rhs) noexcept {
 			offset(rhs);
 			return *this;
 		}
 		// Returns iterator obtained by adding amount to lhs.
-		tile_iterator<T> operator+(difference_type rhs) const noexcept {
+		tile_iterator<T> operator+(difference_type const rhs) const noexcept {
 			tile_iterator<T> ret(*this);
 			ret += rhs;
 			return ret;
 		}
 		// Makes addition of difference_type to iterator commutative.
-		friend tile_iterator<T> operator+(difference_type lhs,tile_iterator<T> const &rhs) noexcept {
+		friend tile_iterator<T> operator+(difference_type const lhs,tile_iterator<T> const &rhs) noexcept {
 			return rhs + lhs;
 		}
 		// Subtract amount from iterator. Can add positive or negative values.
-		tile_iterator<T> operator-=(difference_type rhs) noexcept {
+		tile_iterator<T> operator-=(difference_type const rhs) noexcept {
 			return operator+=(-rhs);
 		}
 		// Returns iterator obtained by subtracting amount from lhs.
-		tile_iterator<T> operator-(difference_type rhs) const noexcept {
+		tile_iterator<T> operator-(difference_type const rhs) const noexcept {
 			tile_iterator<T> ret(*this);
 			ret += -rhs;
 			return ret;
@@ -427,8 +428,8 @@ private:
 		reference  operator* ()       noexcept {	return   tiledata[loc] ;	}
 		pointer    operator->()       noexcept {	return &(tiledata[loc]);	}
 		pointer    operator->() const noexcept {	return &(tiledata[loc]);	}
-		value_type operator[](difference_type n) const noexcept {	return *operator+(n);	}
-		reference  operator[](difference_type n)       noexcept {	return *operator+(n);	}
+		value_type operator[](difference_type const n) const noexcept {	return *operator+(n);	}
+		reference  operator[](difference_type const n)       noexcept {	return *operator+(n);	}
 	};
 
 public:
@@ -446,33 +447,33 @@ public:
 	BaseTile(BaseTile<lsize, nlines> const &other) noexcept;
 	// From (start, finish) range in iterators.
 	template <typename Iter>
-	BaseTile(Iter &start, Iter const &finish, FlipMode f, unsigned nreps = 1) noexcept;
+	BaseTile(Iter &start, Iter const &finish, FlipMode const f, unsigned const nreps = 1) noexcept;
 	// Assignment.
 	BaseTile &operator=(BaseTile<lsize, nlines> const &rhs) noexcept;
 
 	// Computes (square of) distance between two tiles. This distance is defined
 	// as being the sum of th squares of the differences between corresponding
 	// pixels in the tiles.
-	unsigned distance(unsigned const (&DistTable)[16][16], FlipMode flip, const_iterator start, const_iterator const &finish) const noexcept;
+	unsigned distance(unsigned const (&DistTable)[16][16], FlipMode const flip, const_iterator start, const_iterator const &finish) const noexcept;
 
 	// Functions for starting iteration. Note how the reverse iterators are the
 	// same as forward iterators with X and Y both flipped.
-	iterator                 begin(FlipMode f)        noexcept {	return iterator(f, tiledata, false);	}
-	iterator                 end(FlipMode f)          noexcept {	return iterator(f, tiledata, true );	}
-	const_iterator           begin(FlipMode f)  const noexcept {	return const_iterator(f, tiledata, false);	}
-	const_iterator           end(FlipMode f)    const noexcept {	return const_iterator(f, tiledata, true );	}
-	const_iterator          cbegin(FlipMode f)  const noexcept {	return const_iterator(f, tiledata, false);	}
-	const_iterator          cend(FlipMode f)    const noexcept {	return const_iterator(f, tiledata, true );	}
-	reverse_iterator        rbegin(FlipMode f)        noexcept {	return begin(flip_xy(f));	}
-	reverse_iterator        rend(FlipMode f)          noexcept {	return end(f, tiledata);	}
-	const_reverse_iterator  rbegin(FlipMode f)  const noexcept {	return begin(flip_xy(f));	}
-	const_reverse_iterator  rend(FlipMode f)    const noexcept {	return end(f, tiledata);	}
-	const_reverse_iterator crbegin(FlipMode f)  const noexcept {	return begin(flip_xy(f));	}
-	const_reverse_iterator crend(FlipMode f)    const noexcept {	return end(f, tiledata);	}
+	iterator                 begin(FlipMode const f)        noexcept {	return iterator(f, tiledata, false);	}
+	iterator                 end(FlipMode const f)          noexcept {	return iterator(f, tiledata, true );	}
+	const_iterator           begin(FlipMode const f)  const noexcept {	return const_iterator(f, tiledata, false);	}
+	const_iterator           end(FlipMode const f)    const noexcept {	return const_iterator(f, tiledata, true );	}
+	const_iterator          cbegin(FlipMode const f)  const noexcept {	return const_iterator(f, tiledata, false);	}
+	const_iterator          cend(FlipMode const f)    const noexcept {	return const_iterator(f, tiledata, true );	}
+	reverse_iterator        rbegin(FlipMode const f)        noexcept {	return begin(flip_xy(f));	}
+	reverse_iterator        rend(FlipMode const f)          noexcept {	return end(f, tiledata);	}
+	const_reverse_iterator  rbegin(FlipMode const f)  const noexcept {	return begin(flip_xy(f));	}
+	const_reverse_iterator  rend(FlipMode const f)    const noexcept {	return end(f, tiledata);	}
+	const_reverse_iterator crbegin(FlipMode const f)  const noexcept {	return begin(flip_xy(f));	}
+	const_reverse_iterator crend(FlipMode const f)    const noexcept {	return end(f, tiledata);	}
 
 	// Draws linecnt lines of the tile, starting at the position specified by
 	// start iterator, to output stream out.
-	void draw_tile(std::ostream &out, const_iterator &start, unsigned linecnt = nlines) const noexcept;
+	void draw_tile(std::ostream &out, const_iterator &start, unsigned const linecnt = nlines) const noexcept;
 };
 
 
@@ -502,7 +503,7 @@ BaseTile<lsize, nlines>::BaseTile(BaseTile<lsize, nlines> const &other) noexcept
 // Construct by copying from given iterators several times.
 template<int lsize, int nlines>
 template<typename Iter>
-BaseTile<lsize, nlines>::BaseTile(Iter &start, Iter const &finish, FlipMode f, unsigned nreps) noexcept {
+BaseTile<lsize, nlines>::BaseTile(Iter &start, Iter const &finish, FlipMode const f, unsigned const nreps) noexcept {
 	iterator it = begin(f);
 	// First nreps-1 repeats.
 	for (unsigned ii = 1; ii < nreps; ii++) {
@@ -532,11 +533,11 @@ BaseTile<lsize, nlines> &BaseTile<lsize, nlines>::operator=(BaseTile<lsize, nlin
 
 // Computes distance between this tile and the data at the given iterators.
 template<int lsize, int nlines>
-unsigned BaseTile<lsize, nlines>::distance(unsigned const (&DistTable)[16][16], FlipMode flip, const_iterator start, const_iterator const &finish) const noexcept {
+unsigned BaseTile<lsize, nlines>::distance(unsigned const (&DistTable)[16][16], FlipMode const flip, const_iterator start, const_iterator const &finish) const noexcept {
 	unsigned dist = 0;
 	for (const_iterator it = begin(flip) ; it != end(flip) && start != finish;
 	     ++it, ++start) {
-		unsigned cl = *it, cr = *start;
+		unsigned const cl = *it, cr = *start;
 		dist += DistTable[cl][cr];
 	}
 	return dist;

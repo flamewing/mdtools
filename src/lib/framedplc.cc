@@ -28,7 +28,7 @@
 
 using namespace std;
 
-void frame_dplc::read(istream &in, int ver) {
+void frame_dplc::read(istream &in, int const ver) {
 	size_t cnt;
 	if (ver == 1) {
 		cnt = Read1(in);
@@ -45,7 +45,7 @@ void frame_dplc::read(istream &in, int ver) {
 	}
 }
 
-void frame_dplc::write(ostream &out, int ver) const {
+void frame_dplc::write(ostream &out, int const ver) const {
 	if (ver == 1) {
 		Write1(out, dplc.size());
 	} else if (ver == 4) {
@@ -53,14 +53,14 @@ void frame_dplc::write(ostream &out, int ver) const {
 	} else {
 		BigEndian::Write2(out, dplc.size());
 	}
-	for (const auto & elem : dplc) {
+	for (auto const & elem : dplc) {
 		elem.write(out, ver);
 	}
 }
 
 void frame_dplc::print() const {
 	size_t ntiles = 0;
-	for (const auto & elem : dplc) {
+	for (auto const & elem : dplc) {
 		ntiles += elem.get_cnt();
 		elem.print();
 	}
@@ -77,7 +77,7 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 
 	size_t start = src.dplc[0].get_tile(), size = 0;
 	frame_dplc interm;
-	for (const auto & sd : src.dplc) {
+	for (auto const & sd : src.dplc) {
 		if (sd.get_tile() != start + size) {
 			single_dplc nn{};
 			nn.set_tile(start);
@@ -97,9 +97,8 @@ void frame_dplc::consolidate(frame_dplc const &src) {
 	}
 
 	dplc.clear();
-	for (vector<single_dplc>::const_iterator it = interm.dplc.begin();
-	        it != interm.dplc.end(); ++it) {
-		size_t tile = it->get_tile(), sz = it->get_cnt();
+	for (auto const & elem : interm.dplc) {
+		size_t tile = elem.get_tile(), sz = elem.get_cnt();
 
 		while (sz >= 16) {
 			single_dplc nn{};
@@ -123,7 +122,7 @@ void frame_dplc::insert(single_dplc const &val) {
 }
 
 void frame_dplc::build_vram_map(map<size_t, size_t> &vram_map) const {
-	for (const auto & sd : dplc) {
+	for (auto const & sd : dplc) {
 		size_t ss = sd.get_tile(), sz = sd.get_cnt();
 		for (size_t i = ss; i < ss + sz; i++) {
 			vram_map.emplace(vram_map.size(), i);

@@ -27,14 +27,14 @@
 
 using namespace std;
 
-SSTrackFrame::SSTrackFrame(istream &in, bool xflip) noexcept : PlaneH128V28() {
+SSTrackFrame::SSTrackFrame(istream &in, bool const xflip) noexcept : PlaneH128V28() {
 	stringstream bitflags(ios::in | ios::out | ios::binary),
 	             sym_maps(ios::in | ios::out | ios::binary),
 	             dic_maps(ios::in | ios::out | ios::binary);
 	// Fill in the bitflags stream.
 	size_t pos = in.tellg();
 	in.ignore(2);
-	unsigned short len1 = BigEndian::Read2(in);
+	unsigned short const len1 = BigEndian::Read2(in);
 	ostream_iterator<unsigned char> bfdst(bitflags);
 	for (unsigned short ii = 0; ii < len1; ii++) {
 		*bfdst++ = Read1(in);
@@ -45,7 +45,7 @@ SSTrackFrame::SSTrackFrame(istream &in, bool xflip) noexcept : PlaneH128V28() {
 	in.seekg(pos + len1 + 4);
 	pos = in.tellg();
 	in.ignore(2);
-	unsigned short len2 = BigEndian::Read2(in);
+	unsigned short const len2 = BigEndian::Read2(in);
 	ostream_iterator<unsigned char> smdst(sym_maps);
 	for (unsigned short ii = 0; ii < len2; ii++) {
 		*smdst++ = Read1(in);
@@ -56,7 +56,7 @@ SSTrackFrame::SSTrackFrame(istream &in, bool xflip) noexcept : PlaneH128V28() {
 	in.seekg(pos + len2 + 4);
 	pos = in.tellg();
 	in.ignore(2);
-	unsigned short len3 = BigEndian::Read2(in);
+	unsigned short const len3 = BigEndian::Read2(in);
 	ostream_iterator<unsigned char> dmdst(dic_maps);
 	for (unsigned short ii = 0; ii < len3; ii++) {
 		*dmdst++ = Read1(in);
@@ -115,7 +115,7 @@ SSTrackFrame::SSTrackFrame(istream &in, bool xflip) noexcept : PlaneH128V28() {
 			// 7-bit index or 6-bit index?
 			if (idic_maps.pop()) {
 				// 7-bit.
-				unsigned char val = idic_maps.read(7);
+				unsigned char const val = idic_maps.read(7);
 				// Did we read a 0x7f?
 				if (val == 0x7f) {
 					// Yes; this means a non-byte-aligned 0xff, or end-of-line.
