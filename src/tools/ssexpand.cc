@@ -30,7 +30,7 @@ using namespace std;
 #include "mdcomp/kosinski.h"
 
 static void usage(char *prog) {
-	cerr << "Usage: " << prog << " [-f|--flipped] {inart} {intrack} {outartkos} {outplanekos} {outplaneeni}" << endl;
+	cerr << "Usage: " << prog << " [-f|--flipped] {inpal} {inart} {intrack} {outartkos} {outplanekos} {outplaneeni}" << endl;
 	cerr << endl;
 	cerr << "\t-f,--flipped\tFlips the give frame horizontally." << endl;
 }
@@ -58,46 +58,62 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (argc - optind < 5) {
+	enum ArgumentIDs {
+		InPal = 0,
+		InArt,
+		InTrack,
+		OutArtKos,
+		OutPlaneKos,
+		OutPlaneEni,
+		TotalArgCount
+	};
+	if (argc - optind < TotalArgCount) {
 		usage(argv[0]);
 		return 1;
 	}
 
-	ifstream inart(argv[optind+0], ios::in|ios::binary);
+	ifstream inpal(argv[optind+InPal], ios::in|ios::binary);
+	if (!inpal.good()) {
+		cerr << "Could not read from palette file '" << argv[optind+InPal] << "'." << endl;
+		return InPal+2;
+	}
+
+	ifstream inart(argv[optind+InArt], ios::in|ios::binary);
 	if (!inart.good()) {
-		cerr << "Could not read from art file '" << argv[optind+0] << "'." << endl;
-		return 2;
+		cerr << "Could not read from art file '" << argv[optind+InArt] << "'." << endl;
+		return InArt+2;
 	}
 
-	ifstream intrack(argv[optind+1], ios::in|ios::binary);
+	ifstream intrack(argv[optind+InTrack], ios::in|ios::binary);
 	if (!intrack.good()) {
-		cerr << "Could not read from track file '" << argv[optind+1] << "'." << endl;
-		return 3;
+		cerr << "Could not read from track file '" << argv[optind+InTrack] << "'." << endl;
+		return InTrack+2;
 	}
 
-	ofstream artout(argv[optind+2], ios::out|ios::binary|ios::trunc);
+	ofstream artout(argv[optind+OutArtKos], ios::out|ios::binary|ios::trunc);
 	if (!artout.good()) {
-		cerr << "Could not open output art file '" << argv[optind+2] << "'." << endl;
-		return 4;
+		cerr << "Could not open output art file '" << argv[optind+OutArtKos] << "'." << endl;
+		return OutArtKos+2;
 	}
 
-	ofstream planekos(argv[optind+3], ios::out|ios::binary|ios::trunc);
+	ofstream planekos(argv[optind+OutPlaneKos], ios::out|ios::binary|ios::trunc);
 	if (!planekos.good()) {
-		cerr << "Could not open output Kosinski-compressed plane map file '" << argv[optind+3] << "'." << endl;
-		return 5;
+		cerr << "Could not open output Kosinski-compressed plane map file '" << argv[optind+OutPlaneKos] << "'." << endl;
+		return OutPlaneKos+2;
 	}
 
-	ofstream planeeni(argv[optind+4], ios::out|ios::binary|ios::trunc);
+	ofstream planeeni(argv[optind+OutPlaneEni], ios::out|ios::binary|ios::trunc);
 	if (!planeeni.good()) {
-		cerr << "Could not open output Enigma-compressed pĺane map file '" << argv[optind+4] << "'." << endl;
-		return 6;
+		cerr << "Could not open output Enigma-compressed pĺane map file '" << argv[optind+OutPlaneEni] << "'." << endl;
+		return OutPlaneEni+2;
 	}
 
-	SSVRAM ssvram(inart);
+	SSVRAM ssvram(inpal, inart);
 	SSTrackFrame track(intrack, flipped);
 
 	// Lets draw it!
 	VRAM<Tile>  vram;
+	vram.copy_dist_table(ssvram);
 	PlaneH32V28 plane;
 
 	// First, lets create plane map and art for an equivalent scene.

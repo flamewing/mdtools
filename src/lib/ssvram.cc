@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <limits>
 #include <sstream>
 
 #include "bigendian_io.h"
@@ -30,10 +31,10 @@ using namespace std;
 // Initializes the S2 Special Stage VRAM track tiles from the given stream. The
 // tiles are assumed to be Kosinski-encoded after being reduced from 8 identical
 // lines dow to a single line.
-SSVRAM::SSVRAM(istream &in) noexcept : VRAM() {
+SSVRAM::SSVRAM(istream &pal, istream &art) noexcept : VRAM() {
 	// Start by decompressing Kosinski-encoded source data.
 	stringstream sout(ios::in | ios::out | ios::binary);
-	kosinski::decode(in, sout);
+	kosinski::decode(art, sout);
 	sout.seekg(0);
 	sout.clear();
 
@@ -53,6 +54,43 @@ SSVRAM::SSVRAM(istream &in) noexcept : VRAM() {
 		}
 		tiles.push_back(tile);
 	}
+
+	auto const start = pal.tellg();
+	pal.ignore(numeric_limits<streamsize>::max());
+	auto const charCount = pal.gcount();
+	pal.seekg(start);
+	size_t palLen = charCount / sizeof(uint16_t);
+	assert(palLen >= 16);
+	uint16_t *palette = new uint16_t[palLen];
+	for (size_t ii = 0; ii < palLen; ii++) {
+		palette[ii] = BigEndian::Read2(pal);
+	}
+	auto const getR = [](uint16_t clr) -> int {
+			return clr & 0xf;
+		};
+	auto const getG = [](uint16_t clr) -> int {
+			return (clr >> 4) & 0xf;
+		};
+	auto const getB = [](uint16_t clr) -> int {
+			return (clr >> 8) & 0xf;
+		};
+	auto const deltaSquare = [](int c1, int c2) -> unsigned {
+			return (c1 - c2) * (c1 - c2);
+		};
+	auto const distance =
+		[&deltaSquare, &getR, &getG, &getB]
+		(uint16_t c1, uint16_t c2) -> unsigned {
+			return deltaSquare(getR(c1), getR(c2))
+			     + deltaSquare(getG(c1), getG(c2))
+			     + deltaSquare(getB(c1), getB(c2));
+		};
+	for (size_t ii = 0; ii < 16; ii++) {
+		distTable[ii][ii] = 0;
+		for (size_t jj = ii + 1; jj < 16; jj++) {
+			distTable[ii][jj] = distTable[jj][ii] = distance(palette[ii], palette[jj]);
+		}
+	}
+	delete [] palette;
 }
 
 // Splits the given full-sized tile into 4 short (2-line) tiles.

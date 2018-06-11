@@ -34,7 +34,7 @@ typedef BaseTile<8,2> ShortTile;
 // imported image.
 class SSVRAM : public VRAM<ShortTile> {
 public:
-	SSVRAM(std::istream &in) noexcept;
+	SSVRAM(std::istream &pal, std::istream &art) noexcept;
 };
 
 std::vector<ShortTile> split_tile(Tile const &tile) noexcept;

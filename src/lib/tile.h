@@ -453,7 +453,7 @@ public:
 	// Computes (square of) distance between two tiles. This distance is defined
 	// as being the sum of th squares of the differences between corresponding
 	// pixels in the tiles.
-	unsigned distance(FlipMode flip, const_iterator start, const_iterator const &finish) const noexcept;
+	unsigned distance(unsigned const (&DistTable)[16][16], FlipMode flip, const_iterator start, const_iterator const &finish) const noexcept;
 
 	// Functions for starting iteration. Note how the reverse iterators are the
 	// same as forward iterators with X and Y both flipped.
@@ -532,12 +532,12 @@ BaseTile<lsize, nlines> &BaseTile<lsize, nlines>::operator=(BaseTile<lsize, nlin
 
 // Computes distance between this tile and the data at the given iterators.
 template<int lsize, int nlines>
-unsigned BaseTile<lsize, nlines>::distance(FlipMode flip, const_iterator start, const_iterator const &finish) const noexcept {
+unsigned BaseTile<lsize, nlines>::distance(unsigned const (&DistTable)[16][16], FlipMode flip, const_iterator start, const_iterator const &finish) const noexcept {
 	unsigned dist = 0;
 	for (const_iterator it = begin(flip) ; it != end(flip) && start != finish;
 	     ++it, ++start) {
-		unsigned char cl = *it, cr = *start;
-		dist += (cl - cr) * (cl - cr);
+		unsigned cl = *it, cr = *start;
+		dist += DistTable[cl][cr];
 	}
 	return dist;
 }

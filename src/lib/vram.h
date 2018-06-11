@@ -32,6 +32,7 @@ public:
 	typedef std::vector<Tile_t> Tiles;
 protected:
 	Tiles tiles;
+	unsigned distTable[16][16];
 public:
 	// Constructor.
 	VRAM() noexcept {
@@ -51,6 +52,18 @@ public:
 		}
 	}
 
+	decltype(distTable) const & get_dist_table() const {
+		return distTable;
+	}
+	void copy_dist_table(VRAM<Tile_t> const& other) {
+		if (this != &other) {
+			std::memcpy(distTable, other.get_dist_table(), sizeof(distTable));
+		}
+	}
+	template<typename T>
+	void copy_dist_table(VRAM<T> const& other) {
+		std::memcpy(distTable, other.get_dist_table(), sizeof(distTable));
+	}
 	// Gets the referred tile. No bounds checking!
 	Tile_t &get_tile(Pattern_Name const &pnt) noexcept {
 		return tiles[pnt.get_tile()];
@@ -96,7 +109,7 @@ public:
 		for (typename Tiles::const_iterator it = tiles.begin();
 		     it != tiles.end(); ++it) {
 			for (auto & mode : modes) {
-				unsigned dist = it->distance(mode, start, finish);
+				unsigned dist = it->distance(distTable, mode, start, finish);
 				if (dist < best_dist) {
 					// Set new best.
 					best = Pattern_Name(it - tiles.begin());
