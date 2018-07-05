@@ -24,8 +24,8 @@
 
 #include <getopt.h>
 
-#include <mdcomp/kosinski.h>
-#include <mdcomp/nemesis.h>
+#include <mdcomp/kosinski.hh>
+#include <mdcomp/nemesis.hh>
 
 using namespace std;
 

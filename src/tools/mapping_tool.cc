@@ -24,8 +24,8 @@
 
 #include <getopt.h>
 
-#include "mappingfile.h"
-#include "dplcfile.h"
+#include "mappingfile.hh"
+#include "dplcfile.hh"
 
 using namespace std;
 

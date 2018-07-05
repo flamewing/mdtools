@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "dplcfile.h"
+#include "dplcfile.hh"
 
 #include <cstdint>
 #include <iomanip>
@@ -24,7 +24,7 @@
 
 #include <boost/io/ios_state.hpp>
 
-#include "bigendian_io.h"
+#include "bigendian_io.hh"
 
 using namespace std;
 

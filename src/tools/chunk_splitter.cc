@@ -27,7 +27,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "bigendian_io.h"
+#include "bigendian_io.hh"
 
 using namespace std;
 

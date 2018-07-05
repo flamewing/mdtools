@@ -19,7 +19,7 @@
 #ifndef __PATTERN_NAME_H
 #define __PATTERN_NAME_H
 
-#include "bigendian_io.h"
+#include "bigendian_io.hh"
 
 // Possible flips for tiles in pattern names.
 enum FlipMode {

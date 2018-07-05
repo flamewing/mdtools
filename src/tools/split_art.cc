@@ -25,10 +25,10 @@
 
 #include <getopt.h>
 
-#include <mdcomp/comper.h>
-#include <mdcomp/kosinski.h>
+#include <mdcomp/comper.hh>
+#include <mdcomp/kosinski.hh>
 
-#include "dplcfile.h"
+#include "dplcfile.hh"
 
 using namespace std;
 

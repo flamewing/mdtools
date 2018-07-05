@@ -24,10 +24,10 @@ using namespace std;
 
 #include <getopt.h>
 
-#include "ssvram.h"
-#include "sstrack.h"
-#include "mdcomp/enigma.h"
-#include "mdcomp/kosinski.h"
+#include "ssvram.hh"
+#include "sstrack.hh"
+#include "mdcomp/enigma.hh"
+#include "mdcomp/kosinski.hh"
 
 static void usage(char *prog) {
 	cerr << "Usage: " << prog << " [-f|--flipped] {inpal} {inart} {intrack} {outartkos} {outplanekos} {outplaneeni}" << endl;

@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sstrack.h"
+#include "sstrack.hh"
 
 #include <iterator>
 #include <sstream>
 #include <string>
 
-#include "bigendian_io.h"
-#include "bitstream.h"
+#include "bigendian_io.hh"
+#include "bitstream.hh"
 
 using namespace std;
 

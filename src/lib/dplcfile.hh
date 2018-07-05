@@ -16,40 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_FRAMEMAPPING_H
-#define __LIB_FRAMEMAPPING_H
+#ifndef __LIB_DPLCFILE_H
+#define __LIB_DPLCFILE_H
 
 #include <iosfwd>
 #include <vector>
-#include "singlemapping.h"
-#include "framedplc.h"
+#include "framedplc.hh"
 
-class frame_mapping {
+class dplc_file {
 protected:
-	std::vector<single_mapping> maps;
+	std::vector<frame_dplc> frames;
 public:
 	void read(std::istream &in, int const ver);
-	void write(std::ostream &out, int const ver) const;
+	void write(std::ostream &out, int const ver, bool const nullfirst) const;
 	void print() const;
-	void split(frame_mapping const &src, frame_dplc &dplc);
-	void merge(frame_mapping const &src, frame_dplc const &dplc);
-	void change_pal(int const srcpal, int const dstpal);
-	single_mapping const &get_maps(size_t const i) const {
-		return maps[i];
+	void consolidate(dplc_file const &src);
+	void insert(frame_dplc const &val);
+	frame_dplc const &get_dplc(size_t const i) const {
+		return frames[i];
 	}
 	bool empty() const {
-		return maps.empty();
+		return frames.empty();
 	}
 	size_t size() const {
-		return maps.size();
+		return frames.size();
 	}
-	size_t size(int const ver) const {
-		return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
-	}
-	bool operator<(frame_mapping const &rhs) const;
-	bool operator==(frame_mapping const &rhs) const {
-		return !(*this < rhs || rhs < *this);
-	}
+	size_t size(int const ver) const;
 };
 
-#endif // __LIB_FRAMEMAPPING_H
+#endif // __LIB_DPLCFILE_H

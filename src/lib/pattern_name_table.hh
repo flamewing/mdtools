@@ -19,13 +19,13 @@
 #ifndef __PATTERN_NAME_TABLE_H
 #define __PATTERN_NAME_TABLE_H
 
-#include "pattern_name.h"
+#include "pattern_name.hh"
 
 #include <array>
 #include <sstream>
 
-#include "bigendian_io.h"
-#include "mdcomp/enigma.h"
+#include "bigendian_io.hh"
+#include "mdcomp/enigma.hh"
 
 template<unsigned width, unsigned height>
 class Pattern_Name_Table {

@@ -25,10 +25,10 @@
 
 #include <getopt.h>
 
-#include <mdcomp/enigma.h>
+#include <mdcomp/enigma.hh>
 
-#include "bigendian_io.h"
-#include "ignore_unused_variable_warning.h"
+#include "bigendian_io.hh"
+#include "ignore_unused_variable_warning.hh"
 
 using namespace std;
 

@@ -22,7 +22,7 @@
 #include <iosfwd>
 #include <vector>
 
-#include "vram.h"
+#include "vram.hh"
 
 // Ideally, <8,1> would be enough -- except that we will be needing to import
 // from an image which may not be perfectly equal on each pair of tile lines.

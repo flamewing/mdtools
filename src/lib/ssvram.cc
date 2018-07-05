@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ssvram.h"
+#include "ssvram.hh"
 
 #include <cassert>
 #include <iostream>
 #include <limits>
 #include <sstream>
 
-#include "bigendian_io.h"
-#include "mdcomp/kosinski.h"
+#include "bigendian_io.hh"
+#include "mdcomp/kosinski.hh"
 
 using namespace std;
 

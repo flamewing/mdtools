@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "singlemapping.h"
+#include "singlemapping.hh"
 
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
 
-#include "bigendian_io.h"
+#include "bigendian_io.hh"
 
 using namespace std;
 

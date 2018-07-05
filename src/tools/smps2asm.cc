@@ -33,12 +33,12 @@
 
 #include <getopt.h>
 
-#include <mdcomp/saxman.h>
+#include <mdcomp/saxman.hh>
 
-#include "bigendian_io.h"
-#include "fmvoice.h"
-#include "ignore_unused_variable_warning.h"
-#include "songtrack.h"
+#include "bigendian_io.hh"
+#include "fmvoice.hh"
+#include "ignore_unused_variable_warning.hh"
+#include "songtrack.hh"
 
 #define SMPS2ASM_VERSION 1
 

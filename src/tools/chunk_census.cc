@@ -23,7 +23,7 @@
 #include <iostream>
 #include <sstream>
 
-#include <mdcomp/kosinski.h>
+#include <mdcomp/kosinski.hh>
 
 using namespace std;
 

@@ -13,7 +13,7 @@ bin_PROGRAMS = \
 
 voice_dumper_SOURCES = \
 	fmvoice.cc    \
-	fmvoice.h    \
+	fmvoice.hh    \
 	voice_dumper.cc
 
 voice_dumper_CXXFLAGS = \
@@ -50,10 +50,10 @@ ssdraw_LDFLAGS = $(builddir)/../lib/libsstrack.la \
 smps2asm_SOURCES = \
 	smps2asm.cc\
 	fmvoice.cc\
-	fmvoice.h \
+	fmvoice.hh \
 	songtrack.cc \
-	songtrack.h \
-	../lib/ignore_unused_variable_warning.h
+	songtrack.hh \
+	../lib/ignore_unused_variable_warning.hh
 
 smps2asm_CXXFLAGS = \
 	-I$(srcdir)/../lib
@@ -79,7 +79,7 @@ mapping_tool_CXXFLAGS = \
 
 plane_map_SOURCES = \
 	plane_map.cc \
-	../lib/ignore_unused_variable_warning.h
+	../lib/ignore_unused_variable_warning.hh
 
 plane_map_LDFLAGS = -lenigma
 

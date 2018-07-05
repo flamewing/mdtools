@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "singledplc.h"
+#include "singledplc.hh"
 
 #include <iomanip>
 #include <iostream>
 
-#include "bigendian_io.h"
+#include "bigendian_io.hh"
 
 using namespace std;
 

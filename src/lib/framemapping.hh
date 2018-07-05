@@ -16,35 +16,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_MAPPINGFILE_H
-#define __LIB_MAPPINGFILE_H
+#ifndef __LIB_FRAMEMAPPING_H
+#define __LIB_FRAMEMAPPING_H
 
 #include <iosfwd>
 #include <vector>
-#include "framemapping.h"
-#include "dplcfile.h"
+#include "singlemapping.hh"
+#include "framedplc.hh"
 
-class mapping_file {
+class frame_mapping {
 protected:
-	std::vector<frame_mapping> frames;
+	std::vector<single_mapping> maps;
 public:
 	void read(std::istream &in, int const ver);
-	void write(std::ostream &out, int const ver, bool const nullfirst) const;
+	void write(std::ostream &out, int const ver) const;
 	void print() const;
-	void split(mapping_file const &src, dplc_file &dplc);
-	void merge(mapping_file const &src, dplc_file const &dplc);
-	void optimize(mapping_file const &src, dplc_file const &indplc, dplc_file &outdplc);
+	void split(frame_mapping const &src, frame_dplc &dplc);
+	void merge(frame_mapping const &src, frame_dplc const &dplc);
 	void change_pal(int const srcpal, int const dstpal);
-	frame_mapping const &get_maps(size_t const i) const {
-		return frames[i];
+	single_mapping const &get_maps(size_t const i) const {
+		return maps[i];
 	}
 	bool empty() const {
-		return frames.empty();
+		return maps.empty();
 	}
 	size_t size() const {
-		return frames.size();
+		return maps.size();
 	}
-	size_t size(int const ver) const;
+	size_t size(int const ver) const {
+		return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
+	}
+	bool operator<(frame_mapping const &rhs) const;
+	bool operator==(frame_mapping const &rhs) const {
+		return !(*this < rhs || rhs < *this);
+	}
 };
 
-#endif // __LIB_MAPPINGFILE_H
+#endif // __LIB_FRAMEMAPPING_H

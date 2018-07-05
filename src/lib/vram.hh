@@ -22,8 +22,8 @@
 #include <iosfwd>
 #include <vector>
 
-#include "pattern_name.h"
-#include "tile.h"
+#include "pattern_name.hh"
+#include "tile.hh"
 
 // Template class with basic VRAM functionality.
 template<typename Tile_t>
@@ -105,7 +105,7 @@ public:
 		                                finish = tile.end(NoFlip);
 		// Want to compare using all possible flips.
 		static FlipMode const modes[] = {NoFlip, XFlip, YFlip, XYFlip};
-		
+
 		for (typename Tiles::const_iterator it = tiles.begin();
 		     it != tiles.end(); ++it) {
 			for (auto & mode : modes) {

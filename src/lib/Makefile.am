@@ -4,33 +4,33 @@ lib_LTLIBRARIES = \
 	libsstrack.la
 
 libmappings_la_SOURCES = \
-	singledplc.h \
+	singledplc.hh \
 	singledplc.cc \
-	framedplc.h \
+	framedplc.hh \
 	framedplc.cc \
-	dplcfile.h \
+	dplcfile.hh \
 	dplcfile.cc \
-	singlemapping.h \
+	singlemapping.hh \
 	singlemapping.cc \
-	framemapping.h \
+	framemapping.hh \
 	framemapping.cc \
-	mappingfile.h \
+	mappingfile.hh \
 	mappingfile.cc \
-	ignore_unused_variable_warning.h
+	ignore_unused_variable_warning.hh
 
 libmappings_la_LIBADD = 
 
 libsstrack_la_SOURCES =  \
 	ssvram.cc \
-	ssvram.h  \
-	pattern_name.h  \
-	tile.h  \
-	vram.h  \
+	ssvram.hh \
+	pattern_name.hh \
+	tile.hh \
+	vram.hh \
 	sstrack.cc  \
-	sstrack.h  \
-	pattern_name_table.h  \
-	bigendian_io.h  \
-	bitstream.h
+	sstrack.hh \
+	pattern_name_table.hh \
+	bigendian_io.hh \
+	bitstream.hh
 
 libsstrack_la_LIBADD = -lkosinski -lenigma
 

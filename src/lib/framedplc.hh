@@ -16,49 +16,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_SINGLEDPLC_H
-#define __LIB_SINGLEDPLC_H
+#ifndef __LIB_FRAMEDPLC_H
+#define __LIB_FRAMEDPLC_H
 
 #include <iosfwd>
-#include "ignore_unused_variable_warning.h"
+#include <map>
+#include <vector>
+#include "singledplc.hh"
 
-class single_dplc {
+class frame_dplc {
 protected:
-	unsigned short cnt, tile;
+	std::vector<single_dplc> dplc;
 public:
 	void read(std::istream &in, int const ver);
 	void write(std::ostream &out, int const ver) const;
 	void print() const;
-	static size_t size(int const ver) {
-		ignore_unused_variable_warning(ver);
-		return 2;
+	void consolidate(frame_dplc const &src);
+	void insert(single_dplc const &val);
+	void build_vram_map(std::map<size_t, size_t> &vram_map) const;
+	single_dplc const &get_dplc(size_t const i) const {
+		return dplc[i];
 	}
-	unsigned short get_cnt() const {
-		return cnt;
+	bool empty() const {
+		return dplc.empty();
 	}
-	unsigned short get_tile() const {
-		return tile;
+	size_t size() const {
+		return dplc.size();
 	}
-	void set_cnt(unsigned short const c) {
-		cnt = c;
+	size_t size(int const ver) const {
+		return (ver == 1 ? 1 : 2) + single_dplc::size(ver) * dplc.size();
 	}
-	void set_tile(unsigned short const t) {
-		tile = t;
-	}
-	bool operator<(single_dplc const &rhs) const {
-		if (cnt < rhs.cnt) {
-			return true;
-		} else if (cnt > rhs.cnt) {
-			return false;
-		}
-		if (tile < rhs.tile) {
-			return true;
-		}
-		return false;
-	}
-	bool operator==(single_dplc const &rhs) const {
+	bool operator<(frame_dplc const &rhs) const;
+	bool operator==(frame_dplc const &rhs) const {
 		return !(*this < rhs || rhs < *this);
 	}
 };
 
-#endif // __LIB_SINGLEDPLC_H
+#endif // __LIB_FRAMEDPLC_H

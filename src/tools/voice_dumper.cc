@@ -22,8 +22,8 @@
 
 #include <getopt.h>
 
-#include "bigendian_io.h"
-#include "fmvoice.h"
+#include "bigendian_io.hh"
+#include "fmvoice.hh"
 
 using namespace std;
 
