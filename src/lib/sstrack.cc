@@ -22,8 +22,8 @@
 #include <sstream>
 #include <string>
 
-#include "bigendian_io.hh"
-#include "bitstream.hh"
+#include <mdcomp/bigendian_io.hh>
+#include <mdcomp/bitstream.hh>
 
 using namespace std;
 

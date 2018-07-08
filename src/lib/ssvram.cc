@@ -23,8 +23,8 @@
 #include <limits>
 #include <sstream>
 
-#include "bigendian_io.hh"
-#include "mdcomp/kosinski.hh"
+#include <mdcomp/bigendian_io.hh>
+#include <mdcomp/kosinski.hh>
 
 using namespace std;
 

@@ -186,6 +186,16 @@ AX_BOOST_BASE([1.54],, [AC_MSG_ERROR([mdcomp requires Boost, but it was not foun
 # Required mdcomp headers
 # ---------------------------------------------------------------------
 
+AC_CHECK_HEADER(mdcomp/bigendian_io.hh,break,[HAVE_BIGENDIANIO="no"])
+if test "$HAVE_BIGENDIANIO" = "no"; then
+    echo "Fatal error: bigendian_io header not found!"
+    exit 1
+fi
+AC_CHECK_HEADER(mdcomp/bitstream.hh,break,[HAVE_BITSTREAM="no"])
+if test "$HAVE_BITSTREAM" = "no"; then
+    echo "Fatal error: bitstream header not found!"
+    exit 1
+fi
 AC_CHECK_HEADER(mdcomp/comper.hh,break,[HAVE_COMPER="no"])
 if test "$HAVE_COMPER" = "no"; then
     echo "Fatal error: Comper header not found!"
@@ -222,4 +232,3 @@ src/Makefile
 src/lib/Makefile
 src/tools/Makefile
 ])
-

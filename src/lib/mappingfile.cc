@@ -25,7 +25,7 @@
 
 #include <boost/io/ios_state.hpp>
 
-#include "bigendian_io.hh"
+#include <mdcomp/bigendian_io.hh>
 
 using namespace std;
 

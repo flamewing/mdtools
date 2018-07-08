@@ -24,8 +24,8 @@
 #include <array>
 #include <sstream>
 
-#include "bigendian_io.hh"
-#include "mdcomp/enigma.hh"
+#include <mdcomp/bigendian_io.hh>
+#include <mdcomp/enigma.hh>
 
 template<unsigned width, unsigned height>
 class Pattern_Name_Table {

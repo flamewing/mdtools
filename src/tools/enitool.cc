@@ -25,7 +25,7 @@
 
 #include <getopt.h>
 
-#include "bigendian_io.hh"
+#include <mdcomp/bigendian_io.hh>
 #include <mdcomp/enigma.hh>
 
 using namespace std;

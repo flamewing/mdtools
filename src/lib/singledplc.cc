@@ -21,7 +21,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include "bigendian_io.hh"
+#include <mdcomp/bigendian_io.hh>
 
 using namespace std;
 

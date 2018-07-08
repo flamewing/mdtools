@@ -26,8 +26,9 @@ using namespace std;
 
 #include "ssvram.hh"
 #include "sstrack.hh"
-#include "mdcomp/enigma.hh"
-#include "mdcomp/kosinski.hh"
+
+#include <mdcomp/enigma.hh>
+#include <mdcomp/kosinski.hh>
 
 static void usage(char *prog) {
 	cerr << "Usage: " << prog << " [-f|--flipped] {inpal} {inart} {intrack} {outartkos} {outplanekos} {outplaneeni}" << endl;

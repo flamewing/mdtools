@@ -33,9 +33,9 @@
 
 #include <getopt.h>
 
+#include <mdcomp/bigendian_io.hh>
 #include <mdcomp/saxman.hh>
 
-#include "bigendian_io.hh"
 #include "fmvoice.hh"
 #include "ignore_unused_variable_warning.hh"
 #include "songtrack.hh"

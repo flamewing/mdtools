@@ -28,9 +28,7 @@ libsstrack_la_SOURCES =  \
 	vram.hh \
 	sstrack.cc  \
 	sstrack.hh \
-	pattern_name_table.hh \
-	bigendian_io.hh \
-	bitstream.hh
+	pattern_name_table.hh
 
 libsstrack_la_LIBADD = -lkosinski -lenigma
 
