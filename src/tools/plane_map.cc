@@ -28,7 +28,7 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/enigma.hh>
 
-#include "ignore_unused_variable_warning.hh"
+#include <mdtools/ignore_unused_variable_warning.hh>
 
 using namespace std;
 

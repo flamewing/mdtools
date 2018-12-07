@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "singlemapping.hh"
+#include <mdtools/singlemapping.hh>
 
 #include <cstdint>
 #include <iomanip>

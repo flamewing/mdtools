@@ -28,7 +28,7 @@
 #include <mdcomp/comper.hh>
 #include <mdcomp/kosinski.hh>
 
-#include "dplcfile.hh"
+#include <mdtools/dplcfile.hh>
 
 using namespace std;
 

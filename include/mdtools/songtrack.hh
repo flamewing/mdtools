@@ -22,10 +22,10 @@
 #include <iosfwd>
 #include <map>
 #include <set>
-#include "fmvoice.hh"
+#include <mdtools/fmvoice.hh>
 #include <string>
 
-#include "ignore_unused_variable_warning.hh"
+#include <mdtools/ignore_unused_variable_warning.hh>
 
 struct LocTraits {
 	int loc;

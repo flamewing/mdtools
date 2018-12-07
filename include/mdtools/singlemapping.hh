@@ -21,7 +21,7 @@
 
 #include <iosfwd>
 #include <map>
-#include "singledplc.hh"
+#include <mdtools/singledplc.hh>
 
 class single_mapping {
 protected:

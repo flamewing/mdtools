@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ssvram.hh"
+#include <mdtools/ssvram.hh>
 
 #include <cassert>
 #include <iostream>

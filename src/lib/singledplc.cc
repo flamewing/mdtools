@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "singledplc.hh"
+#include <mdtools/singledplc.hh>
 
 #include <iomanip>
 #include <iostream>

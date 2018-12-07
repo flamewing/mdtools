@@ -36,9 +36,9 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/saxman.hh>
 
-#include "fmvoice.hh"
-#include "ignore_unused_variable_warning.hh"
-#include "songtrack.hh"
+#include <mdtools/fmvoice.hh>
+#include <mdtools/ignore_unused_variable_warning.hh>
+#include <mdtools/songtrack.hh>
 
 #define SMPS2ASM_VERSION 1
 

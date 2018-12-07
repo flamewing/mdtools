@@ -19,7 +19,7 @@
 #ifndef __SSTRACK_H
 #define __SSTRACK_H
 
-#include "pattern_name_table.hh"
+#include <mdtools/pattern_name_table.hh>
 
 #include <vector>
 

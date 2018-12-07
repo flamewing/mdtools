@@ -24,8 +24,8 @@ using namespace std;
 
 #include <getopt.h>
 
-#include "ssvram.hh"
-#include "sstrack.hh"
+#include <mdtools/ssvram.hh>
+#include <mdtools/sstrack.hh>
 
 #include <mdcomp/enigma.hh>
 #include <mdcomp/kosinski.hh>

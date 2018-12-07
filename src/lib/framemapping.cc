@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "framemapping.hh"
+#include <mdtools/framemapping.hh>
 
 #include <algorithm>
 #include <iomanip>

@@ -24,7 +24,7 @@
 #include <iosfwd>
 #include <iterator>
 
-#include "pattern_name.hh"
+#include <mdtools/pattern_name.hh>
 
 // Base tile class template that represents a tile with nlines lines of lsize
 // length each, for a total of lsize * nlines pixels (or half that in bytes).

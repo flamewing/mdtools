@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sstrack.hh"
+#include <mdtools/sstrack.hh>
 
 #include <iterator>
 #include <sstream>

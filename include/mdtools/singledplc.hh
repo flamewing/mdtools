@@ -16,41 +16,50 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_FRAMEMAPPING_H
-#define __LIB_FRAMEMAPPING_H
+#ifndef __LIB_SINGLEDPLC_H
+#define __LIB_SINGLEDPLC_H
 
 #include <iosfwd>
-#include <vector>
-#include "singlemapping.hh"
-#include "framedplc.hh"
+#include <mdtools/ignore_unused_variable_warning.hh>
 
-class frame_mapping {
+class single_dplc {
 protected:
-	std::vector<single_mapping> maps;
+	unsigned short cnt, tile;
 
 public:
 	void read(std::istream &in, int const ver);
 	void write(std::ostream &out, int const ver) const;
 	void print() const;
-	void split(frame_mapping const &src, frame_dplc &dplc);
-	void merge(frame_mapping const &src, frame_dplc const &dplc);
-	void change_pal(int const srcpal, int const dstpal);
-	single_mapping const &get_maps(size_t const i) const {
-		return maps[i];
+	static size_t size(int const ver) {
+		ignore_unused_variable_warning(ver);
+		return 2;
 	}
-	bool empty() const {
-		return maps.empty();
+	unsigned short get_cnt() const {
+		return cnt;
 	}
-	size_t size() const {
-		return maps.size();
+	unsigned short get_tile() const {
+		return tile;
 	}
-	size_t size(int const ver) const {
-		return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
+	void set_cnt(unsigned short const c) {
+		cnt = c;
 	}
-	bool operator<(frame_mapping const &rhs) const;
-	bool operator==(frame_mapping const &rhs) const {
+	void set_tile(unsigned short const t) {
+		tile = t;
+	}
+	bool operator<(single_dplc const &rhs) const {
+		if (cnt < rhs.cnt) {
+			return true;
+		} else if (cnt > rhs.cnt) {
+			return false;
+		}
+		if (tile < rhs.tile) {
+			return true;
+		}
+		return false;
+	}
+	bool operator==(single_dplc const &rhs) const {
 		return !(*this < rhs || rhs < *this);
 	}
 };
 
-#endif // __LIB_FRAMEMAPPING_H
+#endif // __LIB_SINGLEDPLC_H

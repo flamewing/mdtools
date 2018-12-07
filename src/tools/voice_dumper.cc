@@ -24,7 +24,7 @@
 
 #include <mdcomp/bigendian_io.hh>
 
-#include "fmvoice.hh"
+#include <mdtools/fmvoice.hh>
 
 using namespace std;
 

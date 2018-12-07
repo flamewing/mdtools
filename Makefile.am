@@ -1,9 +1,6 @@
-## Process this file with automake to produce Makefile.in
-## Created by Anjuta
+SUBDIRS = src
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
-
-SUBDIRS = src
 
 mdtoolsdocdir = ${prefix}/doc/mdtools
 
@@ -15,7 +12,6 @@ EXTRA_DIST = $(mdtoolsdoc_DATA) \
 	$(INTLTOOL_FILES)
 
 DISTCLEANFILES =
-
 
 # Remove doc directory on uninstall
 uninstall-local:

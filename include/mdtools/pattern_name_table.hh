@@ -19,7 +19,7 @@
 #ifndef __PATTERN_NAME_TABLE_H
 #define __PATTERN_NAME_TABLE_H
 
-#include "pattern_name.hh"
+#include <mdtools/pattern_name.hh>
 
 #include <array>
 #include <sstream>

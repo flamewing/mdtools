@@ -16,41 +16,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_FRAMEDPLC_H
-#define __LIB_FRAMEDPLC_H
+#ifndef __LIB_MAPPINGFILE_H
+#define __LIB_MAPPINGFILE_H
 
 #include <iosfwd>
-#include <map>
 #include <vector>
-#include "singledplc.hh"
+#include <mdtools/framemapping.hh>
+#include <mdtools/dplcfile.hh>
 
-class frame_dplc {
+class mapping_file {
 protected:
-	std::vector<single_dplc> dplc;
-
+	std::vector<frame_mapping> frames;
 public:
 	void read(std::istream &in, int const ver);
-	void write(std::ostream &out, int const ver) const;
+	void write(std::ostream &out, int const ver, bool const nullfirst) const;
 	void print() const;
-	void consolidate(frame_dplc const &src);
-	void insert(single_dplc const &val);
-	void build_vram_map(std::map<size_t, size_t> &vram_map) const;
-	single_dplc const &get_dplc(size_t const i) const {
-		return dplc[i];
+	void split(mapping_file const &src, dplc_file &dplc);
+	void merge(mapping_file const &src, dplc_file const &dplc);
+	void optimize(mapping_file const &src, dplc_file const &indplc, dplc_file &outdplc);
+	void change_pal(int const srcpal, int const dstpal);
+	frame_mapping const &get_maps(size_t const i) const {
+		return frames[i];
 	}
 	bool empty() const {
-		return dplc.empty();
+		return frames.empty();
 	}
 	size_t size() const {
-		return dplc.size();
+		return frames.size();
 	}
-	size_t size(int const ver) const {
-		return (ver == 1 ? 1 : 2) + single_dplc::size(ver) * dplc.size();
-	}
-	bool operator<(frame_dplc const &rhs) const;
-	bool operator==(frame_dplc const &rhs) const {
-		return !(*this < rhs || rhs < *this);
-	}
+	size_t size(int const ver) const;
 };
 
-#endif // __LIB_FRAMEDPLC_H
+#endif // __LIB_MAPPINGFILE_H

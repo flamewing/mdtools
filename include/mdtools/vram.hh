@@ -22,8 +22,8 @@
 #include <iosfwd>
 #include <vector>
 
-#include "pattern_name.hh"
-#include "tile.hh"
+#include <mdtools/pattern_name.hh>
+#include <mdtools/tile.hh>
 
 // Template class with basic VRAM functionality.
 template<typename Tile_t>
