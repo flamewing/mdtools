@@ -25,6 +25,7 @@
 class single_dplc {
 protected:
 	unsigned short cnt, tile;
+
 public:
 	void read(std::istream &in, int const ver);
 	void write(std::ostream &out, int const ver) const;
