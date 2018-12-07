@@ -22,6 +22,7 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
+#include <vector>
 
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/kosinski.hh>
@@ -61,7 +62,7 @@ SSVRAM::SSVRAM(istream &pal, istream &art) noexcept : VRAM() {
 	pal.seekg(start);
 	size_t palLen = charCount / sizeof(uint16_t);
 	assert(palLen >= 16);
-	uint16_t *palette = new uint16_t[palLen];
+	vector<uint16_t> palette(palLen, 0);
 	for (size_t ii = 0; ii < palLen; ii++) {
 		palette[ii] = BigEndian::Read2(pal);
 	}
@@ -90,7 +91,6 @@ SSVRAM::SSVRAM(istream &pal, istream &art) noexcept : VRAM() {
 			distTable[ii][jj] = distTable[jj][ii] = distance(palette[ii], palette[jj]);
 		}
 	}
-	delete [] palette;
 }
 
 // Splits the given full-sized tile into 4 short (2-line) tiles.

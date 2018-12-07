@@ -16,11 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <array>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <map>
+#include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include <cassert>
@@ -279,55 +282,61 @@ void split_chunks(ChunkS1 const &highchunk, ChunkS1 const &lowchunk,
 	}
 }
 
-constexpr bool Compare_NoCollison(ChunkS2 const &lhs, ChunkS2 const &rhs) noexcept {
-	return lhs.less(rhs);
+namespace {
+	// Some functions to generate lookup tables.
+	constexpr bool Compare_NoCollison(ChunkS2 const &lhs, ChunkS2 const &rhs) noexcept {
+		return lhs.less(rhs);
+	}
+
+	template <typename Callable, int... ids>
+	constexpr auto get_base_remaps(Callable base_remap, integer_sequence<int, ids...>) noexcept {
+		return array<unsigned char, sizeof...(ids)>{base_remap(ids)...};
+	}
+
+	constexpr auto identity_remap(int cc) {
+		return static_cast<unsigned char>(cc & 0x7F);
+	}
+
+	constexpr auto increment_remap(int cc) {
+		return static_cast<unsigned char>((cc + 1) & 0x7F);
+	}
+
+	constexpr auto init_remaps(int levelid) {
+		if (levelid >= 4 && levelid <= 6) {
+			return get_base_remaps(identity_remap, make_integer_sequence<int, 256>{});
+		} else {
+			return get_base_remaps(increment_remap, make_integer_sequence<int, 256>{});
+		}
+	}
 }
 
-unsigned char *get_chunk_remaps(int levelid) noexcept {
-	auto remaps = new unsigned char[256];
-	for (size_t ii = 0; ii < 256; ii++) {
-		if (levelid == 4) { // WWZ
-			if (ii == 0x15) {
-				remaps[ii] = 0x60;
-			} else if (ii == 0x1E) {
-				remaps[ii] = 0x61;
-			} else if (ii == 0x1F) {
-				remaps[ii] = 0x62;
-			} else if (ii == 0x32) {
-				remaps[ii] = 0x63;
-			} else {
-				remaps[ii] = static_cast<unsigned char>(ii & 0x7F);
-			}
-		} else if (levelid == 5) { // SSZ
-			if (ii == 0x04 || ii == 0x06 || ii == 0x28 || ii == 0x3C
-			    || ii == 0x37 || ii == 0x2F || ii == 0x16) {
-				remaps[ii] = static_cast<unsigned char>((ii + 1) & 0x7F);
-			} else {
-				remaps[ii] = static_cast<unsigned char>(ii & 0x7F);
-			}
-		} else if (levelid == 6) { // MMZ
-			if (ii == 0x46) {
-				remaps[ii] = 0x6A;
-			} else if (ii == 0x48) {
-				remaps[ii] = 0x6B;
-			} else if (ii == 0x4A) {
-				remaps[ii] = 0x6C;
-			} else if (ii == 0x10) {
-				remaps[ii] = 0x6D;
-			} else if (ii == 0x63) {
-				remaps[ii] = 0x6E;
-			} else if (ii == 0x43) {
-				remaps[ii] = 0x6F;
-			} else {
-				remaps[ii] = static_cast<unsigned char>(ii & 0x7F);
-			}
-		} else {
-			if (ii == 0x28) {
-				remaps[ii] = 0x51;
-			} else {
-				remaps[ii] = static_cast<unsigned char>((ii + 1) & 0x7F);
-			}
-		}
+auto get_chunk_remaps(int levelid) noexcept {
+	auto remaps{init_remaps(levelid)};
+	if (levelid == 4) {
+		// WWZ
+		remaps[0x15] = 0x60;
+		remaps[0x1E] = 0x61;
+		remaps[0x1F] = 0x62;
+		remaps[0x32] = 0x63;
+	} else if (levelid == 5) {
+		// SSZ
+		remaps[0x04] = 0x05;
+		remaps[0x06] = 0x07;
+		remaps[0x16] = 0x17;
+		remaps[0x28] = 0x29;
+		remaps[0x2F] = 0x30;
+		remaps[0x37] = 0x38;
+		remaps[0x3C] = 0x3D;
+	} else if (levelid == 6) {
+		// MMZ
+		remaps[0x10] = 0x6D;
+		remaps[0x43] = 0x6F;
+		remaps[0x46] = 0x6A;
+		remaps[0x48] = 0x6B;
+		remaps[0x4A] = 0x6C;
+		remaps[0x63] = 0x6E;
+	} else {
+		remaps[0x28] = 0x51;
 	}
 	return remaps;
 }
@@ -366,7 +375,7 @@ int main(int argc, char *argv[]) {
 
 	cout << "==============================================================" << endl;
 	cout << argv[4] << "\t" << levelid << endl;
-	unsigned char *remaps = get_chunk_remaps(levelid);
+	auto remaps = get_chunk_remaps(levelid);
 	
 	vector<ChunkS1> chunkss1;
 	chunkss1.reserve(256);
@@ -382,56 +391,55 @@ int main(int argc, char *argv[]) {
 	size_t fgw = flayoutFG.get() + 1, fgh = flayoutFG.get() + 1;
 	size_t bgw = flayoutBG.get() + 1, bgh = flayoutBG.get() + 1;
 	cout << "Layout sizes: FG: (" << fgw << ", " << fgh << "), BG: (" << bgw << ", " << bgh << ")" << endl;
-	auto layouts1FG = new unsigned char[fgw * fgh], layouts1BG = new unsigned char[bgw * bgh];
 	set<unsigned char> usedchunks;
 	vector<unsigned char> needremap;
 	needremap.resize(chunkss1.size());
 	set<ChunkS1> uniquechunks;
 
-	for (size_t ii = 0; ii < fgw * fgh; ii++) {
-		char cc;
-		flayoutFG.get(cc);
-		unsigned char uc = static_cast<unsigned char>(cc);
-		layouts1FG[ii] = uc;
-		if ((uc & 0x80) != 0) {
-			needremap[uc & 0x7F] = true;
-			//usedchunks.insert(remaps[uc & 0x7F]);
+	auto process_layout = [&](auto& flayout, auto count) {
+		vector<unsigned char> vlayout(count, 0);
+		for (size_t ii = 0; ii < count; ii++) {
+			char cc;
+			flayout.get(cc);
+			unsigned char uc = static_cast<unsigned char>(cc);
+			vlayout[ii] = uc;
+			if ((uc & 0x80) != 0) {
+				needremap[uc & 0x7F] = true;
+				//usedchunks.insert(remaps[uc & 0x7F]);
+			}
+			usedchunks.insert(uc & 0x7F);
+			if ((uc & 0x7F) != 0) {
+				uniquechunks.insert(chunkss1[(uc & 0x7F) - 1]);
+			}
 		}
-		usedchunks.insert(uc & 0x7F);
-		if ((uc & 0x7F) != 0) {
-			uniquechunks.insert(chunkss1[(uc & 0x7F) - 1]);
-		}
-	}
-	flayoutFG.close();
-	size_t usedfg = usedchunks.size();
+		flayout.close();
+		return vlayout;
+	};
 
-	for (size_t ii = 0; ii < bgw * bgh; ii++) {
-		char cc;
-		flayoutBG.get(cc);
-		unsigned char uc = static_cast<unsigned char>(cc);
-		layouts1BG[ii] = uc;
-		if ((uc & 0x80) != 0) {
-			needremap[uc & 0x7F] = true;
-			//usedchunks.insert(remaps[uc & 0x7F]);
-		}
-		usedchunks.insert(uc & 0x7F);
-		if ((uc & 0x7F) != 0) {
-			uniquechunks.insert(chunkss1[(uc & 0x7F) - 1]);
-		}
-	}
-	flayoutBG.close();
+	auto layouts1FG = process_layout(flayoutFG, fgw * fgh);
+	size_t usedfg = usedchunks.size();
+	auto layouts1BG = process_layout(flayoutBG, bgw * bgh);
+
 	cout << "Number of chunks: total: " << chunkss1.size() << ", FG: " << usedfg
 	     << ", BG: " << (usedchunks.size() - usedfg) << ", used: " << usedchunks.size()
 	     << ", unique: " << uniquechunks.size() << endl;
 
-	size_t s2w = 128, s2h = 20;
-	auto layouts2 = new unsigned char[s2w * s2h];
-	memset(layouts2, 0, s2w * s2h);
-	
+	//size_t s2w = 128, s2h = 20;
+	//vector<unsigned char> layouts2(s2w * s2h, 0);
 	vector<ChunkS2> chunkss2;
 	chunkss2.reserve(256);
 	map<ChunkS2,size_t> chunkids;
 	map<unsigned char,ChunkMap> s1s2chunkidmap;
+
+	auto checked_insert = [&](auto id, auto& dst) {
+		auto it = chunkids.find(id);
+		if (it != chunkids.end()) {
+			dst = it->second;
+		} else {
+			dst = chunkids[id] = chunkss2.size();
+			chunkss2.push_back(id);
+		}
+	};
 
 	for (auto chunk : usedchunks) {
 		if (!chunk) {
@@ -442,32 +450,11 @@ int main(int argc, char *argv[]) {
 		ChunkS1 lowchunk = needremap[chunk] ? chunkss1[remaps[chunk]] : highchunk;
 		ChunkS2 tlchunk, trchunk, blchunk, brchunk;
 		split_chunks(highchunk, lowchunk, tlchunk, trchunk, blchunk, brchunk);
-		map<ChunkS2,size_t>::iterator cit;
 		ChunkMap map;
-		if ((cit = chunkids.find(tlchunk)) != chunkids.end()) {
-			map.tl = cit->second;
-		} else {
-			map.tl = chunkids[tlchunk] = chunkss2.size();
-			chunkss2.push_back(tlchunk);
-		}
-		if ((cit = chunkids.find(trchunk)) != chunkids.end()) {
-			map.tr = cit->second;
-		} else {
-			map.tr = chunkids[trchunk] = chunkss2.size();
-			chunkss2.push_back(trchunk);
-		}
-		if ((cit = chunkids.find(blchunk)) != chunkids.end()) {
-			map.bl = cit->second;
-		} else {
-			map.bl = chunkids[blchunk] = chunkss2.size();
-			chunkss2.push_back(blchunk);
-		}
-		if ((cit = chunkids.find(brchunk)) != chunkids.end()) {
-			map.br = cit->second;
-		} else {
-			map.br = chunkids[brchunk] = chunkss2.size();
-			chunkss2.push_back(brchunk);
-		}
+		checked_insert(tlchunk, map.tl);
+		checked_insert(trchunk, map.tr);
+		checked_insert(blchunk, map.bl);
+		checked_insert(brchunk, map.br);
 		s1s2chunkidmap[chunk] = map;
 	}
 
@@ -497,9 +484,5 @@ int main(int argc, char *argv[]) {
 	}
 	*/
 
-	delete [] layouts2;
-	delete [] layouts1BG;
-	delete [] layouts1FG;
-	delete [] remaps;
 	return 0;
 }
