@@ -87,7 +87,6 @@ void dplc_file::write(ostream &out, int const ver, bool const nullfirst) const {
 			(elem.second).print();
 		}
 	}
-
 }
 
 void dplc_file::print() const {
