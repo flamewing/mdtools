@@ -27,6 +27,7 @@
 class frame_mapping {
 protected:
 	std::vector<single_mapping> maps;
+
 public:
 	void read(std::istream &in, int const ver);
 	void write(std::ostream &out, int const ver) const;
