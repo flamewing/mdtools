@@ -27,6 +27,7 @@
 class frame_dplc {
 protected:
 	std::vector<single_dplc> dplc;
+
 public:
 	void read(std::istream &in, int const ver);
 	void write(std::ostream &out, int const ver) const;
