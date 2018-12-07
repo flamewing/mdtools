@@ -398,6 +398,7 @@ class DumpSmps {
 	string const projname;
 	int sonicver, startloc, offset, len;
 	bool sfx, s3kmode;
+
 public:
 	DumpSmps(istream &i, ostream &o, int s, int off,
 	         string nm, bool tf, bool s3km)
@@ -676,7 +677,6 @@ public:
 				    << next_loc.loc << " bytes from the start of the song."
 				    << endl;
 				for (; it != end; ++it) {
-
 					string lbl = it->second;
 					if (tracklabels.find(lbl) != tracklabels.end()) {
 						out << "; " << lbl.substr(lbl.rfind('_') + 1) << " Data" << endl;
@@ -896,7 +896,6 @@ void dump_single_entry
     istream &in, ostream &out, string const &projname,
     int pointer, int offset, int sonicver, bool saxman, bool sfx, bool s3kmode
 ) {
-
 	if (pointer != 0) {
 		if (saxman) {
 			offset = -offset;
