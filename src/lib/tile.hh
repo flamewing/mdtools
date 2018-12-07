@@ -38,6 +38,7 @@ public:
 		Tile_size = nlines * lsize,
 		Byte_size = nlines * lsize / 2
 	};
+
 private:
 	unsigned char tiledata[Tile_size];
 
@@ -61,6 +62,7 @@ private:
 		typedef std::random_access_iterator_tag iterator_category;
 		// So it can use the protected constructors.
 		friend class BaseTile<lsize, nlines>;
+
 	private:
 		value_type *tiledata;
 		// Controls how we are iterating.
@@ -294,6 +296,7 @@ private:
 		static bool less (tile_iterator<U> const &lhs, tile_iterator<V> const &rhs) noexcept {
 			return difference(lhs, rhs) < 0;
 		}
+
 	protected:
 		// Constructors.
 		tile_iterator(FlipMode const _f, value_type * const _t, bool const ending) noexcept
@@ -324,6 +327,7 @@ private:
 			// Point to start.
 			loc = ending ? static_cast<unsigned>(Tile_size) : start;
 		}
+
 	public:
 		// Conversion constructor that does any one of:
 		// * convert iterator to const_iterator;

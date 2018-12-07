@@ -30,9 +30,11 @@ template<typename Tile_t>
 class VRAM {
 public:
 	typedef std::vector<Tile_t> Tiles;
+
 protected:
 	Tiles tiles;
 	unsigned distTable[16][16];
+
 public:
 	// Constructor.
 	VRAM() noexcept {

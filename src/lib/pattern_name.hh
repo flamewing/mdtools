@@ -72,6 +72,7 @@ private:
 		priority_mask = 1u<<priority_shift
 	};
 	unsigned short pn;
+
 public:
 	// Constructors.
 	Pattern_Name() noexcept : pn(0u) {}

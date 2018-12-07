@@ -61,6 +61,7 @@ protected:
 	static bool need_rest;
 	unsigned char val;
 	unsigned char keydisp;
+
 public:
 	BaseNote(unsigned char v, unsigned char k) : val(v), keydisp(k) {  }
 	virtual ~BaseNote() {  }

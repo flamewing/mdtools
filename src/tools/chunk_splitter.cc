@@ -34,6 +34,7 @@ using namespace std;
 class Block {
 protected:
 	unsigned short block;
+
 public:
 	constexpr Block() noexcept : block(0) {
 	}
@@ -184,6 +185,7 @@ template<int Dim, typename Blk>
 class Chunk {
 protected:
 	Blk blocks[Dim * Dim];
+
 public:
 	constexpr Chunk() noexcept = default;
 	constexpr Chunk(Chunk<Dim, Blk> const &other) noexcept = default;
