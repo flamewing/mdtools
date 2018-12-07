@@ -28,6 +28,7 @@ protected:
 	unsigned short flags, tile;
 	short xx, yy;
 	unsigned char sx, sy;
+
 public:
 	void read(std::istream &in, int const ver);
 	void write(std::ostream &out, int const ver) const;
