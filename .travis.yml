@@ -15,6 +15,9 @@ addons:
     packages: &common_depends
       - libboost-all-dev
 
+before_script: &mdcomp
+  - pushd `mktemp -d` && git clone --depth 1 https://github.com/flamewing/mdcomp.git && cd mdcomp && ./autogen.sh && make && sudo make install && popd
+
 env:
   global:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
@@ -47,6 +50,7 @@ matrix:
           before_script:
             - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 1000
             - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 1000
+            - *mdcomp
 
         ##########################################################################
         # clang on Linux
@@ -63,6 +67,7 @@ matrix:
           before_script:
             - sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-7 1000
             - sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-7 1000
+            - *mdcomp
 
         ##########################################################################
         # GCC on Linux
@@ -79,6 +84,7 @@ matrix:
           before_script:
             - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 1000
             - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 1000
+            - *mdcomp
 
         - os: linux
           compiler: gcc
@@ -92,6 +98,7 @@ matrix:
           before_script:
             - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 1000
             - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 1000
+            - *mdcomp
 
 before_install:
   # Exit immediately if the branch is the "coverity_scan" branch and DO_COVERITY is "0"
@@ -102,12 +109,10 @@ before_install:
   - if [ "$TRAVIS_BRANCH" != "coverity_scan" -a "${DO_COVERITY}" == "1" ] ; then exit 0; fi
   - if [ "${DO_COVERITY}" == "1" ]; then echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca- ; fi
 
-before_script:
-  - pushd `mktemp -d` && git clone --depth 1 https://github.com/flamewing/mdcomp.git && cd mdcomp && ./autogen.sh && make && sudo make install && popd
-
 script: if [ "$TRAVIS_BRANCH" != "coverity_scan" ]; then .travis/script.sh; elif [ -e cov-int/scm_log.txt ] ; then cat cov-int/scm_log.txt; fi
 
 notifications:
   email: true
   on_success: change
   on_failure: always
+
