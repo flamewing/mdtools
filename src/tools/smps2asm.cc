@@ -725,6 +725,7 @@ public:
 		// Read voices, unless universal voice bank, null voice pointer or
 		// external voice bank.
 		if (uses_uvb) {
+			// Don't need to do anything, really.
 		} else if (last_voc < 0) {
 			// There are no voices in use; so we insert a comment saying so and
 			// add a dummy label for the voice pointer.

@@ -184,10 +184,11 @@ public:
 	}
 };
 
-template<int Dim, typename Blk>
+template<unsigned Dim, typename Blk>
 class Chunk {
 protected:
-	Blk blocks[Dim * Dim];
+	constexpr static size_t const numBlocks = size_t(Dim) * size_t(Dim);
+	Blk blocks[numBlocks];
 
 public:
 	constexpr Chunk() noexcept = default;
@@ -195,7 +196,7 @@ public:
 	constexpr Chunk(Chunk<Dim, Blk> &&other) noexcept = default;
 	constexpr Chunk &operator=(Chunk const &other) noexcept {
 		if (this != &other) {
-			for (size_t ii = 0; ii < Dim * Dim; ii++) {
+			for (size_t ii = 0; ii < numBlocks; ii++) {
 				blocks[ii] = other.blocks[ii];
 			}
 		}
@@ -203,7 +204,7 @@ public:
 	}
 	constexpr Chunk &operator=(Chunk &&other) noexcept {
 		if (this != &other) {
-			for (size_t ii = 0; ii < Dim * Dim; ii++) {
+			for (size_t ii = 0; ii < numBlocks; ii++) {
 				blocks[ii] = other.blocks[ii];
 			}
 		}
@@ -215,12 +216,12 @@ public:
 		}
 	}
 	constexpr void write(ostream &out) noexcept {
-		for (size_t ii = 0; ii < Dim * Dim; ii++) {
+		for (size_t ii = 0; ii < numBlocks; ii++) {
 			blocks[ii].write(out);
 		}
 	}
 	constexpr bool operator<(Chunk const &other) const noexcept {
-		for (size_t ii = 0; ii < Dim * Dim; ii++) {
+		for (size_t ii = 0; ii < numBlocks; ii++) {
 			if (blocks[ii] < other.blocks[ii]) {
 				return true;
 			} else if (other.blocks[ii] < blocks[ii]) {
@@ -233,7 +234,7 @@ public:
 		return !(*this < other || other < *this);
 	}
 	constexpr bool less(Chunk const &other) const noexcept {
-		for (size_t ii = 0; ii < Dim * Dim; ii++) {
+		for (size_t ii = 0; ii < numBlocks; ii++) {
 			if (blocks[ii].less(other.blocks[ii])) {
 				return true;
 			} else if (other.blocks[ii].less(blocks[ii])) {
@@ -243,7 +244,7 @@ public:
 		return false;
 	}
 	constexpr bool equal(Chunk const &other) const noexcept {
-		for (size_t ii = 0; ii < Dim * Dim; ii++) {
+		for (size_t ii = 0; ii < numBlocks; ii++) {
 			if (!blocks[ii].equal(other.blocks[ii])) {
 				return false;
 			}
@@ -431,7 +432,7 @@ int main(int argc, char *argv[]) {
 	map<ChunkS2,size_t> chunkids;
 	map<unsigned char,ChunkMap> s1s2chunkidmap;
 
-	auto checked_insert = [&](auto id, auto& dst) {
+	auto checked_insert = [&](auto& id, auto& dst) {
 		auto it = chunkids.find(id);
 		if (it != chunkids.end()) {
 			dst = it->second;
