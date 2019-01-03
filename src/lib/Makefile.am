@@ -11,5 +11,6 @@ libmappings_la_SOURCES = \
 libsstrack_la_SOURCES = ssvram.cc sstrack.cc
 libsstrack_la_LIBADD = -lkosinski -lenigma
 
-AM_CPPFLAGS = -I$(srcdir)/../../include
+AM_LDFLAGS = -L$(srcdir)/../../mdcomp/src/lib/.libs
+AM_CPPFLAGS = -I$(srcdir)/../../include -I$(srcdir)/../../mdcomp/include
 

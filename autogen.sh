@@ -1,6 +1,15 @@
 #!/bin/sh
 # Run this to generate all the initial makefiles, etc.
 
+# Set up git submodule auto-update.
+echo "Setting up post-checkout and post-merge Git hooks for updating submodule..."
+echo "#!/bin/sh" > .git/hooks/post-checkout
+echo "git submodule update --init --recursive" >> .git/hooks/post-checkout
+chmod +x .git/hooks/post-checkout
+cp .git/hooks/post-checkout .git/hooks/post-merge
+# Now do it.
+.git/hooks/post-checkout
+
 srcdir=$(dirname $0)
 test -z "$srcdir" && srcdir=.
 
@@ -73,20 +82,22 @@ rm -f autoconfig.h.in
 rm -f config.status aclocal.m4
 rm -f $(find . -name 'Makefile.in') $(find . -name 'Makefile')
 
+(cd mdcomp; NOCONFIGURE=1 ./autogen.sh)
+
 # Regenerate everything
-echo "Running aclocal $aclocalinclude ..."
+echo "Running aclocal $aclocalinclude..."
 aclocal $aclocalincludes
 echo "Running $libtoolize..."
 $libtoolize --copy
-echo "Running autoconf ..."
+echo "Running autoconf..."
 autoconf
 echo "Running autoheader..."
 autoheader
-echo "Running automake --foreign $am_opt ..."
+echo "Running automake --foreign $am_opt..."
 automake --add-missing --copy --foreign $am_opt
 
 if test x$NOCONFIGURE = x; then
-	echo Running $srcdir/configure "$@" ...
+	echo Running $srcdir/configure "$@"...
 	$srcdir/configure "$@" \
 	&& echo Now type \`make\' to compile. || exit 1
 else

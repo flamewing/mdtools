@@ -1,4 +1,4 @@
-SUBDIRS = src
+SUBDIRS = mdcomp src
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 

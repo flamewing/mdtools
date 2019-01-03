@@ -209,44 +209,9 @@ LT_INIT
 AX_BOOST_BASE([1.54],, [AC_MSG_ERROR([mdcomp requires Boost, but it was not found in your system])])
 
 # ---------------------------------------------------------------------
-# Required mdcomp headers
+# Configure mdcomp
 # ---------------------------------------------------------------------
-
-AC_CHECK_HEADER(mdcomp/bigendian_io.hh,break,[HAVE_BIGENDIANIO="no"])
-if test "$HAVE_BIGENDIANIO" = "no"; then
-    echo "Fatal error: bigendian_io header not found!"
-    exit 1
-fi
-AC_CHECK_HEADER(mdcomp/bitstream.hh,break,[HAVE_BITSTREAM="no"])
-if test "$HAVE_BITSTREAM" = "no"; then
-    echo "Fatal error: bitstream header not found!"
-    exit 1
-fi
-AC_CHECK_HEADER(mdcomp/comper.hh,break,[HAVE_COMPER="no"])
-if test "$HAVE_COMPER" = "no"; then
-    echo "Fatal error: Comper header not found!"
-    exit 1
-fi
-AC_CHECK_HEADER(mdcomp/enigma.hh,break,[HAVE_ENIGMA="no"])
-if test "$HAVE_ENIGMA" = "no"; then
-    echo "Fatal error: Enigma header not found!"
-    exit 1
-fi
-AC_CHECK_HEADER(mdcomp/kosinski.hh,break,[HAVE_KOSINSKI="no"])
-if test "$HAVE_KOSINSKI" = "no"; then
-    echo "Fatal error: Kosinski header not found!"
-    exit 1
-fi
-AC_CHECK_HEADER(mdcomp/nemesis.hh,break,[HAVE_NEMESIS="no"])
-if test "$HAVE_NEMESIS" = "no"; then
-    echo "Fatal error: Nemesis header not found!"
-    exit 1
-fi
-AC_CHECK_HEADER(mdcomp/saxman.hh,break,[HAVE_SAXMAN="no"])
-if test "$HAVE_SAXMAN" = "no"; then
-    echo "Fatal error: Saxman header not found!"
-    exit 1
-fi
+AC_CONFIG_SUBDIRS([mdcomp])
 
 # ---------------------------------------------------------------------
 # Makefiles

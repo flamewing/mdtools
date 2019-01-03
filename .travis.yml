@@ -47,7 +47,6 @@ matrix:
           before_script:
             - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 1000
             - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 1000
-            - pushd `mktemp -d` && git clone --depth 1 https://github.com/flamewing/mdcomp.git && cd mdcomp && ./autogen.sh && make && sudo make install && popd
 
         ##########################################################################
         # clang on Linux
@@ -64,7 +63,6 @@ matrix:
           before_script:
             - sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-7 1000
             - sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-7 1000
-            - pushd `mktemp -d` && git clone --depth 1 https://github.com/flamewing/mdcomp.git && cd mdcomp && ./autogen.sh && make && sudo make install && popd
 
         ##########################################################################
         # GCC on Linux
@@ -81,7 +79,6 @@ matrix:
           before_script:
             - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 1000
             - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 1000
-            - pushd `mktemp -d` && git clone --depth 1 https://github.com/flamewing/mdcomp.git && cd mdcomp && ./autogen.sh && make && sudo make install && popd
 
         - os: linux
           compiler: gcc
@@ -95,7 +92,6 @@ matrix:
           before_script:
             - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 1000
             - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 1000
-            - pushd `mktemp -d` && git clone --depth 1 https://github.com/flamewing/mdcomp.git && cd mdcomp && ./autogen.sh && make && sudo make install && popd
 
 before_install:
   # Exit immediately if the branch is the "coverity_scan" branch and DO_COVERITY is "0"

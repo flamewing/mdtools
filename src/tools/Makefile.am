@@ -42,5 +42,6 @@ plane_map_LDFLAGS = -lenigma
 enitool_SOURCES = enitool.cc
 enitool_LDFLAGS = -lenigma
 
-AM_CPPFLAGS = -I$(srcdir)/../../include
+LDADD = -L$(srcdir)/../../mdcomp/src/lib/.libs
+AM_CPPFLAGS = -I$(srcdir)/../../include -I$(srcdir)/../../mdcomp/include
 
