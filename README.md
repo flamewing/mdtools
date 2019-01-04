@@ -3,6 +3,7 @@
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/13716/badge.svg)](https://scan.coverity.com/projects/13716)
 [![CodeFactor](https://www.codefactor.io/repository/github/flamewing/mdtools/badge)](https://www.codefactor.io/repository/github/flamewing/mdtools)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/flamewing/mdtools.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/flamewing/mdtools/alerts/)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/flamewing/mdtools.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/flamewing/mdtools/context:cpp)
 
 # mdtools
 Assorted tools for the Sega Mega Drive
