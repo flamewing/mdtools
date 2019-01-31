@@ -26,7 +26,7 @@
 
 // Ideally, <8,1> would be enough -- except that we will be needing to import
 // from an image which may not be perfectly equal on each pair of tile lines.
-typedef BaseTile<8,2> ShortTile;
+typedef BaseTile<8, 2> ShortTile;
 
 // Class simulating the S2 Special Stage VRAM. Uses short (2-line) tiles as they
 // are enough for representing the tiles needed by the track, including for the
@@ -34,13 +34,13 @@ typedef BaseTile<8,2> ShortTile;
 // imported image.
 class SSVRAM : public VRAM<ShortTile> {
 public:
-	SSVRAM(std::istream &pal, std::istream &art) noexcept;
+    SSVRAM(std::istream& pal, std::istream& art) noexcept;
 };
 
-std::vector<ShortTile> split_tile(Tile const &tile) noexcept;
-Tile merge_tiles(ShortTile const &tile0, FlipMode const flip0,
-                 ShortTile const &tile1, FlipMode const flip1,
-                 ShortTile const &tile2, FlipMode const flip2,
-                 ShortTile const &tile3, FlipMode const flip3) noexcept;
+std::vector<ShortTile> split_tile(Tile const& tile) noexcept;
+Tile                   merge_tiles(
+                      ShortTile const& tile0, FlipMode const flip0, ShortTile const& tile1,
+                      FlipMode const flip1, ShortTile const& tile2, FlipMode const flip2,
+                      ShortTile const& tile3, FlipMode const flip3) noexcept;
 
 #endif // __SSVRAM_H

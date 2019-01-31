@@ -21,36 +21,30 @@
 
 #include <iosfwd>
 #include <map>
-#include <vector>
 #include <mdtools/singledplc.hh>
+#include <vector>
 
 class frame_dplc {
 protected:
-	std::vector<single_dplc> dplc;
+    std::vector<single_dplc> dplc;
 
 public:
-	void read(std::istream &in, int const ver);
-	void write(std::ostream &out, int const ver) const;
-	void print() const;
-	void consolidate(frame_dplc const &src);
-	void insert(single_dplc const &val);
-	void build_vram_map(std::map<size_t, size_t> &vram_map) const;
-	single_dplc const &get_dplc(size_t const i) const {
-		return dplc[i];
-	}
-	bool empty() const {
-		return dplc.empty();
-	}
-	size_t size() const {
-		return dplc.size();
-	}
-	size_t size(int const ver) const {
-		return (ver == 1 ? 1 : 2) + single_dplc::size(ver) * dplc.size();
-	}
-	bool operator<(frame_dplc const &rhs) const;
-	bool operator==(frame_dplc const &rhs) const {
-		return !(*this < rhs || rhs < *this);
-	}
+    void               read(std::istream& in, int const ver);
+    void               write(std::ostream& out, int const ver) const;
+    void               print() const;
+    void               consolidate(frame_dplc const& src);
+    void               insert(single_dplc const& val);
+    void               build_vram_map(std::map<size_t, size_t>& vram_map) const;
+    single_dplc const& get_dplc(size_t const i) const { return dplc[i]; }
+    bool               empty() const { return dplc.empty(); }
+    size_t             size() const { return dplc.size(); }
+    size_t             size(int const ver) const {
+        return (ver == 1 ? 1 : 2) + single_dplc::size(ver) * dplc.size();
+    }
+    bool operator<(frame_dplc const& rhs) const;
+    bool operator==(frame_dplc const& rhs) const {
+        return !(*this < rhs || rhs < *this);
+    }
 };
 
 #endif // __LIB_FRAMEDPLC_H

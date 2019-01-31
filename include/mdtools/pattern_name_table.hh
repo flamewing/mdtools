@@ -27,57 +27,55 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/enigma.hh>
 
-template<unsigned width, unsigned height>
+template <unsigned width, unsigned height>
 class Pattern_Name_Table {
 public:
-	enum {
-		Width  = width,
-		Height = height
-	};
-	typedef std::array<Pattern_Name, width> Line;
+    enum { Width = width, Height = height };
+    typedef std::array<Pattern_Name, width> Line;
 
 protected:
-	std::array<Line, height> table;
+    std::array<Line, height> table;
 
 public:
-	Pattern_Name_Table() noexcept = default;
-	Pattern_Name_Table(std::istream &in, bool const compressed) noexcept {
-		std::stringstream sin(std::ios::in | std::ios::out | std::ios::binary);
-		if (compressed) {
-			enigma::decode(in, sin);
-		} else {
-			sin << in.rdbuf();
-		}
+    Pattern_Name_Table() noexcept = default;
+    Pattern_Name_Table(std::istream& in, bool const compressed) noexcept {
+        std::stringstream sin(std::ios::in | std::ios::out | std::ios::binary);
+        if (compressed) {
+            enigma::decode(in, sin);
+        } else {
+            sin << in.rdbuf();
+        }
 
-		for (typename std::array<Line, height>::iterator it = table.begin();
-		     it != table.end(); ++it) {
-			Line &line = *it;
-			for (typename Line::iterator it2 = line.begin();
-			     it2 != line.end(); ++it2) {
-				unsigned short pnt = BigEndian::Read2(sin);
-				*it2 = Pattern_Name(sin.good() ? pnt : 0u);
-			}
-		}
-	}
-	virtual ~Pattern_Name_Table() noexcept {}
+        for (typename std::array<Line, height>::iterator it = table.begin();
+             it != table.end(); ++it) {
+            Line& line = *it;
+            for (typename Line::iterator it2 = line.begin(); it2 != line.end();
+                 ++it2) {
+                unsigned short pnt = BigEndian::Read2(sin);
+                *it2               = Pattern_Name(sin.good() ? pnt : 0u);
+            }
+        }
+    }
+    virtual ~Pattern_Name_Table() noexcept {}
 
-	Line const &operator[](size_t const n) const noexcept {	return table[n];	}
-	Line       &operator[](size_t const n)       noexcept {	return table[n];	}
+    Line const& operator[](size_t const n) const noexcept { return table[n]; }
+    Line&       operator[](size_t const n) noexcept { return table[n]; }
 
-	virtual void write(std::ostream &out) const noexcept {
-		for (typename std::array<Line, height>::const_iterator it = table.begin();
-		     it != table.end(); ++it) {
-			Line const &line = *it;
-			for (typename Line::const_iterator it2 = line.begin();
-			     it2 != line.end(); ++it2) {
-				it2->write(out);
-			}
-		}
-	}
+    virtual void write(std::ostream& out) const noexcept {
+        for (typename std::array<Line, height>::const_iterator it =
+                 table.begin();
+             it != table.end(); ++it) {
+            Line const& line = *it;
+            for (typename Line::const_iterator it2 = line.begin();
+                 it2 != line.end(); ++it2) {
+                it2->write(out);
+            }
+        }
+    }
 };
 
-typedef Pattern_Name_Table< 32,28> PlaneH32V28;
-typedef Pattern_Name_Table< 40,28> PlaneH40V28;
-typedef Pattern_Name_Table<128,28> PlaneH128V28;
+typedef Pattern_Name_Table<32, 28>  PlaneH32V28;
+typedef Pattern_Name_Table<40, 28>  PlaneH40V28;
+typedef Pattern_Name_Table<128, 28> PlaneH128V28;
 
 #endif // __PATTERN_NAME_TABLE_H

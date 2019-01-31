@@ -25,31 +25,31 @@
 
 using namespace std;
 
-void single_dplc::read(istream &in, int const ver) {
-	tile = BigEndian::Read2(in);
-	if (ver < 4) {
-		cnt  = ((tile & 0xf000u) >> 12) + 1u;
-		tile &= 0x0fff;
-	} else {
-		cnt  = (tile & 0x000fu) + 1u;
-		tile = (tile & 0xfff0u) >> 4;
-	}
+void single_dplc::read(istream& in, int const ver) {
+    tile = BigEndian::Read2(in);
+    if (ver < 4) {
+        cnt = ((tile & 0xf000u) >> 12) + 1u;
+        tile &= 0x0fff;
+    } else {
+        cnt  = (tile & 0x000fu) + 1u;
+        tile = (tile & 0xfff0u) >> 4;
+    }
 }
 
-void single_dplc::write(ostream &out, int const ver) const {
-	if (ver < 4) {
-		BigEndian::Write2(out, ((cnt - 1) << 12) | tile);
-	} else {
-		BigEndian::Write2(out, (tile << 4) | (cnt - 1));
-	}
+void single_dplc::write(ostream& out, int const ver) const {
+    if (ver < 4) {
+        BigEndian::Write2(out, ((cnt - 1) << 12) | tile);
+    } else {
+        BigEndian::Write2(out, (tile << 4) | (cnt - 1));
+    }
 }
 
 void single_dplc::print() const {
-	cout << nouppercase << "\tFirst tile: $";
-	cout << uppercase   << hex << setfill('0') << setw(4) << tile;
-	cout << nouppercase << "\tLast tile: $";
-	cout << uppercase   << hex << setfill('0') << setw(4) << (tile + cnt - 1);
-	cout << nouppercase << "\tNum tiles: $";
-	cout << uppercase   << hex << setfill('0') << setw(4) << cnt;
-	cout << endl;
+    cout << nouppercase << "\tFirst tile: $";
+    cout << uppercase << hex << setfill('0') << setw(4) << tile;
+    cout << nouppercase << "\tLast tile: $";
+    cout << uppercase << hex << setfill('0') << setw(4) << (tile + cnt - 1);
+    cout << nouppercase << "\tNum tiles: $";
+    cout << uppercase << hex << setfill('0') << setw(4) << cnt;
+    cout << endl;
 }

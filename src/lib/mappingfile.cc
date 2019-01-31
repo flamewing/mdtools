@@ -29,131 +29,133 @@
 
 using namespace std;
 
-void mapping_file::read(istream &in, int const ver) {
-	in.seekg(0, ios::beg);
+void mapping_file::read(istream& in, int const ver) {
+    in.seekg(0, ios::beg);
 
-	vector<size_t> off;
-	auto term = static_cast<int16_t>(BigEndian::Read2(in));
-	while (term == 0) {
-		off.push_back(term);
-		term = static_cast<int16_t>(BigEndian::Read2(in));
-	}
-	off.push_back(term);
-	while (in.tellg() < term) {
-		auto const newterm = static_cast<int16_t>(BigEndian::Read2(in));
-		if (newterm > 0 && newterm < term) {
-			term = newterm;
-		}
-		off.push_back(newterm);
-	}
+    vector<size_t> off;
+    auto           term = static_cast<int16_t>(BigEndian::Read2(in));
+    while (term == 0) {
+        off.push_back(term);
+        term = static_cast<int16_t>(BigEndian::Read2(in));
+    }
+    off.push_back(term);
+    while (in.tellg() < term) {
+        auto const newterm = static_cast<int16_t>(BigEndian::Read2(in));
+        if (newterm > 0 && newterm < term) {
+            term = newterm;
+        }
+        off.push_back(newterm);
+    }
 
-	for (auto const pos : off) {
-		in.clear();
-		in.seekg(pos);
-		frame_mapping sd;
-		sd.read(in, ver);
-		frames.push_back(sd);
-	}
+    for (auto const pos : off) {
+        in.clear();
+        in.seekg(pos);
+        frame_mapping sd;
+        sd.read(in, ver);
+        frames.push_back(sd);
+    }
 }
 
-void mapping_file::write(ostream &out, int const ver, bool const nullfirst) const {
-	map<frame_mapping, size_t> mappos;
-	map<size_t, frame_mapping> posmap;
-	size_t sz = 2 * frames.size();
-	vector<frame_mapping>::const_iterator it;
-	it = frames.begin();
+void mapping_file::write(
+    ostream& out, int const ver, bool const nullfirst) const {
+    map<frame_mapping, size_t>            mappos;
+    map<size_t, frame_mapping>            posmap;
+    size_t                                sz = 2 * frames.size();
+    vector<frame_mapping>::const_iterator it;
+    it = frames.begin();
 
-	if (nullfirst && it != frames.end() && it->empty()) {
-		mappos.emplace(*it, 0);
-		posmap.emplace(0, *it);
-	}
-	for (; it != frames.end(); ++it) {
-		auto const it2 = mappos.find(*it);
-		if (it2 != mappos.end()) {
-			BigEndian::Write2(out, it2->second);
-		} else {
-			mappos.emplace(*it, sz);
-			posmap.emplace(sz, *it);
-			BigEndian::Write2(out, sz);
-			sz += it->size(ver);
-		}
-	}
-	for (auto const & elem : posmap) {
-		if (elem.first == size_t(out.tellp())) {
-			(elem.second).write(out, ver);
-		} else if (elem.first != 0u) {
-			cerr << "Missed write at " << out.tellp() << endl;
-			(elem.second).print();
-		}
-	}
+    if (nullfirst && it != frames.end() && it->empty()) {
+        mappos.emplace(*it, 0);
+        posmap.emplace(0, *it);
+    }
+    for (; it != frames.end(); ++it) {
+        auto const it2 = mappos.find(*it);
+        if (it2 != mappos.end()) {
+            BigEndian::Write2(out, it2->second);
+        } else {
+            mappos.emplace(*it, sz);
+            posmap.emplace(sz, *it);
+            BigEndian::Write2(out, sz);
+            sz += it->size(ver);
+        }
+    }
+    for (auto const& elem : posmap) {
+        if (elem.first == size_t(out.tellp())) {
+            (elem.second).write(out, ver);
+        } else if (elem.first != 0u) {
+            cerr << "Missed write at " << out.tellp() << endl;
+            (elem.second).print();
+        }
+    }
 }
 
 void mapping_file::print() const {
-	cout << "================================================================================" << endl;
-	for (size_t i = 0; i < frames.size(); i++) {
-		cout << "Mappings for frame $";
-		boost::io::ios_all_saver flags(cout);
-		cout << uppercase << hex << setfill('0') << setw(4) << i;
-		cout << ":" << endl;
-		flags.restore();
-		frames[i].print();
-	}
+    cout << "=================================================================="
+            "=============="
+         << endl;
+    for (size_t i = 0; i < frames.size(); i++) {
+        cout << "Mappings for frame $";
+        boost::io::ios_all_saver flags(cout);
+        cout << uppercase << hex << setfill('0') << setw(4) << i;
+        cout << ":" << endl;
+        flags.restore();
+        frames[i].print();
+    }
 }
 
-void mapping_file::split(mapping_file const &src, dplc_file &dplc) {
-	for (auto const & elem : src.frames) {
-		frame_mapping nn;
-		frame_dplc interm, dd;
-		nn.split(elem, interm);
-		dd.consolidate(interm);
-		frames.push_back(nn);
-		dplc.insert(dd);
-	}
+void mapping_file::split(mapping_file const& src, dplc_file& dplc) {
+    for (auto const& elem : src.frames) {
+        frame_mapping nn;
+        frame_dplc    interm, dd;
+        nn.split(elem, interm);
+        dd.consolidate(interm);
+        frames.push_back(nn);
+        dplc.insert(dd);
+    }
 }
 
-void mapping_file::merge(mapping_file const &src, dplc_file const &dplc) {
-	for (size_t i = 0; i < src.frames.size(); i++) {
-		frame_mapping nn;
-		nn.merge(src.frames[i], dplc.get_dplc(i));
-		frames.push_back(nn);
-	}
+void mapping_file::merge(mapping_file const& src, dplc_file const& dplc) {
+    for (size_t i = 0; i < src.frames.size(); i++) {
+        frame_mapping nn;
+        nn.merge(src.frames[i], dplc.get_dplc(i));
+        frames.push_back(nn);
+    }
 }
 
-void mapping_file::optimize(mapping_file const &src, dplc_file const &indplc, dplc_file &outdplc) {
-	for (size_t i = 0; i < src.frames.size(); i++) {
-		frame_mapping endmap;
-		frame_dplc    enddplc;
-		frame_mapping const &intmap  = src.frames[i];
-		frame_dplc    const &intdplc = indplc.get_dplc(i);
-		if ((!intdplc.empty()) && (!intmap.empty())) {
-			frame_mapping mm;
-			frame_dplc    dd;
-			mm.merge(intmap, intdplc);
-			endmap.split(mm, dd);
-			enddplc.consolidate(dd);
-		} else if (!intdplc.empty()) {
-			enddplc.consolidate(intdplc);
-		} else {
-			endmap = intmap;
-		}
+void mapping_file::optimize(
+    mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc) {
+    for (size_t i = 0; i < src.frames.size(); i++) {
+        frame_mapping        endmap;
+        frame_dplc           enddplc;
+        frame_mapping const& intmap  = src.frames[i];
+        frame_dplc const&    intdplc = indplc.get_dplc(i);
+        if ((!intdplc.empty()) && (!intmap.empty())) {
+            frame_mapping mm;
+            frame_dplc    dd;
+            mm.merge(intmap, intdplc);
+            endmap.split(mm, dd);
+            enddplc.consolidate(dd);
+        } else if (!intdplc.empty()) {
+            enddplc.consolidate(intdplc);
+        } else {
+            endmap = intmap;
+        }
 
-		frames.push_back(endmap);
-		outdplc.insert(enddplc);
-	}
+        frames.push_back(endmap);
+        outdplc.insert(enddplc);
+    }
 }
 
 void mapping_file::change_pal(int const srcpal, int const dstpal) {
-	for (auto & elem : frames) {
-		elem.change_pal(srcpal, dstpal);
-	}
+    for (auto& elem : frames) {
+        elem.change_pal(srcpal, dstpal);
+    }
 }
 
 size_t mapping_file::size(int const ver) const {
-	size_t sz = 2 * frames.size();
-	for (auto const & elem : frames) {
-		sz += elem.size(ver);
-	}
-	return sz;
+    size_t sz = 2 * frames.size();
+    for (auto const& elem : frames) {
+        sz += elem.size(ver);
+    }
+    return sz;
 }
-
-

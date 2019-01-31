@@ -24,42 +24,34 @@
 
 class single_dplc {
 protected:
-	unsigned short cnt, tile;
+    unsigned short cnt, tile;
 
 public:
-	void read(std::istream &in, int const ver);
-	void write(std::ostream &out, int const ver) const;
-	void print() const;
-	static size_t size(int const ver) {
-		ignore_unused_variable_warning(ver);
-		return 2;
-	}
-	unsigned short get_cnt() const {
-		return cnt;
-	}
-	unsigned short get_tile() const {
-		return tile;
-	}
-	void set_cnt(unsigned short const c) {
-		cnt = c;
-	}
-	void set_tile(unsigned short const t) {
-		tile = t;
-	}
-	bool operator<(single_dplc const &rhs) const {
-		if (cnt < rhs.cnt) {
-			return true;
-		} else if (cnt > rhs.cnt) {
-			return false;
-		}
-		if (tile < rhs.tile) {
-			return true;
-		}
-		return false;
-	}
-	bool operator==(single_dplc const &rhs) const {
-		return !(*this < rhs || rhs < *this);
-	}
+    void          read(std::istream& in, int const ver);
+    void          write(std::ostream& out, int const ver) const;
+    void          print() const;
+    static size_t size(int const ver) {
+        ignore_unused_variable_warning(ver);
+        return 2;
+    }
+    unsigned short get_cnt() const { return cnt; }
+    unsigned short get_tile() const { return tile; }
+    void           set_cnt(unsigned short const c) { cnt = c; }
+    void           set_tile(unsigned short const t) { tile = t; }
+    bool           operator<(single_dplc const& rhs) const {
+        if (cnt < rhs.cnt) {
+            return true;
+        } else if (cnt > rhs.cnt) {
+            return false;
+        }
+        if (tile < rhs.tile) {
+            return true;
+        }
+        return false;
+    }
+    bool operator==(single_dplc const& rhs) const {
+        return !(*this < rhs || rhs < *this);
+    }
 };
 
 #endif // __LIB_SINGLEDPLC_H

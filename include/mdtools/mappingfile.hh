@@ -20,31 +20,27 @@
 #define __LIB_MAPPINGFILE_H
 
 #include <iosfwd>
-#include <vector>
-#include <mdtools/framemapping.hh>
 #include <mdtools/dplcfile.hh>
+#include <mdtools/framemapping.hh>
+#include <vector>
 
 class mapping_file {
 protected:
-	std::vector<frame_mapping> frames;
+    std::vector<frame_mapping> frames;
+
 public:
-	void read(std::istream &in, int const ver);
-	void write(std::ostream &out, int const ver, bool const nullfirst) const;
-	void print() const;
-	void split(mapping_file const &src, dplc_file &dplc);
-	void merge(mapping_file const &src, dplc_file const &dplc);
-	void optimize(mapping_file const &src, dplc_file const &indplc, dplc_file &outdplc);
-	void change_pal(int const srcpal, int const dstpal);
-	frame_mapping const &get_maps(size_t const i) const {
-		return frames[i];
-	}
-	bool empty() const {
-		return frames.empty();
-	}
-	size_t size() const {
-		return frames.size();
-	}
-	size_t size(int const ver) const;
+    void read(std::istream& in, int const ver);
+    void write(std::ostream& out, int const ver, bool const nullfirst) const;
+    void print() const;
+    void split(mapping_file const& src, dplc_file& dplc);
+    void merge(mapping_file const& src, dplc_file const& dplc);
+    void optimize(
+        mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc);
+    void                 change_pal(int const srcpal, int const dstpal);
+    frame_mapping const& get_maps(size_t const i) const { return frames[i]; }
+    bool                 empty() const { return frames.empty(); }
+    size_t               size() const { return frames.size(); }
+    size_t               size(int const ver) const;
 };
 
 #endif // __LIB_MAPPINGFILE_H

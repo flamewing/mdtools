@@ -23,17 +23,18 @@
 
 #include <vector>
 
-typedef std::pair<Pattern_Name,unsigned> RLEPattern;
+typedef std::pair<Pattern_Name, unsigned> RLEPattern;
 
 class SSTrackFrame : public PlaneH128V28 {
 private:
-	static std::vector<Pattern_Name> SymLUT_6bit;
-	static std::vector<Pattern_Name> SymLUT_10bit;
-	static std::vector<RLEPattern>   DicLUT_6bit;
-	static std::vector<RLEPattern>   DicLUT_7bit;
+    static std::vector<Pattern_Name> SymLUT_6bit;
+    static std::vector<Pattern_Name> SymLUT_10bit;
+    static std::vector<RLEPattern>   DicLUT_6bit;
+    static std::vector<RLEPattern>   DicLUT_7bit;
+
 public:
-	SSTrackFrame() noexcept = default;
-	SSTrackFrame(std::istream &in, bool const xflip) noexcept;
+    SSTrackFrame() noexcept = default;
+    SSTrackFrame(std::istream& in, bool const xflip) noexcept;
 };
 
 #endif // __SSTRACK_H

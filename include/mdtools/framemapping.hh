@@ -20,37 +20,31 @@
 #define __LIB_FRAMEMAPPING_H
 
 #include <iosfwd>
-#include <vector>
-#include <mdtools/singlemapping.hh>
 #include <mdtools/framedplc.hh>
+#include <mdtools/singlemapping.hh>
+#include <vector>
 
 class frame_mapping {
 protected:
-	std::vector<single_mapping> maps;
+    std::vector<single_mapping> maps;
 
 public:
-	void read(std::istream &in, int const ver);
-	void write(std::ostream &out, int const ver) const;
-	void print() const;
-	void split(frame_mapping const &src, frame_dplc &dplc);
-	void merge(frame_mapping const &src, frame_dplc const &dplc);
-	void change_pal(int const srcpal, int const dstpal);
-	single_mapping const &get_maps(size_t const i) const {
-		return maps[i];
-	}
-	bool empty() const {
-		return maps.empty();
-	}
-	size_t size() const {
-		return maps.size();
-	}
-	size_t size(int const ver) const {
-		return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
-	}
-	bool operator<(frame_mapping const &rhs) const;
-	bool operator==(frame_mapping const &rhs) const {
-		return !(*this < rhs || rhs < *this);
-	}
+    void read(std::istream& in, int const ver);
+    void write(std::ostream& out, int const ver) const;
+    void print() const;
+    void split(frame_mapping const& src, frame_dplc& dplc);
+    void merge(frame_mapping const& src, frame_dplc const& dplc);
+    void change_pal(int const srcpal, int const dstpal);
+    single_mapping const& get_maps(size_t const i) const { return maps[i]; }
+    bool                  empty() const { return maps.empty(); }
+    size_t                size() const { return maps.size(); }
+    size_t                size(int const ver) const {
+        return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
+    }
+    bool operator<(frame_mapping const& rhs) const;
+    bool operator==(frame_mapping const& rhs) const {
+        return !(*this < rhs || rhs < *this);
+    }
 };
 
 #endif // __LIB_FRAMEMAPPING_H
