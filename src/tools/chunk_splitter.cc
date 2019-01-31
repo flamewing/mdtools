@@ -248,11 +248,6 @@ void split_chunks(
 
 namespace {
     // Some functions to generate lookup tables.
-    constexpr bool
-    Compare_NoCollison(ChunkS2 const& lhs, ChunkS2 const& rhs) noexcept {
-        return lhs.less(rhs);
-    }
-
     template <typename Callable, int... ids>
     constexpr auto get_base_remaps(
         Callable base_remap, integer_sequence<int, ids...>) noexcept {
