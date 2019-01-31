@@ -18,7 +18,6 @@
 
 #include <mdtools/songtrack.hh>
 
-#include <cstdio>
 #include <iomanip>
 #include <iostream>
 #include <istream>
@@ -26,6 +25,17 @@
 #include <vector>
 
 #include <boost/io/ios_state.hpp>
+
+#ifdef __GNUG__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+#endif
+#define FMT_HEADER_ONLY 1
+#define FMT_STRING_ALIAS 1
+#include <fmt/format.h>
+#ifdef __GNUG__
+#    pragma GCC diagnostic pop
+#endif
 
 #include <mdcomp/bigendian_io.hh>
 
@@ -349,17 +359,15 @@ void FMPSGNote::print(
 
     if (noteName.length() != 0) {
         if (keydisp != 0) {
-            char buf[30];
-            snprintf(
-                buf, sizeof(buf), "-$%X)&$FF", static_cast<unsigned>(keydisp));
+            string buf = fmt::format(fmt("({}-${:X})&$FF"), noteName, keydisp);
             if (workAround) {
                 cerr << "Converting PSG noise note $" << hex << setw(2)
                      << setfill('0') << uppercase << static_cast<int>(val)
                      << nouppercase
                      << " from xm*smps with broken transposition '$" << hex
                      << setw(2) << setfill('0') << uppercase
-                     << static_cast<int>(keydisp) << nouppercase << "' to '("
-                     << noteName << buf << "'" << endl;
+                     << static_cast<int>(keydisp) << nouppercase << "' to '"
+                     << buf << "'" << endl;
                 if ((val - keydisp) >= 0xE0 || (val - keydisp) <= 0x80) {
                     cerr << "Error: however, this conversion will result in an "
                             "invalid note.\n"
@@ -370,7 +378,7 @@ void FMPSGNote::print(
                          << endl;
                 }
             }
-            PrintName(out, "(" + noteName + buf, notesprinted == 0);
+            PrintName(out, buf, notesprinted == 0);
         } else {
             PrintName(out, noteName, notesprinted == 0);
         }

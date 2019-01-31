@@ -1,3 +1,6 @@
 [submodule "mdcomp"]
 	path = mdcomp
 	url = https://github.com/flamewing/mdcomp
+[submodule "fmt"]
+	path = fmt
+	url = https://github.com/fmtlib/fmt.git

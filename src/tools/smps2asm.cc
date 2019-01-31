@@ -33,6 +33,17 @@
 
 #include <getopt.h>
 
+#ifdef __GNUG__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+#endif
+#define FMT_HEADER_ONLY 1
+#define FMT_STRING_ALIAS 1
+#include <fmt/format.h>
+#ifdef __GNUG__
+#    pragma GCC diagnostic pop
+#endif
+
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/saxman.hh>
 
@@ -120,9 +131,7 @@ struct SNIO {
 };
 
 static inline string make_label_code(int code) {
-    char buf[20];
-    sprintf(buf, "%02X", code);
-    return string(buf);
+    return fmt::format(fmt("{:02X}"), code);
 }
 
 static inline string need_call_label() {
@@ -1085,9 +1094,9 @@ int main(int argc, char* argv[]) {
 
     if (bankmode) {
         fin.seekg(ptrtable);
-        vector<int> ptrtable;
+        vector<int> pointerTable;
         int         leastptr = 0xFFFF;
-        ptrtable.reserve(128);
+        pointerTable.reserve(128);
 
         while (fin.good() && fin.tellg() < (leastptr & 0x7FFF)) {
             int ptr = LittleEndian::Read2(fin);
@@ -1096,23 +1105,16 @@ int main(int argc, char* argv[]) {
             } else if (ptr < leastptr) {
                 leastptr = ptr;
             }
-            ptrtable.push_back(ptr);
+            pointerTable.push_back(ptr);
         }
 
-        char const* fmt;
-        if (ptrtable.size() < 256) {
-            fmt = "%02X";
-        } else {
-            fmt = "%04X";
-        }
-        char buf[10];
-
-        for (unsigned ii = 0; ii < ptrtable.size(); ii++) {
-            snprintf(buf, sizeof(buf), fmt, ii);
+        int const width = (pointerTable.size() < 256) ? 2 : 4;
+        for (unsigned ii = 0; ii < pointerTable.size(); ii++) {
+            string buf = fmt::format(fmt("{}{:0{}X}"), projname, ii, width);
             dump_single_entry(
-                fin, fout, projname + buf, ptrtable[ii] & 0x7FFF, 0, sonicver,
-                saxman, sfx, s3kmode);
-            if (ii + 1 < ptrtable.size()) {
+                fin, fout, buf, pointerTable[ii] & 0x7FFF, 0, sonicver, saxman,
+                sfx, s3kmode);
+            if (ii + 1 < pointerTable.size()) {
                 fout << endl;
             }
         }

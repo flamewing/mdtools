@@ -43,5 +43,5 @@ enitool_SOURCES = enitool.cc
 enitool_LDFLAGS = -lenigma
 
 LDADD = -L$(srcdir)/../../mdcomp/src/lib/.libs
-AM_CPPFLAGS = -I$(srcdir)/../../include -I$(srcdir)/../../mdcomp/include
+AM_CPPFLAGS = -I$(srcdir)/../../include -I$(srcdir)/../../mdcomp/include -I$(srcdir)/../../fmt/include
 
