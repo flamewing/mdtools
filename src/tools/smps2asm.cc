@@ -53,7 +53,24 @@
 
 #define SMPS2ASM_VERSION 1
 
-using namespace std;
+using std::cerr;
+using std::dec;
+using std::endl;
+using std::ifstream;
+using std::ios;
+using std::istream;
+using std::make_shared;
+using std::map;
+using std::multimap;
+using std::ofstream;
+using std::ostream;
+using std::priority_queue;
+using std::set;
+using std::shared_ptr;
+using std::streamoff;
+using std::string;
+using std::stringstream;
+using std::vector;
 
 struct S1IO {
     template <typename T>
