@@ -293,23 +293,24 @@ public:
     int  get_pointer() const final { return jumptarget; }
 };
 
-extern template class CoordFlagNoParams<true>;
-extern template class CoordFlagNoParams<false>;
-extern template class CoordFlag1ParamByte<true>;
-extern template class CoordFlag1ParamByte<false>;
-extern template class CoordFlag2ParamBytes<true>;
-extern template class CoordFlag2ParamBytes<false>;
-extern template class CoordFlag3ParamBytes<true>;
-extern template class CoordFlag3ParamBytes<false>;
-extern template class CoordFlag4ParamBytes<true>;
-extern template class CoordFlag4ParamBytes<false>;
-extern template class CoordFlag5ParamBytes<true>;
-extern template class CoordFlag5ParamBytes<false>;
-extern template class CoordFlagPointerParam<true>;
-extern template class CoordFlagPointerParam<false>;
-extern template class CoordFlagPointer1ParamByte<true>;
-extern template class CoordFlagPointer1ParamByte<false>;
-extern template class CoordFlagPointer2ParamBytes<true>;
-extern template class CoordFlagPointer2ParamBytes<false>;
+// Explicit instantiation of all templates
+template class CoordFlagNoParams<true>;
+template class CoordFlagNoParams<false>;
+template class CoordFlag1ParamByte<true>;
+template class CoordFlag1ParamByte<false>;
+template class CoordFlag2ParamBytes<true>;
+template class CoordFlag2ParamBytes<false>;
+template class CoordFlag3ParamBytes<true>;
+template class CoordFlag3ParamBytes<false>;
+template class CoordFlag4ParamBytes<true>;
+template class CoordFlag4ParamBytes<false>;
+template class CoordFlag5ParamBytes<true>;
+template class CoordFlag5ParamBytes<false>;
+template class CoordFlagPointerParam<true>;
+template class CoordFlagPointerParam<false>;
+template class CoordFlagPointer1ParamByte<true>;
+template class CoordFlagPointer1ParamByte<false>;
+template class CoordFlagPointer2ParamBytes<true>;
+template class CoordFlagPointer2ParamBytes<false>;
 
 #endif // __TOOLS_SONGTRACK_H
