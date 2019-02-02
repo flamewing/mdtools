@@ -25,19 +25,22 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/bitstream.hh>
 
-using namespace std;
+using std::ios;
+using std::istream;
+using std::ostream_iterator;
+using std::stringstream;
+using std::vector;
 
-SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept
-    : PlaneH128V28() {
-    stringstream bitflags(ios::in | ios::out | ios::binary),
-        sym_maps(ios::in | ios::out | ios::binary),
-        dic_maps(ios::in | ios::out | ios::binary);
+SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept {
+    stringstream bitflags(ios::in | ios::out | ios::binary);
+    stringstream sym_maps(ios::in | ios::out | ios::binary);
+    stringstream dic_maps(ios::in | ios::out | ios::binary);
     // Fill in the bitflags stream.
     size_t pos = in.tellg();
     in.ignore(2);
-    unsigned short const            len1 = BigEndian::Read2(in);
-    ostream_iterator<unsigned char> bfdst(bitflags);
-    for (unsigned short ii = 0; ii < len1; ii++) {
+    uint16_t const            len1 = BigEndian::Read2(in);
+    ostream_iterator<uint8_t> bfdst(bitflags);
+    for (uint16_t ii = 0; ii < len1; ii++) {
         *bfdst++ = Read1(in);
     }
     bitflags.seekg(0);
@@ -46,41 +49,41 @@ SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept
     in.seekg(pos + len1 + 4);
     pos = in.tellg();
     in.ignore(2);
-    unsigned short const            len2 = BigEndian::Read2(in);
-    ostream_iterator<unsigned char> smdst(sym_maps);
-    for (unsigned short ii = 0; ii < len2; ii++) {
+    uint16_t const            len2 = BigEndian::Read2(in);
+    ostream_iterator<uint8_t> smdst(sym_maps);
+    for (uint16_t ii = 0; ii < len2; ii++) {
         *smdst++ = Read1(in);
     }
     sym_maps.seekg(0);
 
     // Fill in the dictionary index stream.
     in.seekg(pos + len2 + 4);
-    pos = in.tellg();
     in.ignore(2);
-    unsigned short const            len3 = BigEndian::Read2(in);
-    ostream_iterator<unsigned char> dmdst(dic_maps);
-    for (unsigned short ii = 0; ii < len3; ii++) {
+    uint16_t const len3 = BigEndian::Read2(in);
+
+    ostream_iterator<uint8_t> dmdst(dic_maps);
+    for (uint16_t ii = 0; ii < len3; ii++) {
         *dmdst++ = Read1(in);
     }
     dic_maps.seekg(0);
 
-    ibitstream<unsigned char, false>  ibitflags(bitflags);
-    ibitstream<unsigned short, false> isym_maps(sym_maps);
-    ibitstream<unsigned char, false>  idic_maps(dic_maps);
+    ibitstream<uint8_t, false>  ibitflags(bitflags);
+    ibitstream<uint16_t, false> isym_maps(sym_maps);
+    ibitstream<uint8_t, false>  idic_maps(dic_maps);
 
-    auto  lineit  = table.begin();
+    auto  lineit  = getTable().begin();
     Line* curline = &(*lineit);
     // Only one of these get used depending on xflip.
     auto fwdit = curline->begin();
     auto revit = curline->rbegin();
 
-    while (lineit != table.end()) {
+    while (lineit != getTable().end()) {
         // Is the next entry symbolwise- or dictionary-encoded?
-        if (ibitflags.pop()) {
+        if (ibitflags.pop() != 0) {
             // Symbolwise.
             Pattern_Name pat;
             // 10-bit index or 6-bit index?
-            if (isym_maps.pop()) {
+            if (isym_maps.pop() != 0) {
                 // 10-bit.
                 pat = SymLUT_10bit[isym_maps.read(10)];
             } else {
@@ -100,9 +103,9 @@ SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept
         } else {
             // Dictionary.
             // Do he have zero bits in the buffer?
-            if (!idic_maps.have_waiting_bits()) {
+            if (idic_maps.have_waiting_bits() == 0U) {
                 // Yes; check to see if the next byte is a 0xff.
-                if (static_cast<unsigned char>(dic_maps.peek()) == 0xff) {
+                if (static_cast<uint8_t>(dic_maps.peek()) == 0xff) {
                     // It is. Discard byte, advance to next line and continue.
                     dic_maps.ignore(1);
                     ++lineit;
@@ -114,9 +117,9 @@ SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept
             }
             RLEPattern pat;
             // 7-bit index or 6-bit index?
-            if (idic_maps.pop()) {
+            if (idic_maps.pop() != 0) {
                 // 7-bit.
-                unsigned char const val = idic_maps.read(7);
+                uint8_t const val = idic_maps.read(7);
                 // Did we read a 0x7f?
                 if (val == 0x7f) {
                     // Yes; this means a non-byte-aligned 0xff, or end-of-line.
@@ -151,12 +154,15 @@ SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept
 // Hard-coded stuff starts here.
 // At some point, we will want to use the raw game data instead of hard-coding
 // all of this.
-#define make_block_tile(addr, flx, fly, pal, pri)                              \
-    (((static_cast<unsigned>(pri)) & 1) << 15) |                               \
-        (((static_cast<unsigned>(pal)) & 3) << 13) |                           \
-        (((static_cast<unsigned>(fly)) & 1) << 12) |                           \
-        (((static_cast<unsigned>(flx)) & 1) << 11) |                           \
-        ((static_cast<unsigned>(addr)) & 0x7FF)
+constexpr static inline Pattern_Name make_block_tile(
+    uint16_t addr, uint16_t flx, uint16_t fly, uint16_t pal, uint16_t pri) {
+    return Pattern_Name(
+        (((static_cast<unsigned>(pri)) & 1) << 15) |
+        (((static_cast<unsigned>(pal)) & 3) << 13) |
+        (((static_cast<unsigned>(fly)) & 1) << 12) |
+        (((static_cast<unsigned>(flx)) & 1) << 11) |
+        ((static_cast<unsigned>(addr)) & 0x7FF));
+}
 
 vector<Pattern_Name> SSTrackFrame::SymLUT_6bit{
     make_block_tile(0x0001, 0, 0, 0, 1), make_block_tile(0x0007, 0, 0, 0, 1),
@@ -605,4 +611,3 @@ vector<RLEPattern> SSTrackFrame::DicLUT_7bit{
     RLEPattern(make_block_tile(0x002C, 0, 0, 0, 0), 0x000C),
     RLEPattern(make_block_tile(0x002C, 0, 0, 0, 0), 0x000F),
     RLEPattern(make_block_tile(0x002C, 0, 0, 0, 0), 0x0010)};
-#undef make_block_tile

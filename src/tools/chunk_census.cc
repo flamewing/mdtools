@@ -25,7 +25,17 @@
 
 #include <mdcomp/kosinski.hh>
 
-using namespace std;
+using std::cerr;
+using std::cout;
+using std::dec;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::ifstream;
+using std::ofstream;
+using std::setfill;
+using std::setw;
+using std::stringstream;
 
 static void usage() {
     cerr << "Usage: chunk_census {chunk_ID} {filename_list}" << endl;
@@ -53,8 +63,9 @@ int main(int argc, char* argv[]) {
         } else {
             stringstream sin(ios::in | ios::out | ios::binary);
             kosinski::decode(fin, sin);
-            sin.seekg(0ul);
-            size_t xpos = 0, ypos = 0;
+            sin.seekg(0UL);
+            size_t xpos   = 0;
+            size_t ypos   = 0;
             bool   planeA = true;
             while (sin.good()) {
                 int c = sin.get();

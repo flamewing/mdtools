@@ -30,7 +30,17 @@
 
 #include <mdtools/ignore_unused_variable_warning.hh>
 
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::ifstream;
+using std::ios;
+using std::istream;
+using std::map;
+using std::ofstream;
+using std::ostream;
+using std::streamsize;
+using std::string;
+using std::stringstream;
 
 static void usage() {
     cerr << "Usage: plane_map [-x|--extract [{pointer}]] [--sonic2] "
@@ -81,7 +91,7 @@ static void plane_map(
     for (size_t n = 0; n < nframes; n++, off += 2) {
         BigEndian::Write2(dst, w * h);
         for (size_t j = 0; j < h; j++) {
-            signed char y_pos = (j - h / 2) << 3;
+            auto y_pos = static_cast<signed char>((j - h / 2) << 3);
             for (size_t i = 0; i < w; i++) {
                 dst.put(static_cast<char>(y_pos));
                 dst.put(static_cast<char>(0x00));
@@ -153,7 +163,10 @@ int main(int argc, char* argv[]) {
                              {"compress", no_argument, nullptr, 'c'},
                              {nullptr, 0, nullptr, 0}};
 
-    bool       extract = false, compress = false, unmap = false;
+    bool extract  = false;
+    bool compress = false;
+    bool unmap    = false;
+
     streamsize pointer = 0;
 
     while (true) {
@@ -179,6 +192,8 @@ int main(int argc, char* argv[]) {
 
         case 'u':
             unmap = true;
+            break;
+        default:
             break;
         }
     }
@@ -214,9 +229,10 @@ int main(int argc, char* argv[]) {
         }
     } else {
         stringstream fbuf(ios::in | ios::out | ios::binary | ios::trunc);
-        size_t       ww = strtoul(argv[optind + 2], nullptr, 0),
-               hh       = strtoul(argv[optind + 3], nullptr, 0);
-        if ((ww == 0u || ww > 128u) || (hh == 0u || hh > 128u)) {
+
+        size_t ww = strtoul(argv[optind + 2], nullptr, 0);
+        size_t hh = strtoul(argv[optind + 3], nullptr, 0);
+        if ((ww == 0U || ww > 128U) || (hh == 0U || hh > 128U)) {
             cerr << "Invalid height or width for plane mapping." << endl
                  << endl;
             return 4;

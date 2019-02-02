@@ -23,7 +23,7 @@
 
 #include <vector>
 
-typedef std::pair<Pattern_Name, unsigned> RLEPattern;
+using RLEPattern = std::pair<Pattern_Name, unsigned>;
 
 class SSTrackFrame : public PlaneH128V28 {
 private:
@@ -34,7 +34,7 @@ private:
 
 public:
     SSTrackFrame() noexcept = default;
-    SSTrackFrame(std::istream& in, bool const xflip) noexcept;
+    SSTrackFrame(std::istream& in, bool xflip) noexcept;
 };
 
 #endif // __SSTRACK_H

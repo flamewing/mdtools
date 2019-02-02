@@ -27,7 +27,16 @@
 #include <mdcomp/kosinski.hh>
 #include <mdcomp/nemesis.hh>
 
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::ifstream;
+using std::ios;
+using std::istream;
+using std::ofstream;
+using std::ostream;
+using std::streamsize;
+using std::string;
+using std::stringstream;
 
 static void usage() {
     cerr << "Usage: recolor-art [-o|--format {unc|nem|kos}] [-m|--moduled] "
@@ -198,8 +207,8 @@ int main(int argc, char* argv[]) {
         return 3;
     }
 
-    stringstream sin(ios::in | ios::out | ios::binary),
-        sout(ios::in | ios::out | ios::binary);
+    stringstream sin(ios::in | ios::out | ios::binary);
+    stringstream sout(ios::in | ios::out | ios::binary);
 
     fin.seekg(0);
     if (fmt == eUncompressed) {
@@ -218,8 +227,8 @@ int main(int argc, char* argv[]) {
     sin.seekg(0);
     recolor(sin, sout, colormap);
 
-    fstream fout(
-        argv[optind + 1], ios::in | ios::out | ios::binary | ios::trunc);
+    ofstream fout(
+        argv[optind + 1], ios::out | ios::binary);
     if (!fout.good()) {
         cerr << "Output file '" << argv[optind + 1] << "' could not be opened."
              << endl

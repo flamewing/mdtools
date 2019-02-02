@@ -27,7 +27,18 @@
 
 #include <mdcomp/bigendian_io.hh>
 
-using namespace std;
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::istream;
+using std::map;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::uppercase;
+using std::vector;
 
 void mapping_file::read(istream& in, int const ver) {
     in.seekg(0, ios::beg);
@@ -82,7 +93,7 @@ void mapping_file::write(
     for (auto const& elem : posmap) {
         if (elem.first == size_t(out.tellp())) {
             (elem.second).write(out, ver);
-        } else if (elem.first != 0u) {
+        } else if (elem.first != 0U) {
             cerr << "Missed write at " << out.tellp() << endl;
             (elem.second).print();
         }
@@ -106,7 +117,8 @@ void mapping_file::print() const {
 void mapping_file::split(mapping_file const& src, dplc_file& dplc) {
     for (auto const& elem : src.frames) {
         frame_mapping nn;
-        frame_dplc    interm, dd;
+        frame_dplc    interm;
+        frame_dplc    dd;
         nn.split(elem, interm);
         dd.consolidate(interm);
         frames.push_back(nn);

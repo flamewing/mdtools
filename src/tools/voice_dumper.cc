@@ -26,7 +26,17 @@
 
 #include <mdtools/fmvoice.hh>
 
-using namespace std;
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::ifstream;
+using std::ios;
+using std::istream;
+using std::ofstream;
+using std::ostream;
+using std::streamsize;
+using std::string;
+using std::stringstream;
 
 static void usage() {
     cerr << "Usage: voice_dumper [-x|--extract [{pointer}]] {-v|--sonicver} "
@@ -56,7 +66,8 @@ int main(int argc, char* argv[]) {
         {"sonicver", required_argument, nullptr, 'v'},
         {nullptr, 0, nullptr, 0}};
 
-    int pointer = 0, sonicver = -1;
+    int64_t pointer  = 0;
+    int64_t sonicver = -1;
 
     while (true) {
         int option_index = 0;
@@ -69,11 +80,13 @@ int main(int argc, char* argv[]) {
 
         switch (c) {
         case 'x':
-            pointer = strtoul(optarg, nullptr, 0);
+            pointer = strtol(optarg, nullptr, 0);
             break;
 
         case 'v':
-            sonicver = strtoul(optarg, nullptr, 0);
+            sonicver = strtol(optarg, nullptr, 0);
+            break;
+        default:
             break;
         }
     }
@@ -91,20 +104,20 @@ int main(int argc, char* argv[]) {
         return 2;
     }
 
-    unsigned long numvoices = strtoul(argv[optind + 1], nullptr, 0);
-    if (numvoices == 0ul || numvoices > 128) {
+    uint64_t numvoices = strtoul(argv[optind + 1], nullptr, 0);
+    if (numvoices == 0UL || numvoices > 128) {
         cerr << "Invalid number of voices: '" << argv[optind + 1]
              << "'. Please supply a value between 1 and 128." << endl
              << endl;
         return 3;
     }
     fin.seekg(0, ios::end);
-    unsigned long len = fin.tellg();
+    uint64_t len = fin.tellg();
     fin.seekg(pointer);
 
-    for (unsigned long i = 0ul; i < numvoices; i++) {
-        unsigned long pos(fin.tellg());
-        if (pos + 25ul > len) {
+    for (uint64_t i = 0UL; i < numvoices; i++) {
+        uint64_t pos(fin.tellg());
+        if (pos + 25UL > len) {
             // End of file reached in the middle of a voice.
             cerr << "Broken voice! The end-of-file was reached in the middle "
                     "of an FM voice."

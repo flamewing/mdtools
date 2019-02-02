@@ -21,14 +21,25 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
-#include <map>
 #include <set>
 
 #include <boost/io/ios_state.hpp>
 
 #include <mdcomp/bigendian_io.hh>
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::istream;
+using std::map;
+using std::ostream;
+using std::pair;
+using std::set;
+using std::setfill;
+using std::setw;
+using std::uppercase;
+using std::vector;
 
 void frame_mapping::read(istream& in, int const ver) {
     size_t const cnt = ver == 1 ? Read1(in) : BigEndian::Read2(in);
@@ -62,13 +73,14 @@ void frame_mapping::print() const {
 }
 
 struct SingleMapCmp {
-    bool operator()(single_mapping const& lhs, single_mapping const& rhs) {
+    bool
+    operator()(single_mapping const& lhs, single_mapping const& rhs) const {
         return lhs.get_tile() < rhs.get_tile();
     }
 };
 
 struct SingleDPLCCmp {
-    bool operator()(single_dplc const& lhs, single_dplc const& rhs) {
+    bool operator()(single_dplc const& lhs, single_dplc const& rhs) const {
         return lhs.get_tile() + lhs.get_cnt() < rhs.get_tile();
     }
 };
@@ -78,7 +90,8 @@ void frame_mapping::split(frame_mapping const& src, frame_dplc& dplc) {
     // that are neighbours in art to coalesce the ranges as needed.
     vector<pair<size_t, size_t>> ranges;
     for (auto const& sd : src.maps) {
-        size_t const ss = sd.get_tile(), sz = sd.get_sx() * sd.get_sy();
+        size_t const ss = sd.get_tile();
+        size_t const sz = sd.get_sx() * sd.get_sy();
         if (ranges.empty()) {
             // Happens only once. Hopefully, the compiler will pull this out of
             // the loop, as it happens right at the start of the loop.
@@ -109,7 +122,8 @@ void frame_mapping::split(frame_mapping const& src, frame_dplc& dplc) {
     // Build VRAM map for coalesced ranges.
     map<size_t, size_t> vram_map;
     for (auto const& elem : ranges) {
-        size_t const ss = elem.first, sz = elem.second;
+        size_t const ss = elem.first;
+        size_t const sz = elem.second;
         for (size_t i = ss; i < ss + sz; i++) {
             if (vram_map.find(i) == vram_map.end()) {
                 vram_map.emplace(i, vram_map.size());
@@ -166,13 +180,15 @@ void frame_mapping::change_pal(int const srcpal, int const dstpal) {
 bool frame_mapping::operator<(frame_mapping const& rhs) const {
     if (maps.size() < rhs.maps.size()) {
         return true;
-    } else if (maps.size() > rhs.maps.size()) {
+    }
+    if (maps.size() > rhs.maps.size()) {
         return false;
     }
     for (size_t ii = 0; ii < maps.size(); ii++) {
         if (maps[ii] < rhs.maps[ii]) {
             return true;
-        } else if (rhs.maps[ii] < maps[ii]) {
+        }
+        if (rhs.maps[ii] < maps[ii]) {
             return false;
         }
     }

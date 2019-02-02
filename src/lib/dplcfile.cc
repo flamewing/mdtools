@@ -26,7 +26,18 @@
 
 #include <mdcomp/bigendian_io.hh>
 
-using namespace std;
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::istream;
+using std::map;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::uppercase;
+using std::vector;
 
 void dplc_file::read(istream& in, int const ver) {
     in.seekg(0, ios::beg);
@@ -82,7 +93,7 @@ void dplc_file::write(ostream& out, int const ver, bool const nullfirst) const {
     for (auto const& elem : posmap) {
         if (elem.first == size_t(out.tellp())) {
             (elem.second).write(out, ver);
-        } else if (elem.first != 0u) {
+        } else if (elem.first != 0U) {
             cerr << "Missed write at " << out.tellp() << endl;
             (elem.second).print();
         }

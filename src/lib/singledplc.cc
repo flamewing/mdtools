@@ -23,16 +23,25 @@
 
 #include <mdcomp/bigendian_io.hh>
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::istream;
+using std::nouppercase;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::uppercase;
 
 void single_dplc::read(istream& in, int const ver) {
     tile = BigEndian::Read2(in);
     if (ver < 4) {
-        cnt = ((tile & 0xf000u) >> 12) + 1u;
+        cnt = ((tile & 0xf000U) >> 12) + 1U;
         tile &= 0x0fff;
     } else {
-        cnt  = (tile & 0x000fu) + 1u;
-        tile = (tile & 0xfff0u) >> 4;
+        cnt  = (tile & 0x000fU) + 1U;
+        tile = (tile & 0xfff0U) >> 4;
     }
 }
 

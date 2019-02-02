@@ -159,35 +159,38 @@ template <typename IO>
 BaseNote* BaseNote::read(
     istream& in, int sonicver, int offset, string const& projname,
     LocTraits::LocType tracktype, multimap<int, string>& labels, int& last_voc,
-    unsigned char keydisp) {
-    unsigned char byte = Read1(in);
+    uint8_t keydisp) {
+    uint8_t byte = Read1(in);
     // Initialize to invalid 32-bit address.
     if (byte < 0x80) {
         return new Duration(byte, keydisp);
-    } else if (byte < 0xe0) {
+    }
+    if (byte < 0xe0) {
         switch (tracktype) {
         case LocTraits::eFMInit:
         case LocTraits::eFMTrack:
             return new FMPSGNote(byte, keydisp);
         case LocTraits::ePSGInit:
-        case LocTraits::ePSGTrack: {
+        case LocTraits::ePSGTrack:
             return new FMPSGNote(byte, keydisp);
-        }
         case LocTraits::eDACInit:
         case LocTraits::eDACTrack:
         case LocTraits::ePCMInit:
         case LocTraits::ePCMTrack:
         case LocTraits::ePWMInit:
         case LocTraits::ePWMTrack:
-        default:
             return new DACNote(byte, keydisp);
+        case LocTraits::eHeader:
+        case LocTraits::eVoices:
+        case LocTraits::eExtVoices:
+            __builtin_unreachable();
         }
     }
 
     if (sonicver >= 3) {
         switch (byte) {
         case 0xff: { // Meta
-            unsigned char spec = Read1(in);
+            uint8_t spec = Read1(in);
             switch (spec) {
             case 0x02:
             case 0x07:
@@ -205,8 +208,8 @@ BaseNote* BaseNote::read(
                     byte, keydisp, spec, Read1(in), Read1(in), Read1(in),
                     Read1(in));
             case 0x03: {
-                int           ptr = IO::read_pointer(in, offset);
-                unsigned char cnt = Read1(in);
+                int     ptr = IO::read_pointer(in, offset);
+                uint8_t cnt = Read1(in);
                 return new CoordFlagPointer2ParamBytes<false>(
                     byte, keydisp, spec, cnt, ptr);
             }
@@ -220,9 +223,10 @@ BaseNote* BaseNote::read(
             }
         }
         case 0xf7: { // Loop
-            unsigned char index = Read1(in), repeats = Read1(in);
-            int           ptr = IO::read_pointer(in, offset);
-            auto          it  = labels.find(ptr);
+            uint8_t index   = Read1(in);
+            uint8_t repeats = Read1(in);
+            int     ptr     = IO::read_pointer(in, offset);
+            auto    it      = labels.find(ptr);
             if (it == labels.end()) {
                 labels.emplace(ptr, projname + need_loop_label());
             }
@@ -231,8 +235,10 @@ BaseNote* BaseNote::read(
         }
         case 0xf0:   // Start modulation
         case 0xfe: { // FM3 Special mode
-            unsigned char p1 = Read1(in), p2 = Read1(in), p3 = Read1(in),
-                          p4 = Read1(in);
+            uint8_t p1 = Read1(in);
+            uint8_t p2 = Read1(in);
+            uint8_t p3 = Read1(in);
+            uint8_t p4 = Read1(in);
             return new CoordFlag4ParamBytes<false>(
                 byte, keydisp, p1, p2, p3, p4);
         }
@@ -254,14 +260,13 @@ BaseNote* BaseNote::read(
             }
             if (byte == 0xf6) {
                 return new CoordFlagPointerParam<true>(byte, keydisp, ptr);
-            } else {
-                return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
             }
+            return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
         }
         case 0xeb: { // Conditional jump
-            unsigned char index = Read1(in);
-            int           ptr   = IO::read_pointer(in, offset);
-            auto          it    = labels.find(ptr);
+            uint8_t index = Read1(in);
+            int     ptr   = IO::read_pointer(in, offset);
+            auto    it    = labels.find(ptr);
             if (it == labels.end()) {
                 labels.emplace(ptr, projname + need_jump_label());
             }
@@ -283,14 +288,13 @@ BaseNote* BaseNote::read(
                 last_voc = voc;
             }
             if (voc < 0) {
-                unsigned char id = Read1(in) - 0x81;
+                uint8_t id = Read1(in) - 0x81;
                 if (tracktype == LocTraits::eFMTrack) {
                     voc &= 0x7f;
                 }
                 return new CoordFlag2ParamBytes<false>(byte, keydisp, voc, id);
-            } else {
-                return new CoordFlag1ParamByte<false>(byte, keydisp, voc);
             }
+            return new CoordFlag1ParamByte<false>(byte, keydisp, voc);
         }
 
         case 0xe0:
@@ -311,12 +315,11 @@ BaseNote* BaseNote::read(
             return new CoordFlagChgKeydisp(byte, keydisp, Read1(in));
 
         case 0xe2: { // Fade to previous
-            unsigned char c = Read1(in);
+            uint8_t c = Read1(in);
             if (c == 0xff) {
                 return new CoordFlagNoParams<false>(byte, keydisp);
-            } else {
-                return new CoordFlag1ParamByte<false>(byte, keydisp, c);
             }
+            return new CoordFlag1ParamByte<false>(byte, keydisp, c);
         }
 
         case 0xe3:
@@ -330,9 +333,10 @@ BaseNote* BaseNote::read(
     } else {
         switch (byte) {
         case 0xf7: { // Loop
-            unsigned char index = Read1(in), repeats = Read1(in);
-            int           ptr = IO::read_pointer(in, offset);
-            auto          it  = labels.find(ptr);
+            uint8_t index   = Read1(in);
+            uint8_t repeats = Read1(in);
+            int     ptr     = IO::read_pointer(in, offset);
+            auto    it      = labels.find(ptr);
             if (it == labels.end()) {
                 labels.emplace(ptr, projname + need_loop_label());
             }
@@ -340,8 +344,10 @@ BaseNote* BaseNote::read(
                 byte, keydisp, index, repeats, ptr);
         }
         case 0xf0: { // Start modulation
-            unsigned char wait = Read1(in), speed = Read1(in),
-                          change = Read1(in), steps = Read1(in);
+            uint8_t wait   = Read1(in);
+            uint8_t speed  = Read1(in);
+            uint8_t change = Read1(in);
+            uint8_t steps  = Read1(in);
             return new CoordFlag4ParamBytes<false>(
                 byte, keydisp, wait, speed, change, steps);
         }
@@ -356,9 +362,8 @@ BaseNote* BaseNote::read(
             }
             if (byte == 0xf6) {
                 return new CoordFlagPointerParam<true>(byte, keydisp, ptr);
-            } else {
-                return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
             }
+            return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
         }
         case 0xed: // S1: clear push flag; S2: eat byte
             if (sonicver == 1) {
@@ -494,9 +499,11 @@ public:
             // Time to output headers for all tracks then queue uptheir data
             // for exploration.
             for (int i = 0; i < nchan; i++) {
-                int playctrl = Read1(in), chanid = Read1(in),
-                    trackptr = IO::read_header_pointer(in, offset),
-                    keydisp = Read1(in), initvol = Read1(in);
+                int playctrl = Read1(in);
+                int chanid   = Read1(in);
+                int trackptr = IO::read_header_pointer(in, offset);
+                int keydisp  = Read1(in);
+                int initvol  = Read1(in);
 
                 // Special case for non-ordinary playback control bytes.
                 if (playctrl != 0x80) {
@@ -514,7 +521,7 @@ public:
                 case 0x80:
                 case 0xA0:
                 case 0xC0: {
-                    char c = ((chanid & 0x60) >> 5) + '1';
+                    auto c = static_cast<char>(((chanid & 0x60) >> 5) + '1');
                     out << "cPSG" << c << ", ";
                     lbl += "_PSG";
                     lbl += c;
@@ -534,7 +541,7 @@ public:
                 case 0x04:
                 case 0x05:
                 case 0x06: {
-                    char c = (chanid & 0x07) + '0';
+                    auto c = static_cast<char>((chanid & 0x07) + '0');
                     out << "cFM" << c << ", ";
                     lbl += "_FM";
                     lbl += c;
@@ -564,7 +571,8 @@ public:
             }
         } else {
             // Number of FM+DAC, PSG channels.
-            int nfm = Read1(in), npsg = Read1(in);
+            int nfm  = Read1(in);
+            int npsg = Read1(in);
             // Output channel setup header.
             PrintMacro(out, "smpsHeaderChan");
             PrintHex2(out, nfm, false);
@@ -572,7 +580,8 @@ public:
             out << endl;
 
             // Tempo dividing timing, main tempo modifier.
-            int tempodiv = Read1(in), tempomod = Read1(in);
+            int tempodiv = Read1(in);
+            int tempomod = Read1(in);
             // Output tempo header; it will deal with main tempo conversion.
             PrintMacro(out, "smpsHeaderTempo");
             PrintHex2(out, tempodiv, false);
@@ -581,8 +590,9 @@ public:
 
             // First come the DAC and FM channels.
             for (int i = 0; i < nfm; i++) {
-                int ptr     = IO::read_header_pointer(in, offset),
-                    keydisp = Read1(in), initvol = Read1(in);
+                int ptr     = IO::read_header_pointer(in, offset);
+                int keydisp = Read1(in);
+                int initvol = Read1(in);
 
                 string             lbl = projname;
                 LocTraits::LocType type;
@@ -602,7 +612,7 @@ public:
                     type = LocTraits::eDACInit;
                 } else {
                     // Now come FM channels.
-                    char c = i + '0';
+                    auto c = static_cast<char>(i + '0');
                     lbl += "_FM";
                     lbl += c;
                     labels.emplace(ptr, lbl);
@@ -621,12 +631,13 @@ public:
 
             // Time for PSG channels.
             for (int i = 0; i < npsg; i++) {
-                int ptr     = IO::read_header_pointer(in, offset),
-                    keydisp = Read1(in), initvol = Read1(in),
-                    modctrl = Read1(in), tone = Read1(in);
-
-                string lbl = projname;
-                char   c   = i + '1';
+                int    ptr     = IO::read_header_pointer(in, offset);
+                int    keydisp = Read1(in);
+                int    initvol = Read1(in);
+                int    modctrl = Read1(in);
+                int    tone    = Read1(in);
+                string lbl     = projname;
+                auto   c       = static_cast<char>(i + '1');
                 lbl += "_PSG";
                 lbl += c;
                 labels.emplace(ptr, lbl);
@@ -674,8 +685,16 @@ public:
             case LocTraits::ePSGInit:
                 next_loc.type = LocTraits::ePSGTrack;
                 break;
-            default:
+            case LocTraits::eDACTrack:
+            case LocTraits::eHeader:
+            case LocTraits::eFMTrack:
+            case LocTraits::ePCMTrack:
+            case LocTraits::ePSGTrack:
+            case LocTraits::ePWMTrack:
                 break;
+            case LocTraits::eVoices:
+            case LocTraits::eExtVoices:
+                __builtin_unreachable();
             }
 
             todo.pop();
@@ -686,8 +705,8 @@ public:
             }
 
             if (next_loc.loc < 0 || next_loc.loc >= len) {
-                auto it  = labels.lower_bound(next_loc.loc),
-                     end = labels.upper_bound(next_loc.loc);
+                auto it  = labels.lower_bound(next_loc.loc);
+                auto end = labels.upper_bound(next_loc.loc);
 
                 if (it != end) {
                     BaseNote::force_linebreak(out, true);
@@ -802,8 +821,8 @@ public:
             int                  off  = elem.first;
             shared_ptr<BaseNote> note = elem.second;
             if (off > lastlabel) {
-                auto it  = labels.upper_bound(lastlabel),
-                     end = labels.upper_bound(off);
+                auto it  = labels.upper_bound(lastlabel);
+                auto end = labels.upper_bound(off);
 
                 if (it != end) {
                     BaseNote::force_linebreak(out, true);
@@ -990,7 +1009,7 @@ void dump_single_entry(
     } else {
         src = &sin;
         in.seekg(pointer);
-        saxman::decode(in, sin, 0u);
+        saxman::decode(in, sin, 0U);
         sin.seekg(0);
     }
 
@@ -1016,8 +1035,14 @@ int main(int argc, char* argv[]) {
         {"s3kmode", no_argument, nullptr, '3'},
         {nullptr, 0, nullptr, 0}};
 
-    bool sfx = false, saxman = false, s3kmode = false, bankmode = false;
-    int  pointer = 0, offset = 0, ptrtable = 0, sonicver = -1;
+    bool    sfx      = false;
+    bool    saxman   = false;
+    bool    s3kmode  = false;
+    bool    bankmode = false;
+    int64_t pointer  = 0;
+    int64_t offset   = 0;
+    int64_t ptrtable = 0;
+    int64_t sonicver = -1;
 
     while (true) {
         int option_index = 0;
@@ -1031,14 +1056,14 @@ int main(int argc, char* argv[]) {
         switch (c) {
         case 'b':
             if (optarg != nullptr) {
-                ptrtable = strtoul(optarg, nullptr, 0);
+                ptrtable = strtol(optarg, nullptr, 0);
             }
             bankmode = true;
             break;
 
         case 'x':
             if (optarg != nullptr) {
-                pointer = strtoul(optarg, nullptr, 0);
+                pointer = strtol(optarg, nullptr, 0);
             }
             break;
 
@@ -1048,7 +1073,7 @@ int main(int argc, char* argv[]) {
 
         case 'o':
             assert(optarg != nullptr);
-            offset = strtoul(optarg, nullptr, 0);
+            offset = strtol(optarg, nullptr, 0);
             break;
 
         case 's':
@@ -1057,11 +1082,13 @@ int main(int argc, char* argv[]) {
 
         case 'v':
             assert(optarg != nullptr);
-            sonicver = strtoul(optarg, nullptr, 0);
+            sonicver = strtol(optarg, nullptr, 0);
             break;
 
         case '3':
             s3kmode = true;
+            break;
+        default:
             break;
         }
     }
@@ -1102,14 +1129,15 @@ int main(int argc, char* argv[]) {
             int ptr = LittleEndian::Read2(fin);
             if (ptr < 0x8000) {
                 break;
-            } else if (ptr < leastptr) {
+            }
+            if (ptr < leastptr) {
                 leastptr = ptr;
             }
             pointerTable.push_back(ptr);
         }
 
         int const width = (pointerTable.size() < 256) ? 2 : 4;
-        for (unsigned ii = 0; ii < pointerTable.size(); ii++) {
+        for (size_t ii = 0; ii < pointerTable.size(); ii++) {
             string buf = fmt::format(fmt("{}{:0{}X}"), projname, ii, width);
             dump_single_entry(
                 fin, fout, buf, pointerTable[ii] & 0x7FFF, 0, sonicver, saxman,

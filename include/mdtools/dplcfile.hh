@@ -24,19 +24,21 @@
 #include <vector>
 
 class dplc_file {
-protected:
+private:
     std::vector<frame_dplc> frames;
 
 public:
-    void read(std::istream& in, int const ver);
-    void write(std::ostream& out, int const ver, bool const nullfirst) const;
+    size_t size() const { return frames.size(); }
+    size_t size(int ver) const;
+
+    void read(std::istream& in, int ver);
+    void write(std::ostream& out, int ver, bool nullfirst) const;
     void print() const;
     void consolidate(dplc_file const& src);
     void insert(frame_dplc const& val);
+    bool empty() const { return frames.empty(); }
+
     frame_dplc const& get_dplc(size_t const i) const { return frames[i]; }
-    bool              empty() const { return frames.empty(); }
-    size_t            size() const { return frames.size(); }
-    size_t            size(int const ver) const;
 };
 
 #endif // __LIB_DPLCFILE_H

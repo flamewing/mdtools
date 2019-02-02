@@ -44,10 +44,9 @@ struct LocTraits {
         eVoices,
         eExtVoices
     } type;
-    unsigned char keydisp;
+    uint8_t keydisp;
 
-    LocTraits(int l, LocType t, unsigned char k = 0)
-        : loc(l), type(t), keydisp(k) {}
+    LocTraits(int l, LocType t, uint8_t k = 0) : loc(l), type(t), keydisp(k) {}
     bool operator<(LocTraits const& other) const {
         return type > other.type || (type == other.type && loc < other.loc);
     }
@@ -58,43 +57,53 @@ protected:
     static size_t          notesprinted;
     static BaseNote const* last_note;
     static bool            need_rest;
-    unsigned char          val;
-    unsigned char          keydisp;
+
+private:
+    uint8_t                val;
+    uint8_t                keydisp;
+
+protected:
+    uint8_t get_value() const { return val; }
+    uint8_t get_base_keydisp() const { return keydisp; }
 
 public:
-    BaseNote(unsigned char v, unsigned char k) : val(v), keydisp(k) {}
-    virtual ~BaseNote() {}
+    BaseNote(uint8_t v, uint8_t k) noexcept : val(v), keydisp(k) {}
+    BaseNote(BaseNote const&) noexcept = default;
+    BaseNote(BaseNote&&) noexcept      = default;
+    BaseNote& operator=(BaseNote const&) noexcept = default;
+    BaseNote& operator=(BaseNote&&) noexcept = default;
+    virtual ~BaseNote() noexcept             = default;
     template <typename IO>
     static BaseNote* read(
         std::istream& in, int sonicver, int offset, std::string const& projname,
         LocTraits::LocType tracktype, std::multimap<int, std::string>& labels,
-        int& last_voc, unsigned char keydisp);
+        int& last_voc, uint8_t keydisp);
     void         write(std::ostream& out, int sonicver, size_t offset) const;
     virtual void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
         std::multimap<int, std::string>& labels, bool s3kmode) const = 0;
     static void force_linebreak(std::ostream& out, bool force = false);
     static void
-                          print_psg_tone(std::ostream& out, int tone, int sonicver, bool last);
-    virtual bool          ends_track() const { return false; }
-    virtual bool          has_pointer() const { return false; }
-    virtual int           get_pointer() const { return 0; }
-    virtual bool          is_rest() const { return false; }
-    virtual unsigned char get_keydisp() const { return keydisp; }
+                    print_psg_tone(std::ostream& out, int tone, int sonicver, bool last);
+    virtual bool    ends_track() const { return false; }
+    virtual bool    has_pointer() const { return false; }
+    virtual int     get_pointer() const { return 0; }
+    virtual bool    is_rest() const { return false; }
+    virtual uint8_t get_keydisp() const { return keydisp; }
 };
 
 class RealNote : public BaseNote {
 public:
-    RealNote(unsigned char v, unsigned char k) : BaseNote(v, k) {}
-    bool is_rest() const override { return val == 0x80; }
+    RealNote(uint8_t v, uint8_t k) : BaseNote(v, k) {}
+    bool is_rest() const final { return get_value() == 0x80; }
 };
 
 class Duration : public BaseNote {
 public:
-    Duration(unsigned char v, unsigned char k) : BaseNote(v, k) {}
+    Duration(uint8_t v, uint8_t k) : BaseNote(v, k) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
 };
 
 class NullNote : public BaseNote {
@@ -102,7 +111,7 @@ public:
     NullNote() : BaseNote(0, 0) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override {
+        std::multimap<int, std::string>& labels, bool s3kmode) const final {
         ignore_unused_variable_warning(
             out, sonicver, tracktype, labels, s3kmode);
     }
@@ -116,197 +125,191 @@ public:
     FMVoice(std::istream& in, int sonicver, int n);
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
 };
 
 class DACNote : public RealNote {
 public:
-    DACNote(unsigned char v, unsigned char k) : RealNote(v, k) {}
+    DACNote(uint8_t v, uint8_t k) : RealNote(v, k) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
 };
 
 class FMPSGNote : public RealNote {
 public:
-    FMPSGNote(unsigned char v, unsigned char k) : RealNote(v, k) {}
+    FMPSGNote(uint8_t v, uint8_t k) : RealNote(v, k) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
 };
 
 template <bool noret>
 class CoordFlagNoParams : public BaseNote {
 public:
-    CoordFlagNoParams(unsigned char v, unsigned char k) : BaseNote(v, k) {}
+    CoordFlagNoParams(uint8_t v, uint8_t k) : BaseNote(v, k) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    bool ends_track() const override { return noret; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    bool ends_track() const final { return noret; }
 };
 
 template <bool noret>
 class CoordFlag1ParamByte : public BaseNote {
-protected:
-    unsigned char param;
+private:
+    uint8_t param;
 
 public:
-    CoordFlag1ParamByte(unsigned char v, unsigned char k, unsigned char p)
+    CoordFlag1ParamByte(uint8_t v, uint8_t k, uint8_t p)
         : BaseNote(v, k), param(p) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    bool ends_track() const override { return noret; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    bool ends_track() const final { return noret; }
 };
 
 class CoordFlagChgKeydisp : public BaseNote {
-protected:
-    unsigned char param;
+private:
+    uint8_t param;
 
 public:
-    CoordFlagChgKeydisp(unsigned char v, unsigned char k, unsigned char p)
+    CoordFlagChgKeydisp(uint8_t v, uint8_t k, uint8_t p)
         : BaseNote(v, k), param(p) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    unsigned char get_keydisp() const override { return keydisp + param; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    uint8_t get_keydisp() const final { return get_base_keydisp() + param; }
 };
 
 template <bool noret>
 class CoordFlag2ParamBytes : public BaseNote {
-protected:
-    unsigned char param1, param2;
+private:
+    uint8_t param1, param2;
 
 public:
-    CoordFlag2ParamBytes(
-        unsigned char v, unsigned char k, unsigned char p1, unsigned char p2)
+    CoordFlag2ParamBytes(uint8_t v, uint8_t k, uint8_t p1, uint8_t p2)
         : BaseNote(v, k), param1(p1), param2(p2) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    bool ends_track() const override { return noret; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    bool ends_track() const final { return noret; }
 };
 
 template <bool noret>
 class CoordFlag3ParamBytes : public BaseNote {
-protected:
-    unsigned char param1, param2, param3;
+private:
+    uint8_t param1, param2, param3;
 
 public:
     CoordFlag3ParamBytes(
-        unsigned char v, unsigned char k, unsigned char p1, unsigned char p2,
-        unsigned char p3)
+        uint8_t v, uint8_t k, uint8_t p1, uint8_t p2, uint8_t p3)
         : BaseNote(v, k), param1(p1), param2(p2), param3(p3) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    bool ends_track() const override { return noret; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    bool ends_track() const final { return noret; }
 };
 
 template <bool noret>
 class CoordFlag4ParamBytes : public BaseNote {
-protected:
-    unsigned char param1, param2, param3, param4;
+private:
+    uint8_t param1, param2, param3, param4;
 
 public:
     CoordFlag4ParamBytes(
-        unsigned char v, unsigned char k, unsigned char p1, unsigned char p2,
-        unsigned char p3, unsigned char p4)
+        uint8_t v, uint8_t k, uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4)
         : BaseNote(v, k), param1(p1), param2(p2), param3(p3), param4(p4) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    bool ends_track() const override { return noret; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    bool ends_track() const final { return noret; }
 };
 
 template <bool noret>
 class CoordFlag5ParamBytes : public BaseNote {
-protected:
-    unsigned char param1, param2, param3, param4, param5;
+private:
+    uint8_t param1, param2, param3, param4, param5;
 
 public:
     CoordFlag5ParamBytes(
-        unsigned char v, unsigned char k, unsigned char p1, unsigned char p2,
-        unsigned char p3, unsigned char p4, unsigned char p5)
+        uint8_t v, uint8_t k, uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4,
+        uint8_t p5)
         : BaseNote(v, k), param1(p1), param2(p2), param3(p3), param4(p4),
           param5(p5) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    bool ends_track() const override { return noret; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    bool ends_track() const final { return noret; }
 };
 
 template <bool noret>
 class CoordFlagPointerParam : public BaseNote {
-protected:
+private:
     int jumptarget;
 
 public:
-    CoordFlagPointerParam(unsigned char v, unsigned char k, int p)
+    CoordFlagPointerParam(uint8_t v, uint8_t k, int p)
         : BaseNote(v, k), jumptarget(p) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    bool ends_track() const override { return noret; }
-    bool has_pointer() const override { return true; }
-    int  get_pointer() const override { return jumptarget; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    bool ends_track() const final { return noret; }
+    bool has_pointer() const final { return true; }
+    int  get_pointer() const final { return jumptarget; }
 };
 
 template <bool noret>
 class CoordFlagPointer1ParamByte : public BaseNote {
-protected:
-    int           jumptarget;
-    unsigned char param1;
+private:
+    int     jumptarget;
+    uint8_t param1;
 
 public:
-    CoordFlagPointer1ParamByte(
-        unsigned char v, unsigned char k, unsigned char p1, int ptr)
+    CoordFlagPointer1ParamByte(uint8_t v, uint8_t k, uint8_t p1, int ptr)
         : BaseNote(v, k), jumptarget(ptr), param1(p1) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    bool ends_track() const override { return noret; }
-    bool has_pointer() const override { return true; }
-    int  get_pointer() const override { return jumptarget; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    bool ends_track() const final { return noret; }
+    bool has_pointer() const final { return true; }
+    int  get_pointer() const final { return jumptarget; }
 };
 
 template <bool noret>
 class CoordFlagPointer2ParamBytes : public BaseNote {
-protected:
-    int           jumptarget;
-    unsigned char param1, param2;
+private:
+    int     jumptarget;
+    uint8_t param1, param2;
 
 public:
     CoordFlagPointer2ParamBytes(
-        unsigned char v, unsigned char k, unsigned char p1, unsigned char p2,
-        int ptr)
+        uint8_t v, uint8_t k, uint8_t p1, uint8_t p2, int ptr)
         : BaseNote(v, k), jumptarget(ptr), param1(p1), param2(p2) {}
     void print(
         std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-        std::multimap<int, std::string>& labels, bool s3kmode) const override;
-    bool ends_track() const override { return noret; }
-    bool has_pointer() const override { return true; }
-    int  get_pointer() const override { return jumptarget; }
+        std::multimap<int, std::string>& labels, bool s3kmode) const final;
+    bool ends_track() const final { return noret; }
+    bool has_pointer() const final { return true; }
+    int  get_pointer() const final { return jumptarget; }
 };
 
-// Explicit instantiation of all templates
-template class CoordFlagNoParams<true>;
-template class CoordFlagNoParams<false>;
-template class CoordFlag1ParamByte<true>;
-template class CoordFlag1ParamByte<false>;
-template class CoordFlag2ParamBytes<true>;
-template class CoordFlag2ParamBytes<false>;
-template class CoordFlag3ParamBytes<true>;
-template class CoordFlag3ParamBytes<false>;
-template class CoordFlag4ParamBytes<true>;
-template class CoordFlag4ParamBytes<false>;
-template class CoordFlag5ParamBytes<true>;
-template class CoordFlag5ParamBytes<false>;
-template class CoordFlagPointerParam<true>;
-template class CoordFlagPointerParam<false>;
-template class CoordFlagPointer1ParamByte<true>;
-template class CoordFlagPointer1ParamByte<false>;
-template class CoordFlagPointer2ParamBytes<true>;
-template class CoordFlagPointer2ParamBytes<false>;
+extern template class CoordFlagNoParams<true>;
+extern template class CoordFlagNoParams<false>;
+extern template class CoordFlag1ParamByte<true>;
+extern template class CoordFlag1ParamByte<false>;
+extern template class CoordFlag2ParamBytes<true>;
+extern template class CoordFlag2ParamBytes<false>;
+extern template class CoordFlag3ParamBytes<true>;
+extern template class CoordFlag3ParamBytes<false>;
+extern template class CoordFlag4ParamBytes<true>;
+extern template class CoordFlag4ParamBytes<false>;
+extern template class CoordFlag5ParamBytes<true>;
+extern template class CoordFlag5ParamBytes<false>;
+extern template class CoordFlagPointerParam<true>;
+extern template class CoordFlagPointerParam<false>;
+extern template class CoordFlagPointer1ParamByte<true>;
+extern template class CoordFlagPointer1ParamByte<false>;
+extern template class CoordFlagPointer2ParamBytes<true>;
+extern template class CoordFlagPointer2ParamBytes<false>;
 
 #endif // __TOOLS_SONGTRACK_H

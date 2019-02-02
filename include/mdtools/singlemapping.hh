@@ -24,73 +24,81 @@
 #include <mdtools/singledplc.hh>
 
 class single_mapping {
-protected:
-    unsigned short flags, tile;
-    short          xx, yy;
-    unsigned char  sx, sy;
+private:
+    uint16_t flags, tile;
+    int16_t  xx, yy;
+    uint8_t  sx, sy;
+    enum MapSizes : size_t { sizeS1 = 5, sizeS2 = 8, sizeS3 = 6 };
 
 public:
-    void read(std::istream& in, int const ver);
-    void write(std::ostream& out, int const ver) const;
+    static size_t size(int const ver) {
+        switch (ver) {
+        case 1:
+            return sizeS1;
+        case 2:
+            return sizeS2;
+        default:
+            return sizeS3;
+        }
+    }
+    void read(std::istream& in, int ver);
+    void write(std::ostream& out, int ver) const;
     void print() const;
     void split(
         single_mapping const& src, single_dplc& dplc,
         std::map<size_t, size_t>& vram_map);
     void merge(single_mapping const& src, std::map<size_t, size_t>& vram_map);
-    void change_pal(int const srcpal, int const dstpal);
-    static size_t size(int const ver) {
-        switch (ver) {
-        case 1:
-            return 5;
-        case 2:
-            return 8;
-        default:
-            return 6;
-        }
-    }
-    unsigned short get_flags() const { return flags; }
-    unsigned short get_tile() const { return tile; }
-    short          get_xx() const { return xx; }
-    short          get_yy() const { return yy; }
-    unsigned char  get_sx() const { return sx; }
-    unsigned char  get_sy() const { return sy; }
-    void           set_flags(unsigned short const t) { flags = t; }
-    void           set_tile(unsigned short const t) { tile = t; }
-    void           set_xx(short const t) { xx = t; }
-    void           set_yy(short const t) { yy = t; }
-    void           set_sx(unsigned char const t) { sx = t; }
-    void           set_sy(unsigned char const t) { sy = t; }
-    bool           operator<(single_mapping const& rhs) const {
+    void change_pal(int srcpal, int dstpal);
+
+    uint16_t get_flags() const { return flags; }
+    uint16_t get_tile() const { return tile; }
+    int16_t  get_xx() const { return xx; }
+    int16_t  get_yy() const { return yy; }
+    uint8_t  get_sx() const { return sx; }
+    uint8_t  get_sy() const { return sy; }
+
+    void set_flags(uint16_t const t) { flags = t; }
+    void set_tile(uint16_t const t) { tile = t; }
+    void set_xx(int16_t t) { xx = t; }
+    void set_yy(int16_t t) { yy = t; }
+    void set_sx(int8_t const t) { sx = t; }
+    void set_sy(int8_t const t) { sy = t; }
+    bool operator<(single_mapping const& rhs) const {
         if (tile < rhs.tile) {
             return true;
-        } else if (tile > rhs.tile) {
+        }
+        if (tile > rhs.tile) {
             return false;
         }
         if (sx < rhs.sx) {
             return true;
-        } else if (sx > rhs.sx) {
+        }
+        if (sx > rhs.sx) {
             return false;
         }
         if (sy < rhs.sy) {
             return true;
-        } else if (sy > rhs.sy) {
+        }
+        if (sy > rhs.sy) {
             return false;
         }
         if (flags < rhs.flags) {
             return true;
-        } else if (flags > rhs.flags) {
+        }
+        if (flags > rhs.flags) {
             return false;
         }
         if (xx < rhs.xx) {
             return true;
-        } else if (xx > rhs.xx) {
+        }
+        if (xx > rhs.xx) {
             return false;
         }
         if (yy < rhs.yy) {
             return true;
-        } else /*if (yy > rhs.yy)*/ {
-            return false;
         }
+        /*if (yy > rhs.yy)*/
+        return false;
     }
     bool operator==(single_mapping const& rhs) const {
         return !(*this < rhs || rhs < *this);

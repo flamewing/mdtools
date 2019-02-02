@@ -24,7 +24,18 @@
 
 #include <mdcomp/bigendian_io.hh>
 
-using namespace std;
+using std::cout;
+using std::dec;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::istream;
+using std::map;
+using std::nouppercase;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::uppercase;
 
 void single_mapping::read(istream& in, int const ver) {
     yy    = static_cast<signed char>(Read1(in));
@@ -32,8 +43,8 @@ void single_mapping::read(istream& in, int const ver) {
     sx    = ((sy & 0xc) >> 2) + 1;
     sy    = (sy & 0x3) + 1;
     tile  = BigEndian::Read2(in);
-    flags = ((tile & 0xf800u) >> 8u);
-    tile &= 0x07ffu;
+    flags = ((tile & 0xf800U) >> 8U);
+    tile &= 0x07ffU;
     if (ver == 2) {
         in.ignore(2);
     }
@@ -73,25 +84,25 @@ void single_mapping::print() const {
     cout << nouppercase << "\tLast tile: $";
     cout << uppercase << hex << setfill('0') << setw(4) << (tile + sx * sy - 1);
     cout << nouppercase << "\tFlags: ";
-    if ((flags & 0x80u) != 0) {
+    if ((flags & 0x80U) != 0) {
         cout << "foreground";
-        if ((flags & 0x78u) != 0) {
+        if ((flags & 0x78U) != 0) {
             cout << "|";
         }
     }
-    if ((flags & 0x60u) != 0) {
-        cout << "palette+" << dec << ((flags & 0x60u) >> 5u);
-        if ((flags & 0x18u) != 0) {
+    if ((flags & 0x60U) != 0) {
+        cout << "palette+" << dec << ((flags & 0x60U) >> 5U);
+        if ((flags & 0x18U) != 0) {
             cout << "|";
         }
     }
-    if ((flags & 0x08u) != 0) {
+    if ((flags & 0x08U) != 0) {
         cout << "flip_x";
-        if ((flags & 0x10u) != 0) {
+        if ((flags & 0x10U) != 0) {
             cout << "|";
         }
     }
-    if ((flags & 0x10u) != 0) {
+    if ((flags & 0x10U) != 0) {
         cout << "flip_y";
     }
     cout << endl;

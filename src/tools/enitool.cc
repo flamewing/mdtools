@@ -28,7 +28,14 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/enigma.hh>
 
-using namespace std;
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::ios;
+using std::ifstream;
+using std::ofstream;
+using std::set;
+using std::stringstream;
 
 static void usage(char* prog) {
     cerr << "Usage: " << prog << "-s|--size {filename}" << endl << endl;
@@ -89,6 +96,8 @@ int main(int argc, char* argv[]) {
         case 's':
             sizeOnly = true;
             break;
+        default:
+            break;
         }
     }
 
@@ -98,10 +107,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int delta = 0;
+    int64_t delta = 0;
     if (!sizeOnly) {
         delta = strtol(argv[optind++], nullptr, 0);
-        if ((delta == 0) && (paldelta == 0u)) {
+        if ((delta == 0) && (paldelta == 0U)) {
             cerr << "Adding zero to file... aborting." << endl << endl;
             return 2;
         }

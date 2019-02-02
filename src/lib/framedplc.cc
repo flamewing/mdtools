@@ -26,7 +26,16 @@
 
 #include <mdcomp/bigendian_io.hh>
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::istream;
+using std::map;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::uppercase;
 
 void frame_dplc::read(istream& in, int const ver) {
     size_t cnt;
@@ -76,7 +85,8 @@ void frame_dplc::consolidate(frame_dplc const& src) {
         return;
     }
 
-    size_t     start = src.dplc[0].get_tile(), size = 0;
+    size_t     start = src.dplc[0].get_tile();
+    size_t     size  = 0;
     frame_dplc interm;
     for (auto const& sd : src.dplc) {
         if (sd.get_tile() != start + size) {
@@ -99,7 +109,8 @@ void frame_dplc::consolidate(frame_dplc const& src) {
 
     dplc.clear();
     for (auto const& elem : interm.dplc) {
-        size_t tile = elem.get_tile(), sz = elem.get_cnt();
+        size_t tile = elem.get_tile();
+        size_t sz   = elem.get_cnt();
 
         while (sz >= 16) {
             single_dplc nn{};
@@ -109,7 +120,7 @@ void frame_dplc::consolidate(frame_dplc const& src) {
             sz -= 16;
             tile += 16;
         }
-        if (sz != 0u) {
+        if (sz != 0U) {
             single_dplc nn{};
             nn.set_tile(tile);
             nn.set_cnt(sz);
@@ -122,7 +133,8 @@ void frame_dplc::insert(single_dplc const& val) { dplc.push_back(val); }
 
 void frame_dplc::build_vram_map(map<size_t, size_t>& vram_map) const {
     for (auto const& sd : dplc) {
-        size_t ss = sd.get_tile(), sz = sd.get_cnt();
+        size_t ss = sd.get_tile();
+        size_t sz = sd.get_cnt();
         for (size_t i = ss; i < ss + sz; i++) {
             vram_map.emplace(vram_map.size(), i);
         }
@@ -132,13 +144,15 @@ void frame_dplc::build_vram_map(map<size_t, size_t>& vram_map) const {
 bool frame_dplc::operator<(frame_dplc const& rhs) const {
     if (dplc.size() < rhs.dplc.size()) {
         return true;
-    } else if (dplc.size() > rhs.dplc.size()) {
+    }
+    if (dplc.size() > rhs.dplc.size()) {
         return false;
     }
     for (size_t ii = 0; ii < dplc.size(); ii++) {
         if (dplc[ii] < rhs.dplc[ii]) {
             return true;
-        } else if (rhs.dplc[ii] < dplc[ii]) {
+        }
+        if (rhs.dplc[ii] < dplc[ii]) {
             return false;
         }
     }

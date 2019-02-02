@@ -31,10 +31,14 @@ template <unsigned width, unsigned height>
 class Pattern_Name_Table {
 public:
     enum { Width = width, Height = height };
-    typedef std::array<Pattern_Name, width> Line;
+    using Line = std::array<Pattern_Name, width>;
+
+private:
+    std::array<Line, height> table;
 
 protected:
-    std::array<Line, height> table;
+    auto const& getTable() const noexcept { return table; }
+    auto&       getTable() noexcept { return table; }
 
 public:
     Pattern_Name_Table() noexcept = default;
@@ -46,36 +50,33 @@ public:
             sin << in.rdbuf();
         }
 
-        for (typename std::array<Line, height>::iterator it = table.begin();
-             it != table.end(); ++it) {
-            Line& line = *it;
-            for (typename Line::iterator it2 = line.begin(); it2 != line.end();
-                 ++it2) {
-                unsigned short pnt = BigEndian::Read2(sin);
-                *it2               = Pattern_Name(sin.good() ? pnt : 0u);
+        for (Line& line : table) {
+            for (auto& pattern : line) {
+                uint16_t pnt = BigEndian::Read2(sin);
+                pattern      = Pattern_Name(sin.good() ? pnt : 0U);
             }
         }
     }
-    virtual ~Pattern_Name_Table() noexcept {}
+    Pattern_Name_Table(Pattern_Name_Table const&)     = default;
+    Pattern_Name_Table(Pattern_Name_Table&&) noexcept = default;
+    virtual ~Pattern_Name_Table() noexcept            = default;
+    Pattern_Name_Table& operator=(Pattern_Name_Table const&) = default;
+    Pattern_Name_Table& operator=(Pattern_Name_Table&&) noexcept = default;
 
     Line const& operator[](size_t const n) const noexcept { return table[n]; }
     Line&       operator[](size_t const n) noexcept { return table[n]; }
 
     virtual void write(std::ostream& out) const noexcept {
-        for (typename std::array<Line, height>::const_iterator it =
-                 table.begin();
-             it != table.end(); ++it) {
-            Line const& line = *it;
-            for (typename Line::const_iterator it2 = line.begin();
-                 it2 != line.end(); ++it2) {
-                it2->write(out);
+        for (Line const& line : table) {
+            for (auto const& pattern : line) {
+                pattern.write(out);
             }
         }
     }
 };
 
-typedef Pattern_Name_Table<32, 28>  PlaneH32V28;
-typedef Pattern_Name_Table<40, 28>  PlaneH40V28;
-typedef Pattern_Name_Table<128, 28> PlaneH128V28;
+using PlaneH32V28  = Pattern_Name_Table<32, 28>;
+using PlaneH40V28  = Pattern_Name_Table<40, 28>;
+using PlaneH128V28 = Pattern_Name_Table<128, 28>;
 
 #endif // __PATTERN_NAME_TABLE_H

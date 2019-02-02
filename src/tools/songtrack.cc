@@ -39,7 +39,39 @@
 
 #include <mdcomp/bigendian_io.hh>
 
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::istream;
+using std::multimap;
+using std::nouppercase;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::string;
+using std::uppercase;
+using std::vector;
+
+// Explicit instantiation of all templates
+template class CoordFlagNoParams<true>;
+template class CoordFlagNoParams<false>;
+template class CoordFlag1ParamByte<true>;
+template class CoordFlag1ParamByte<false>;
+template class CoordFlag2ParamBytes<true>;
+template class CoordFlag2ParamBytes<false>;
+template class CoordFlag3ParamBytes<true>;
+template class CoordFlag3ParamBytes<false>;
+template class CoordFlag4ParamBytes<true>;
+template class CoordFlag4ParamBytes<false>;
+template class CoordFlag5ParamBytes<true>;
+template class CoordFlag5ParamBytes<false>;
+template class CoordFlagPointerParam<true>;
+template class CoordFlagPointerParam<false>;
+template class CoordFlagPointer1ParamByte<true>;
+template class CoordFlagPointer1ParamByte<false>;
+template class CoordFlagPointer2ParamBytes<true>;
+template class CoordFlagPointer2ParamBytes<false>;
 
 size_t          BaseNote::notesprinted = 0;
 BaseNote const* BaseNote::last_note    = nullptr;
@@ -47,11 +79,11 @@ bool            BaseNote::need_rest    = false;
 
 void BaseNote::force_linebreak(ostream& out, bool force) {
     if (force) {
-        out << endl;
+        out << '\n';
     }
 
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
 }
@@ -79,10 +111,10 @@ void Duration::print(
         out << "\tdc.b\t";
     }
 
-    PrintHex2Pre(out, val, notesprinted == 0);
+    PrintHex2Pre(out, get_value(), notesprinted == 0);
 
     if (++notesprinted == 12) {
-        out << endl;
+        out << '\n';
         notesprinted = 0;
     }
 }
@@ -307,10 +339,10 @@ void DACNote::print(
         out << "\tdc.b\t";
     }
 
-    print_dac_sample(out, val, sonicver, notesprinted == 0);
+    print_dac_sample(out, get_value(), sonicver, notesprinted == 0);
 
     if (++notesprinted == 12) {
-        out << endl;
+        out << '\n';
         notesprinted = 0;
     }
 }
@@ -344,8 +376,8 @@ void FMPSGNote::print(
     bool   workAround = false;
     if ((tracktype == LocTraits::ePSGInit ||
          tracktype == LocTraits::ePSGTrack) &&
-        val != 0x80) {
-        unsigned char newbyte = (val + keydisp) & 0x7f;
+        get_value() != 0x80) {
+        unsigned char newbyte = (get_value() + get_base_keydisp()) & 0x7f;
         if (sonicver >= 3 && (newbyte == 0x53 || newbyte == 0x54)) {
             noteName = newbyte == 0x54 ? "nMaxPSG2" : "nMaxPSG1";
         } else if (sonicver <= 2 && newbyte == 0x46) {
@@ -358,17 +390,19 @@ void FMPSGNote::print(
     }
 
     if (noteName.length() != 0) {
-        if (keydisp != 0) {
-            string buf = fmt::format(fmt("({}-${:X})&$FF"), noteName, keydisp);
+        if (get_base_keydisp() != 0) {
+            string buf = fmt::format(
+                fmt("({}-${:X})&$FF"), noteName, get_base_keydisp());
             if (workAround) {
                 cerr << "Converting PSG noise note $" << hex << setw(2)
-                     << setfill('0') << uppercase << static_cast<int>(val)
-                     << nouppercase
+                     << setfill('0') << uppercase
+                     << static_cast<int>(get_value()) << nouppercase
                      << " from xm*smps with broken transposition '$" << hex
                      << setw(2) << setfill('0') << uppercase
-                     << static_cast<int>(keydisp) << nouppercase << "' to '"
-                     << buf << "'" << endl;
-                if ((val - keydisp) >= 0xE0 || (val - keydisp) <= 0x80) {
+                     << static_cast<int>(get_base_keydisp()) << nouppercase
+                     << "' to '" << buf << "'" << endl;
+                if ((get_value() - get_base_keydisp()) >= 0xE0 ||
+                    (get_value() - get_base_keydisp()) <= 0x80) {
                     cerr << "Error: however, this conversion will result in an "
                             "invalid note.\n"
                          << "You must edit the channel's transposition and the "
@@ -383,16 +417,16 @@ void FMPSGNote::print(
             PrintName(out, noteName, notesprinted == 0);
         }
     } else {
-        size_t note = val - 0x80;
+        size_t note = get_value() - 0x80;
         if (note >= sizeof(fmpsglut) / sizeof(fmpsglut[0])) {
-            PrintHex2Pre(out, val, notesprinted == 0);
+            PrintHex2Pre(out, get_value(), notesprinted == 0);
         } else {
             PrintName(out, fmpsglut[note], notesprinted == 0);
         }
     }
 
     if (++notesprinted == 12) {
-        out << endl;
+        out << '\n';
         notesprinted = 0;
     }
 }
@@ -406,7 +440,7 @@ void CoordFlagNoParams<noret>::print(
     string s;
     bool   notelike = false;
     if (sonicver >= 3) {
-        switch (val) {
+        switch (get_value()) {
         case 0xe2:
             s = "smpsFade";
             break; // For $E2, $FF
@@ -431,7 +465,7 @@ void CoordFlagNoParams<noret>::print(
             break;
         }
     } else {
-        switch (val) {
+        switch (get_value()) {
         case 0xe3:
             s = "smpsReturn";
             break;
@@ -475,24 +509,24 @@ void CoordFlagNoParams<noret>::print(
         PrintName(out, s, notesprinted == 0);
 
         if (++notesprinted == 12) {
-            out << endl;
+            out << '\n';
             notesprinted = 0;
         }
     } else {
         if (notesprinted != 0) {
-            out << endl;
+            out << '\n';
         }
         notesprinted = 0;
 
         if (s.empty()) {
             out << "\tdc.b\t";
-            PrintHex2(out, val, false);
+            PrintHex2(out, get_value(), false);
         } else {
             out << "\t";
             PrintName(out, s, true);
         }
 
-        out << endl;
+        out << '\n';
     }
 }
 
@@ -522,7 +556,7 @@ void CoordFlag1ParamByte<noret>::print(
     multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(labels, s3kmode);
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
     need_rest    = true;
@@ -530,7 +564,7 @@ void CoordFlag1ParamByte<noret>::print(
     string s;
     bool   metacf = false;
     if (sonicver >= 3) {
-        switch (val) {
+        switch (get_value()) {
         case 0xe0:
             s = "smpsPan";
             break;
@@ -589,7 +623,7 @@ void CoordFlag1ParamByte<noret>::print(
             break;
         }
     } else {
-        switch (val) {
+        switch (get_value()) {
         case 0xe0:
             s = "smpsPan";
             break;
@@ -635,15 +669,15 @@ void CoordFlag1ParamByte<noret>::print(
 
     if (s.empty()) {
         out << "\tdc.b\t";
-        PrintHex2(out, val, false);
+        PrintHex2(out, get_value(), false);
     } else if (metacf) {
-        out << "\t" << s << endl;
+        out << "\t" << s << '\n';
         return;
     } else {
         PrintMacro(out, s.c_str());
     }
 
-    if (val == 0xe0) {
+    if (get_value() == 0xe0) {
         int dir = param & 0xc0;
         switch (dir) {
         case 0x40:
@@ -660,17 +694,18 @@ void CoordFlag1ParamByte<noret>::print(
             break;
         }
         PrintHex2(out, param & 0x3f, true);
-    } else if (val == 0xf5) {
+    } else if (get_value() == 0xf5) {
         BaseNote::print_psg_tone(out, param, sonicver, true);
     } else if (
-        sonicver >= 3 && val == 0xef && tracktype == LocTraits::ePSGTrack) {
+        sonicver >= 3 && get_value() == 0xef &&
+        tracktype == LocTraits::ePSGTrack) {
         BaseNote::print_psg_tone(out, param, sonicver, true);
-    } else if (sonicver >= 3 && val == 0xea) {
+    } else if (sonicver >= 3 && get_value() == 0xea) {
         print_dac_sample(out, param, sonicver, true);
     } else {
         PrintHex2(out, param, true);
     }
-    out << endl;
+    out << '\n';
 }
 
 void CoordFlagChgKeydisp::print(
@@ -678,13 +713,13 @@ void CoordFlagChgKeydisp::print(
     multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(sonicver, tracktype, labels, s3kmode);
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
     need_rest    = true;
     PrintMacro(out, "smpsChangeTransposition");
     PrintHex2(out, param, true);
-    out << endl;
+    out << '\n';
 }
 
 template <bool noret>
@@ -693,7 +728,7 @@ void CoordFlag2ParamBytes<noret>::print(
     multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
     need_rest    = true;
@@ -701,7 +736,7 @@ void CoordFlag2ParamBytes<noret>::print(
     string s;
     bool   metacf = false;
     if (sonicver >= 3) {
-        switch (val) {
+        switch (get_value()) {
         case 0xe5:
             s = "smpsFMAlterVol";
             break;
@@ -733,7 +768,7 @@ void CoordFlag2ParamBytes<noret>::print(
 
     if (s.empty()) {
         out << "\tdc.b\t";
-        PrintHex2(out, val, false);
+        PrintHex2(out, get_value(), false);
     } else {
         PrintMacro(out, s.c_str());
     }
@@ -743,7 +778,7 @@ void CoordFlag2ParamBytes<noret>::print(
     }
 
     PrintHex2(out, param2, true);
-    out << endl;
+    out << '\n';
 }
 
 template <bool noret>
@@ -752,7 +787,7 @@ void CoordFlag3ParamBytes<noret>::print(
     multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
     need_rest    = true;
@@ -760,7 +795,7 @@ void CoordFlag3ParamBytes<noret>::print(
     string s;
     bool   metacf = false;
     if (sonicver >= 3) {
-        switch (val) {
+        switch (get_value()) {
         case 0xff:
             metacf = true;
             switch (param1) {
@@ -774,7 +809,7 @@ void CoordFlag3ParamBytes<noret>::print(
 
     if (s.empty()) {
         out << "\tdc.b\t";
-        PrintHex2(out, val, false);
+        PrintHex2(out, get_value(), false);
     } else {
         PrintMacro(out, s.c_str());
     }
@@ -785,7 +820,7 @@ void CoordFlag3ParamBytes<noret>::print(
 
     PrintHex2(out, param2, false);
     PrintHex2(out, param3, true);
-    out << endl;
+    out << '\n';
 }
 
 template <bool noret>
@@ -794,7 +829,7 @@ void CoordFlag4ParamBytes<noret>::print(
     multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
     need_rest    = true;
@@ -802,7 +837,7 @@ void CoordFlag4ParamBytes<noret>::print(
     string s;
     bool   metacf = false;
     if (sonicver >= 3) {
-        switch (val) {
+        switch (get_value()) {
         case 0xf0:
             s = "smpsModSet";
             break;
@@ -811,7 +846,7 @@ void CoordFlag4ParamBytes<noret>::print(
             break;
         }
     } else {
-        switch (val) {
+        switch (get_value()) {
         case 0xf0:
             s = "smpsModSet";
             break;
@@ -820,7 +855,7 @@ void CoordFlag4ParamBytes<noret>::print(
 
     if (s.empty()) {
         out << "\tdc.b\t";
-        PrintHex2(out, val, false);
+        PrintHex2(out, get_value(), false);
     } else {
         PrintMacro(out, s.c_str());
     }
@@ -832,7 +867,7 @@ void CoordFlag4ParamBytes<noret>::print(
     PrintHex2(out, param2, false);
     PrintHex2(out, param3, false);
     PrintHex2(out, param4, true);
-    out << endl;
+    out << '\n';
 }
 
 template <bool noret>
@@ -841,7 +876,7 @@ void CoordFlag5ParamBytes<noret>::print(
     multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
     need_rest    = true;
@@ -849,7 +884,7 @@ void CoordFlag5ParamBytes<noret>::print(
     string s;
     bool   metacf = false;
     if (sonicver >= 3) {
-        switch (val) {
+        switch (get_value()) {
         case 0xff:
             metacf = true;
             switch (param1) {
@@ -863,7 +898,7 @@ void CoordFlag5ParamBytes<noret>::print(
 
     if (s.empty()) {
         out << "\tdc.b\t";
-        PrintHex2(out, val, false);
+        PrintHex2(out, get_value(), false);
     } else {
         PrintMacro(out, s.c_str());
     }
@@ -876,7 +911,7 @@ void CoordFlag5ParamBytes<noret>::print(
     PrintHex2(out, param3, false);
     PrintHex2(out, param4, false);
     PrintHex2(out, param5, true);
-    out << endl;
+    out << '\n';
 }
 
 template <bool noret>
@@ -885,22 +920,22 @@ void CoordFlagPointerParam<noret>::print(
     multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(sonicver, tracktype, s3kmode);
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
     need_rest    = true;
 
-    if (val == 0xf6) {
+    if (get_value() == 0xf6) {
         PrintMacro(out, "smpsJump");
-    } else if (val == 0xf8) {
+    } else if (get_value() == 0xf8) {
         last_note = nullptr;
         PrintMacro(out, "smpsCall");
-    } else if (val == 0xfc) { // Sonic 3 only
+    } else if (get_value() == 0xfc) { // Sonic 3 only
         PrintMacro(out, "smpsContinuousLoop");
     }
 
     auto it = labels.find(jumptarget);
-    out << it->second << endl;
+    out << it->second << '\n';
 }
 
 template <bool noret>
@@ -909,7 +944,7 @@ void CoordFlagPointer1ParamByte<noret>::print(
     multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, s3kmode);
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
     need_rest    = true;
@@ -917,7 +952,7 @@ void CoordFlagPointer1ParamByte<noret>::print(
     string s;
     bool   metacf = false;
     if (sonicver >= 3) {
-        switch (val) {
+        switch (get_value()) {
         case 0xeb:
             s = "smpsConditionalJump";
             break;
@@ -926,7 +961,7 @@ void CoordFlagPointer1ParamByte<noret>::print(
 
     if (s.empty()) {
         out << "\tdc.b\t";
-        PrintHex2(out, val, false);
+        PrintHex2(out, get_value(), false);
     } else {
         PrintMacro(out, s.c_str());
     }
@@ -936,7 +971,7 @@ void CoordFlagPointer1ParamByte<noret>::print(
     }
 
     auto it = labels.find(jumptarget);
-    out << it->second << endl;
+    out << it->second << '\n';
 }
 
 template <bool noret>
@@ -945,7 +980,7 @@ void CoordFlagPointer2ParamBytes<noret>::print(
     multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, s3kmode);
     if (notesprinted != 0) {
-        out << endl;
+        out << '\n';
     }
     notesprinted = 0;
     need_rest    = true;
@@ -953,7 +988,7 @@ void CoordFlagPointer2ParamBytes<noret>::print(
     string s;
     bool   metacf = false;
     if (sonicver >= 3) {
-        switch (val) {
+        switch (get_value()) {
         case 0xf7:
             s = "smpsLoop";
             break;
@@ -967,7 +1002,7 @@ void CoordFlagPointer2ParamBytes<noret>::print(
             break;
         }
     } else {
-        switch (val) {
+        switch (get_value()) {
         case 0xf7:
             s = "smpsLoop";
             break;
@@ -976,7 +1011,7 @@ void CoordFlagPointer2ParamBytes<noret>::print(
 
     if (s.empty()) {
         out << "\tdc.b\t";
-        PrintHex2(out, val, false);
+        PrintHex2(out, get_value(), false);
     } else {
         PrintMacro(out, s.c_str());
     }
@@ -997,5 +1032,5 @@ void CoordFlagPointer2ParamBytes<noret>::print(
         out << ", ";
         PrintHex2(out, param2, true);
     }
-    out << endl;
+    out << '\n';
 }

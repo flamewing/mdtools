@@ -19,35 +19,37 @@
 #ifndef __LIB_SINGLEDPLC_H
 #define __LIB_SINGLEDPLC_H
 
+#include <cstdint>
 #include <iosfwd>
 #include <mdtools/ignore_unused_variable_warning.hh>
 
 class single_dplc {
-protected:
-    unsigned short cnt, tile;
+private:
+    uint16_t cnt, tile;
 
 public:
-    void          read(std::istream& in, int const ver);
-    void          write(std::ostream& out, int const ver) const;
-    void          print() const;
     static size_t size(int const ver) {
         ignore_unused_variable_warning(ver);
         return 2;
     }
-    unsigned short get_cnt() const { return cnt; }
-    unsigned short get_tile() const { return tile; }
-    void           set_cnt(unsigned short const c) { cnt = c; }
-    void           set_tile(unsigned short const t) { tile = t; }
-    bool           operator<(single_dplc const& rhs) const {
+    void read(std::istream& in, int ver);
+    void write(std::ostream& out, int ver) const;
+    void print() const;
+
+    uint16_t get_cnt() const { return cnt; }
+    uint16_t get_tile() const { return tile; }
+
+    void set_cnt(uint16_t const c) { cnt = c; }
+    void set_tile(uint16_t const t) { tile = t; }
+
+    bool operator<(single_dplc const& rhs) const {
         if (cnt < rhs.cnt) {
             return true;
-        } else if (cnt > rhs.cnt) {
+        }
+        if (cnt > rhs.cnt) {
             return false;
         }
-        if (tile < rhs.tile) {
-            return true;
-        }
-        return false;
+        return tile < rhs.tile;
     }
     bool operator==(single_dplc const& rhs) const {
         return !(*this < rhs || rhs < *this);

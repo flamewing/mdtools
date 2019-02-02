@@ -20,7 +20,14 @@
 #include <iostream>
 #include <sstream>
 
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::ios;
+using std::ifstream;
+using std::istream;
+using std::ofstream;
+using std::ostream;
+using std::stringstream;
 
 #include <getopt.h>
 
@@ -52,10 +59,8 @@ int main(int argc, char* argv[]) {
             break;
         }
 
-        switch (c) {
-        case 'f':
+        if (c == 'f') {
             flipped = true;
-            break;
         }
     }
 
@@ -128,14 +133,19 @@ int main(int argc, char* argv[]) {
 
     // First, lets create plane map and art for an equivalent scene.
     for (unsigned curline = 0; curline < SSTrackFrame::Height; curline++) {
-        SSTrackFrame::Line& tline = track[curline];
-        PlaneH32V28::Line&  pline = plane[curline];
-        auto tl0 = tline.cbegin(), tl1 = tl0 + PlaneH32V28::Width,
-             tl2 = tl1 + PlaneH32V28::Width, tl3 = tl2 + PlaneH32V28::Width,
-             tlast = tline.cend();
-        auto it    = pline.begin();
+        auto& tline = track[curline];
+        auto& pline = plane[curline];
+        auto  tl0   = tline.cbegin();
+        auto  tl1   = tl0 + PlaneH32V28::Width;
+        auto  tl2   = tl1 + PlaneH32V28::Width;
+        auto  tl3   = tl2 + PlaneH32V28::Width;
+        auto  tlast = tline.cend();
+        auto  it    = pline.begin();
         while (tl3 != tlast) {
-            Pattern_Name tp0 = *tl0++, tp1 = *tl1++, tp2 = *tl2++, tp3 = *tl3++;
+            Pattern_Name tp0    = *tl0++;
+            Pattern_Name tp1    = *tl1++;
+            Pattern_Name tp2    = *tl2++;
+            Pattern_Name tp3    = *tl3++;
             ShortTile&   tile0  = ssvram[tp0];
             ShortTile&   tile1  = ssvram[tp1];
             ShortTile&   tile2  = ssvram[tp2];

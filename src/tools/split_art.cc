@@ -30,15 +30,26 @@
 
 #include <mdtools/dplcfile.hh>
 
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::hex;
+using std::ifstream;
+using std::ios;
+using std::istream;
+using std::ofstream;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::stringstream;
+using std::vector;
 
 struct Tile {
-    unsigned char tiledata[32];
-    bool          read(istream& in) {
+    uint8_t tiledata[32];
+    bool    read(istream& in) {
         for (auto& elem : tiledata) {
             char cc;
             in.get(cc);
-            elem = static_cast<unsigned char>(cc);
+            elem = static_cast<uint8_t>(cc);
         }
         return true;
     }
@@ -80,12 +91,13 @@ int main(int argc, char* argv[]) {
                                     {"sonic", required_argument, nullptr, 'z'},
                                     {nullptr, 0, nullptr, 0}};
 
-    int compress = 0;
-    int sonicver = 2;
+    int64_t compress = 0;
+    int64_t sonicver = 2;
 
     while (true) {
         int option_index = 0;
-        int c            = getopt_long(
+
+        int c = getopt_long(
             argc, argv, "cm", static_cast<option*>(long_options),
             &option_index);
         if (c == -1) {
@@ -110,10 +122,12 @@ int main(int argc, char* argv[]) {
             compress = 2;
             break;
         case 'z':
-            sonicver = strtoul(optarg, nullptr, 0);
+            sonicver = strtol(optarg, nullptr, 0);
             if (sonicver < 1 || sonicver > 4) {
                 sonicver = 2;
             }
+            break;
+        default:
             break;
         }
     }
@@ -123,8 +137,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    ifstream inart(argv[optind + 0], ios::in | ios::binary),
-        indplc(argv[optind + 1], ios::in | ios::binary);
+    ifstream inart(argv[optind + 0], ios::in | ios::binary);
+    ifstream indplc(argv[optind + 1], ios::in | ios::binary);
 
     if (!inart.good()) {
         cerr << "Input art file '" << argv[optind + 0]

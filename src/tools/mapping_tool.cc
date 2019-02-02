@@ -27,7 +27,14 @@
 #include <mdtools/dplcfile.hh>
 #include <mdtools/mappingfile.hh>
 
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::ifstream;
+using std::ios;
+using std::istream;
+using std::ofstream;
+using std::ostream;
+using std::string;
 
 static void usage() {
     cerr << "Usage: mapping_tool {-c|--crush-mappings} [OPTIONS] INPUT_MAPS "
@@ -192,10 +199,13 @@ int main(int argc, char* argv[]) {
         {"sonic", required_argument, nullptr, 'z'},
         {nullptr, 0, nullptr, 0}};
 
-    Actions act       = eNone;
-    bool    nullfirst = true;
-    int     nargs = 0, srcpal = -1, dstpal = -1;
-    int     tosonicver = 2, fromsonicver = 2;
+    Actions act          = eNone;
+    bool    nullfirst    = true;
+    int64_t nargs        = 0;
+    int64_t srcpal       = -1;
+    int64_t dstpal       = -1;
+    int64_t tosonicver   = 2;
+    int64_t fromsonicver = 2;
 
     while (true) {
         int option_index = 0;
@@ -211,19 +221,19 @@ int main(int argc, char* argv[]) {
             nullfirst = false;
             break;
         case 'x':
-            fromsonicver = strtoul(optarg, nullptr, 0);
+            fromsonicver = strtol(optarg, nullptr, 0);
             if (fromsonicver < 1 || fromsonicver > 4) {
                 fromsonicver = 2;
             }
             break;
         case 'y':
-            tosonicver = strtoul(optarg, nullptr, 0);
+            tosonicver = strtol(optarg, nullptr, 0);
             if (tosonicver < 1 || tosonicver > 4) {
                 tosonicver = 2;
             }
             break;
         case 'z':
-            fromsonicver = tosonicver = strtoul(optarg, nullptr, 0);
+            fromsonicver = tosonicver = strtol(optarg, nullptr, 0);
             if (fromsonicver < 1 || fromsonicver > 4) {
                 fromsonicver = tosonicver = 2;
             }
@@ -238,14 +248,16 @@ int main(int argc, char* argv[]) {
             ARG_CASE('d', eDplc, 1, )
             ARG_CASE(
                 'p', ePalChange, 2,
-                srcpal = (strtoul(optarg, nullptr, 0) & 3) << 5)
+                srcpal = (strtol(optarg, nullptr, 0) & 3) << 5)
         case 'a':
             if (act != ePalChange) {
                 usage();
                 return eInvalidArgs;
             }
             nargs  = 2;
-            dstpal = (strtoul(optarg, nullptr, 0) & 3) << 5;
+            dstpal = (strtol(optarg, nullptr, 0) & 3) << 5;
+            break;
+        default:
             break;
         }
     }
@@ -257,8 +269,8 @@ int main(int argc, char* argv[]) {
 
     switch (act) {
     case eOptimize: {
-        ifstream inmaps(argv[optind + 0], ios::in | ios::binary),
-            indplc(argv[optind + 1], ios::in | ios::binary);
+        ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
+        ifstream indplc(argv[optind + 1], ios::in | ios::binary);
         TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
         TEST_FILE(indplc, optind + 1, eInputDplcMissing);
 
@@ -278,8 +290,8 @@ int main(int argc, char* argv[]) {
         // dstmaps.split(intmaps, dstdplc);
         dstmaps.optimize(srcmaps, srcdplc, dstdplc);
 
-        ofstream outmaps(argv[optind + 2], ios::out | ios::binary | ios::trunc),
-            outdplc(argv[optind + 3], ios::out | ios::binary | ios::trunc);
+        ofstream outmaps(argv[optind + 2], ios::out | ios::binary | ios::trunc);
+        ofstream outdplc(argv[optind + 3], ios::out | ios::binary | ios::trunc);
         TEST_FILE(outmaps, optind + 2, eOutputMapsMissing);
         TEST_FILE(outdplc, optind + 3, eOutputDplcMissing);
 
@@ -302,8 +314,8 @@ int main(int argc, char* argv[]) {
         dplc_file    dstdplc;
         dstmaps.split(srcmaps, dstdplc);
 
-        ofstream outmaps(argv[optind + 1], ios::out | ios::binary | ios::trunc),
-            outdplc(argv[optind + 2], ios::out | ios::binary | ios::trunc);
+        ofstream outmaps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
+        ofstream outdplc(argv[optind + 2], ios::out | ios::binary | ios::trunc);
         TEST_FILE(outmaps, optind + 1, eOutputMapsMissing);
         TEST_FILE(outdplc, optind + 2, eOutputDplcMissing);
 
@@ -315,8 +327,8 @@ int main(int argc, char* argv[]) {
         break;
     }
     case eMerge: {
-        ifstream inmaps(argv[optind + 0], ios::in | ios::binary),
-            indplc(argv[optind + 1], ios::in | ios::binary);
+        ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
+        ifstream indplc(argv[optind + 1], ios::in | ios::binary);
         TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
         TEST_FILE(indplc, optind + 1, eInputDplcMissing);
 
@@ -423,11 +435,11 @@ int main(int argc, char* argv[]) {
         outmaps.close();
         break;
     }
-    default:
+    case eNone:
         cerr
             << "Divide By Cucumber Error. Please Reinstall Universe And Reboot."
             << endl;
-        break;
+        __builtin_unreachable();
     }
 
     return 0;

@@ -29,17 +29,17 @@
 template <typename Tile_t>
 class VRAM {
 public:
-    typedef std::vector<Tile_t> Tiles;
+    using Tiles = std::vector<Tile_t>;
 
-protected:
-    Tiles    tiles;
-    unsigned distTable[16][16];
+private:
+    Tiles       tiles;
+    DistTable_t distTable = {};
 
 public:
     // Constructor.
     VRAM() noexcept { tiles.reserve(400); }
 
-    VRAM(std::istream& in) noexcept {
+    explicit VRAM(std::istream& in) noexcept {
         tiles.reserve(400);
 
         // Just read in tiles.
@@ -52,15 +52,23 @@ public:
         }
     }
 
-    decltype(distTable) const& get_dist_table() const { return distTable; }
-    void                       copy_dist_table(VRAM<Tile_t> const& other) {
+    void reserve_tiles(size_t cnt) { tiles.reserve(cnt); }
+    Tile_t& new_tile() {
+        tiles.emplace_back();
+        return tiles.back();
+    }
+
+    auto& get_dist_table() const { return distTable; }
+    auto& get_dist_table() { return distTable; }
+
+    void copy_dist_table(VRAM<Tile_t> const& other) {
         if (this != &other) {
-            std::memcpy(distTable, other.get_dist_table(), sizeof(distTable));
+            distTable = other.get_dist_table();
         }
     }
     template <typename T>
     void copy_dist_table(VRAM<T> const& other) {
-        std::memcpy(distTable, other.get_dist_table(), sizeof(distTable));
+        distTable = other.get_dist_table();
     }
     // Gets the referred tile. No bounds checking!
     Tile_t& get_tile(Pattern_Name const& pnt) noexcept {
@@ -86,7 +94,7 @@ public:
 
     // Adds the tile to VRAM, changing its size if needed.
     void add_tile(Tile_t const& tile, Pattern_Name const& pnt) noexcept {
-        unsigned index = pnt.get_tile();
+        uint32_t index = pnt.get_tile();
         if (index >= tiles.size()) {
             tiles.resize(index + 1);
         }
@@ -96,17 +104,16 @@ public:
     // tile. This resemblance is based on the distance function defined in the
     // tile class. Returns the pattern name as a parameter, and the distance as
     // the function return.
-    unsigned find_closest(Tile_t const& tile, Pattern_Name& best) const
+    uint32_t find_closest(Tile_t const& tile, Pattern_Name& best) const
         noexcept {
         // Start with "infinite" distance.
-        unsigned                        best_dist = ~0u;
-        typename Tile_t::const_iterator start     = tile.begin(NoFlip),
-                                        finish    = tile.end(NoFlip);
+        uint32_t best_dist = ~0U;
+        auto     start     = tile.begin(NoFlip);
+        auto     finish    = tile.end(NoFlip);
         // Want to compare using all possible flips.
         static FlipMode const modes[] = {NoFlip, XFlip, YFlip, XYFlip};
 
-        for (typename Tiles::const_iterator it = tiles.begin();
-             it != tiles.end(); ++it) {
+        for (auto it = tiles.begin(); it != tiles.end(); ++it) {
             for (auto& mode : modes) {
                 unsigned dist = it->distance(distTable, mode, start, finish);
                 if (dist < best_dist) {
@@ -120,9 +127,8 @@ public:
         return best_dist;
     }
     void write(std::ostream& out) const noexcept {
-        for (typename Tiles::const_iterator it = tiles.begin();
-             it != tiles.end(); ++it) {
-            typename Tile_t::const_iterator it2 = it->begin(NoFlip);
+        for (auto it = tiles.begin(); it != tiles.end(); ++it) {
+            auto it2 = it->begin(NoFlip);
             it->draw_tile(out, it2, Tile_t::Num_lines);
         }
     }

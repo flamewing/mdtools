@@ -21,14 +21,16 @@
 
 #include <mdcomp/bigendian_io.hh>
 
+#include <cstdint>
+
 // Possible flips for tiles in pattern names.
-enum FlipMode { NoFlip = 0, XFlip = 1, YFlip = 2, XYFlip = 3 };
+enum FlipMode : uint16_t { NoFlip = 0, XFlip = 1, YFlip = 2, XYFlip = 3 };
 
 // Convenience operator for flip modes.
 constexpr inline FlipMode
 operator^(FlipMode const lhs, FlipMode const rhs) noexcept {
     return static_cast<FlipMode>(
-        static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
+        static_cast<uint16_t>(lhs) ^ static_cast<uint16_t>(rhs));
 }
 
 // A couple more operations on flip modes: flipping on X, on Y and on both.
@@ -42,81 +44,82 @@ constexpr inline FlipMode flip_xy(FlipMode const src) noexcept {
     return src ^ XYFlip;
 }
 
-enum PaletteLine { Line0 = 0, Line1 = 1, Line2 = 2, Line3 = 3 };
+enum PaletteLine : uint16_t { Line0 = 0, Line1 = 1, Line2 = 2, Line3 = 3 };
 
 // Convenience operators for palette lines.
 constexpr inline PaletteLine
-operator+(PaletteLine const lhs, unsigned const rhs) noexcept {
-    return static_cast<PaletteLine>((static_cast<unsigned>(lhs) + rhs) % 4);
+operator+(PaletteLine const lhs, uint32_t const rhs) noexcept {
+    return static_cast<PaletteLine>((static_cast<uint32_t>(lhs) + rhs) % 4);
 }
 constexpr inline PaletteLine
-operator-(PaletteLine const lhs, unsigned const rhs) noexcept {
-    return static_cast<PaletteLine>((static_cast<unsigned>(lhs) - rhs) % 4);
+operator-(PaletteLine const lhs, uint32_t const rhs) noexcept {
+    return static_cast<PaletteLine>((static_cast<uint32_t>(lhs) - rhs) % 4);
 }
 
 // Class representing a VDP pattern name and abstracting away its pieces.
 class Pattern_Name {
 private:
     // NO MAGIC NUMBERS.
-    enum {
+    enum : uint16_t {
         xyflip_shift   = 11,
         xflip_shift    = xyflip_shift,
         yflip_shift    = xyflip_shift + 1,
         palette_shift  = 13,
         priority_shift = 15,
-        tile_mask      = 0x07ffu,
-        xflip_mask     = 1u << xflip_shift,
-        yflip_mask     = 1u << yflip_shift,
-        xyflip_mask    = 3u << xyflip_shift,
-        palette_mask   = 3u << palette_shift,
-        priority_mask  = 1u << priority_shift
+        tile_mask      = 0x07ffU,
+        xflip_mask     = 1U << xflip_shift,
+        yflip_mask     = 1U << yflip_shift,
+        xyflip_mask    = 3U << xyflip_shift,
+        palette_mask   = 3U << palette_shift,
+        priority_mask  = 1U << priority_shift
     };
-    unsigned short pn;
+    uint16_t pn{0U};
 
 public:
     // Constructors.
-    Pattern_Name() noexcept : pn(0u) {}
-    Pattern_Name(unsigned short _pn) noexcept : pn(_pn) {}
-    Pattern_Name(Pattern_Name const& other) noexcept = default;
-    Pattern_Name(Pattern_Name&& other) noexcept      = default;
+    constexpr Pattern_Name() noexcept = default;
+    constexpr explicit Pattern_Name(uint16_t _pn) noexcept : pn(_pn) {}
+    constexpr Pattern_Name(Pattern_Name const&) noexcept = default;
+    constexpr Pattern_Name(Pattern_Name&&) noexcept      = default;
     // Assignment operators.
-    Pattern_Name& operator=(Pattern_Name const& rhs) noexcept = default;
-    Pattern_Name& operator=(Pattern_Name&& rhs) noexcept = default;
+    Pattern_Name& operator=(Pattern_Name const&) noexcept = default;
+    Pattern_Name& operator=(Pattern_Name&&) noexcept = default;
+    ~Pattern_Name() noexcept                         = default;
 
     // Getters.
-    unsigned short get_tile() const noexcept { return (pn & tile_mask); }
-    FlipMode       get_flip() const noexcept {
+    constexpr uint16_t get_tile() const noexcept { return (pn & tile_mask); }
+    constexpr FlipMode get_flip() const noexcept {
         return static_cast<FlipMode>((pn & xyflip_mask) >> xyflip_shift);
     }
-    PaletteLine get_palette() const noexcept {
+    constexpr PaletteLine get_palette() const noexcept {
         return static_cast<PaletteLine>((pn & palette_mask) >> palette_shift);
     }
-    bool high_priority() const noexcept { return (pn & priority_mask) != 0; }
+    constexpr bool high_priority() const noexcept { return (pn & priority_mask) != 0; }
 
     // Setters.
-    void set_tile(unsigned short const t) noexcept {
+    constexpr void set_tile(uint16_t const t) noexcept {
         pn = (pn & ~tile_mask) | (t & tile_mask);
     }
-    void set_flip(FlipMode const f) noexcept {
-        pn = (pn & ~xyflip_mask) | (static_cast<unsigned>(f) << xyflip_shift);
+    constexpr void set_flip(FlipMode const f) noexcept {
+        pn = (pn & ~xyflip_mask) | (static_cast<uint16_t>(f) << xyflip_shift);
     }
-    void set_palette(PaletteLine const p) noexcept {
-        pn = (pn & ~palette_mask) | (static_cast<unsigned>(p) << palette_shift);
+    constexpr void set_palette(PaletteLine const p) noexcept {
+        pn = (pn & ~palette_mask) | (static_cast<uint16_t>(p) << palette_shift);
     }
-    void set_priority(bool const b) noexcept {
+    constexpr void set_priority(bool const b) noexcept {
         pn = (pn & ~priority_mask) | (b ? priority_mask : 0);
     }
 
     // Comparison operator for STL containers and algorithms. Only the tile is
     // important, flip, palette and priority are ignored.
-    bool operator<(Pattern_Name const& rhs) const noexcept {
+    constexpr bool operator<(Pattern_Name const& rhs) const noexcept {
         return get_tile() < rhs.get_tile();
     }
 
     // A few arithmetic operators defined for convenience. They operate only on
     // the tile part.
     // Increment tile by given offset. Saturates at tile_mask.
-    Pattern_Name& operator+=(unsigned short const delta) noexcept {
+    constexpr Pattern_Name& operator+=(uint16_t const delta) noexcept {
         if (get_tile() + delta <= tile_mask) {
             set_tile(get_tile() + delta);
         } else {
@@ -125,25 +128,25 @@ public:
         return *this;
     }
     // Get new pattern name equal to old plus offset. Saturates at tile_mask.
-    Pattern_Name operator+(unsigned short const delta) const noexcept {
+    constexpr Pattern_Name operator+(uint16_t const delta) const noexcept {
         Pattern_Name ret(*this);
         return ret += delta;
     }
     // Get new pattern name equal to old plus offset. Saturates at tile_mask.
-    friend Pattern_Name
-    operator+(unsigned short const delta, Pattern_Name const& rhs) noexcept {
+    constexpr friend Pattern_Name
+    operator+(uint16_t const delta, Pattern_Name const& rhs) noexcept {
         return rhs + delta;
     }
     // Prefix increment pattern name. Saturates at tile_mask.
-    Pattern_Name& operator++() noexcept { return operator+=(1); }
+    constexpr Pattern_Name& operator++() noexcept { return operator+=(1); }
     // Postfix increment pattern name. Saturates at tile_mask.
-    Pattern_Name operator++(int) noexcept {
+    constexpr Pattern_Name operator++(int) noexcept {
         Pattern_Name ret(*this);
-                     operator++();
+        ++(*this);
         return ret;
     }
     // Decrement tile by given amount. Saturates at 0.
-    Pattern_Name& operator-=(unsigned short const delta) noexcept {
+    constexpr Pattern_Name& operator-=(uint16_t const delta) noexcept {
         if (get_tile() >= delta) {
             set_tile(get_tile() - delta);
         } else {
@@ -152,16 +155,16 @@ public:
         return *this;
     }
     // Get new pattern name equal to old minus offset. Saturates at 0.
-    Pattern_Name operator-(unsigned short const delta) const noexcept {
+    constexpr Pattern_Name operator-(uint16_t const delta) const noexcept {
         Pattern_Name ret(*this);
         return ret -= delta;
     }
     // Prefix decrement pattern name. Saturates at 0.
-    Pattern_Name& operator--() noexcept { return operator-=(1); }
+    constexpr Pattern_Name& operator--() noexcept { return operator-=(1); }
     // Prefix decrement pattern name. Saturates at 0.
-    Pattern_Name operator--(int) noexcept {
+    constexpr Pattern_Name operator--(int) noexcept {
         Pattern_Name ret(*this);
-                     operator--();
+        --(*this);
         return ret;
     }
 
