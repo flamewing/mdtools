@@ -5,4 +5,4 @@ path_classifiers:
     - mdcomp
 queries:
   - exclude:
-    tags: "library"
+    tags: ["library"]
