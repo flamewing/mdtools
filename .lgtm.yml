@@ -1,8 +1,4 @@
 path_classifiers:
   library:
-    - exclude: / # ignore our default classification for test code
     - fmt
     - mdcomp
-queries:
-  - exclude:
-    tags: ["library"]
