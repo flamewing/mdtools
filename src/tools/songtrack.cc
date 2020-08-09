@@ -372,7 +372,7 @@ void FMPSGNote::print(
     if (noteName.length() != 0) {
         if (get_base_keydisp() != 0) {
             string buf = fmt::format(
-                fmt("({}-${:X})&$FF"), noteName, get_base_keydisp());
+                FMT_STRING("({}-${:X})&$FF"), noteName, get_base_keydisp());
             if (workAround) {
                 cerr << "Converting PSG noise note $" << hex << setw(2)
                      << setfill('0') << uppercase
