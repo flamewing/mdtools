@@ -19,13 +19,12 @@
 #ifndef __PATTERN_NAME_TABLE_H
 #define __PATTERN_NAME_TABLE_H
 
+#include <mdcomp/bigendian_io.hh>
+#include <mdcomp/enigma.hh>
 #include <mdtools/pattern_name.hh>
 
 #include <array>
 #include <sstream>
-
-#include <mdcomp/bigendian_io.hh>
-#include <mdcomp/enigma.hh>
 
 template <unsigned width, unsigned height>
 class Pattern_Name_Table {
@@ -37,8 +36,12 @@ private:
     std::array<Line, height> table;
 
 protected:
-    auto const& getTable() const noexcept { return table; }
-    auto&       getTable() noexcept { return table; }
+    auto const& getTable() const noexcept {
+        return table;
+    }
+    auto& getTable() noexcept {
+        return table;
+    }
 
 public:
     Pattern_Name_Table() noexcept = default;
@@ -63,8 +66,12 @@ public:
     Pattern_Name_Table& operator=(Pattern_Name_Table const&) = default;
     Pattern_Name_Table& operator=(Pattern_Name_Table&&) noexcept = default;
 
-    Line const& operator[](size_t const n) const noexcept { return table[n]; }
-    Line&       operator[](size_t const n) noexcept { return table[n]; }
+    Line const& operator[](size_t const n) const noexcept {
+        return table[n];
+    }
+    Line& operator[](size_t const n) noexcept {
+        return table[n];
+    }
 
     virtual void write(std::ostream& out) const noexcept {
         for (Line const& line : table) {
@@ -79,4 +86,4 @@ using PlaneH32V28  = Pattern_Name_Table<32, 28>;
 using PlaneH40V28  = Pattern_Name_Table<40, 28>;
 using PlaneH128V28 = Pattern_Name_Table<128, 28>;
 
-#endif // __PATTERN_NAME_TABLE_H
+#endif    // __PATTERN_NAME_TABLE_H

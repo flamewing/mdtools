@@ -16,16 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <getopt.h>
+#include <mdtools/dplcfile.hh>
+#include <mdtools/mappingfile.hh>
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
-
-#include <getopt.h>
-
-#include <mdtools/dplcfile.hh>
-#include <mdtools/mappingfile.hh>
 
 using std::cerr;
 using std::endl;
@@ -161,43 +160,43 @@ enum FileErrors {
     eOutputDplcMissing
 };
 
-#define ARG_CASE(x, y, z, w)                                                   \
-    case (x):                                                                  \
-        if (act != eNone) {                                                    \
-            usage();                                                           \
-            return eInvalidArgs;                                               \
-        }                                                                      \
-        act   = (y);                                                           \
-        nargs = (z);                                                           \
-        w;                                                                     \
+#define ARG_CASE(x, y, z, w)     \
+    case (x):                    \
+        if (act != eNone) {      \
+            usage();             \
+            return eInvalidArgs; \
+        }                        \
+        act   = (y);             \
+        nargs = (z);             \
+        w;                       \
         break;
 
-#define TEST_FILE(x, y, z)                                                     \
-    do {                                                                       \
-        if (!(x).good()) {                                                     \
-            cerr << "File '" << argv[(y)] << "' could not be opened." << endl  \
-                 << endl;                                                      \
-            return (z);                                                        \
-        }                                                                      \
+#define TEST_FILE(x, y, z)                                                    \
+    do {                                                                      \
+        if (!(x).good()) {                                                    \
+            cerr << "File '" << argv[(y)] << "' could not be opened." << endl \
+                 << endl;                                                     \
+            return (z);                                                       \
+        }                                                                     \
     } while (0)
 
 int main(int argc, char* argv[]) {
-    static option long_options[] = {
-        {"optimize", no_argument, nullptr, 'o'},
-        {"split", no_argument, nullptr, 's'},
-        {"merge", no_argument, nullptr, 'm'},
-        {"fix", no_argument, nullptr, 'f'},
-        {"crush-mappings", no_argument, nullptr, 'c'},
-        {"crush-dplc", no_argument, nullptr, 'k'},
-        {"info", no_argument, nullptr, 'i'},
-        {"dplc", no_argument, nullptr, 'd'},
-        {"no-null", no_argument, nullptr, '0'},
-        {"pal-change", required_argument, nullptr, 'p'},
-        {"pal-dest", required_argument, nullptr, 'a'},
-        {"from-sonic", required_argument, nullptr, 'x'},
-        {"to-sonic", required_argument, nullptr, 'y'},
-        {"sonic", required_argument, nullptr, 'z'},
-        {nullptr, 0, nullptr, 0}};
+    static option long_options[]
+            = {{"optimize", no_argument, nullptr, 'o'},
+               {"split", no_argument, nullptr, 's'},
+               {"merge", no_argument, nullptr, 'm'},
+               {"fix", no_argument, nullptr, 'f'},
+               {"crush-mappings", no_argument, nullptr, 'c'},
+               {"crush-dplc", no_argument, nullptr, 'k'},
+               {"info", no_argument, nullptr, 'i'},
+               {"dplc", no_argument, nullptr, 'd'},
+               {"no-null", no_argument, nullptr, '0'},
+               {"pal-change", required_argument, nullptr, 'p'},
+               {"pal-dest", required_argument, nullptr, 'a'},
+               {"from-sonic", required_argument, nullptr, 'x'},
+               {"to-sonic", required_argument, nullptr, 'y'},
+               {"sonic", required_argument, nullptr, 'z'},
+               {nullptr, 0, nullptr, 0}};
 
     Actions act          = eNone;
     bool    nullfirst    = true;
@@ -210,8 +209,8 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-            argc, argv, "osmfckidp:a:0", static_cast<option*>(long_options),
-            &option_index);
+                argc, argv, "osmfckidp:a:0", static_cast<option*>(long_options),
+                &option_index);
         if (c == -1) {
             break;
         }
@@ -247,8 +246,8 @@ int main(int argc, char* argv[]) {
             ARG_CASE('i', eInfo, 1, )
             ARG_CASE('d', eDplc, 1, )
             ARG_CASE(
-                'p', ePalChange, 2,
-                srcpal = (strtol(optarg, nullptr, 0) & 3) << 5)
+                    'p', ePalChange, 2,
+                    srcpal = (strtol(optarg, nullptr, 0) & 3) << 5)
         case 'a':
             if (act != ePalChange) {
                 usage();
@@ -436,9 +435,9 @@ int main(int argc, char* argv[]) {
         break;
     }
     case eNone:
-        cerr
-            << "Divide By Cucumber Error. Please Reinstall Universe And Reboot."
-            << endl;
+        cerr << "Divide By Cucumber Error. Please Reinstall Universe And "
+                "Reboot."
+             << endl;
         __builtin_unreachable();
     }
 

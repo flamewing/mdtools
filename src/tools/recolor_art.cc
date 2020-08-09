@@ -16,16 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <getopt.h>
+#include <mdcomp/kosinski.hh>
+#include <mdcomp/nemesis.hh>
+
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
-#include <getopt.h>
-
-#include <mdcomp/kosinski.hh>
-#include <mdcomp/nemesis.hh>
 
 using std::cerr;
 using std::endl;
@@ -51,7 +50,7 @@ static void usage() {
          << endl;
 }
 
-enum Formats { eUncompressed = 0, eNemesis = 1, eKosinski = 2 };
+enum Formats { eInvalid = -1, eUncompressed = 0, eNemesis = 1, eKosinski = 2 };
 
 struct Tile {
     unsigned char tiledata[64];
@@ -98,10 +97,10 @@ void recolor(istream& in, ostream& out, int const (&colormap)[16]) {
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[] = {
-        {"format", required_argument, nullptr, 'o'},
-        {"moduled", optional_argument, nullptr, 'm'},
-        {nullptr, 0, nullptr, 0}};
+    static option long_options[]
+            = {{"format", required_argument, nullptr, 'o'},
+               {"moduled", optional_argument, nullptr, 'm'},
+               {nullptr, 0, nullptr, 0}};
 
     bool       moduled    = false;
     streamsize modulesize = 0x1000;
@@ -114,8 +113,8 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-            argc, argv, "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
-            static_cast<option*>(long_options), &option_index);
+                argc, argv, "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
+                static_cast<option*>(long_options), &option_index);
         if (c == -1) {
             break;
         }
@@ -124,18 +123,26 @@ int main(int argc, char* argv[]) {
             c += ('a' - 'A');
         }
 
+        auto getFormat = [](auto optarg) {
+            if (optarg == nullptr) {
+                return eInvalid;
+            }
+            if (strcmp(optarg, "unc") == 0) {
+                return eUncompressed;
+            }
+            if (strcmp(optarg, "nem") == 0) {
+                return eNemesis;
+            }
+            if (strcmp(optarg, "kos") == 0) {
+                return eKosinski;
+            }
+            return eInvalid;
+        };
+
         switch (c) {
         case 'o':
-            if (optarg == nullptr) {
-                usage();
-                return 1;
-            } else if (strcmp(optarg, "unc") == 0) {
-                fmt = eUncompressed;
-            } else if (strcmp(optarg, "nem") == 0) {
-                fmt = eNemesis;
-            } else if (strcmp(optarg, "kos") == 0) {
-                fmt = eKosinski;
-            } else {
+            fmt = getFormat(optarg);
+            if (fmt == eInvalid) {
                 usage();
                 return 1;
             }
@@ -174,7 +181,7 @@ int main(int argc, char* argv[]) {
             } else {
                 c1 = c - 'a' + 10;
             }
-            int d = *optarg;
+            int d = static_cast<unsigned char>(*optarg);
             if (d >= '0' && d <= '9') {
                 colormap[c1] = d - '0';
             } else if (d >= 'a' && d <= 'f') {
@@ -215,7 +222,7 @@ int main(int argc, char* argv[]) {
         sin << fin.rdbuf();
     } else if (fmt == eNemesis) {
         nemesis::decode(fin, sin);
-    } else { // if (fmt == eKosinski)
+    } else {    // if (fmt == eKosinski)
         if (moduled) {
             kosinski::moduled_decode(fin, sin);
         } else {
@@ -227,8 +234,7 @@ int main(int argc, char* argv[]) {
     sin.seekg(0);
     recolor(sin, sout, colormap);
 
-    ofstream fout(
-        argv[optind + 1], ios::out | ios::binary);
+    ofstream fout(argv[optind + 1], ios::out | ios::binary);
     if (!fout.good()) {
         cerr << "Output file '" << argv[optind + 1] << "' could not be opened."
              << endl
@@ -242,7 +248,7 @@ int main(int argc, char* argv[]) {
         fout << sout.rdbuf();
     } else if (fmt == eNemesis) {
         nemesis::encode(sout, fout);
-    } else { // if (fmt == eKosinski)
+    } else {    // if (fmt == eKosinski)
         if (moduled) {
             kosinski::moduled_encode(sout, fout, modulesize);
         } else {

@@ -16,7 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mdcomp/bigendian_io.hh>
+
 #include <array>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -25,12 +30,6 @@
 #include <set>
 #include <utility>
 #include <vector>
-
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
-
-#include <mdcomp/bigendian_io.hh>
 
 using std::array;
 using std::cerr;
@@ -51,12 +50,22 @@ private:
     uint16_t block{0};
 
 public:
-    void read(istream& in) noexcept { block = BigEndian::Read2(in); }
-    void write(ostream& out) noexcept { BigEndian::Write2(out, block); }
-    constexpr uint16_t get_block() const noexcept { return block; }
-    constexpr uint16_t get_index() const noexcept { return block & 0x3FF; }
-    constexpr void     set_block(uint16_t blk) { block = blk; }
-    constexpr void     set_index(uint16_t idx) {
+    void read(istream& in) noexcept {
+        block = BigEndian::Read2(in);
+    }
+    void write(ostream& out) const noexcept {
+        BigEndian::Write2(out, block);
+    }
+    constexpr uint16_t get_block() const noexcept {
+        return block;
+    }
+    constexpr uint16_t get_index() const noexcept {
+        return block & 0x3FF;
+    }
+    constexpr void set_block(uint16_t blk) {
+        block = blk;
+    }
+    constexpr void set_index(uint16_t idx) {
         block &= (~0x3FF);
         block |= (idx & 0x3FF);
     }
@@ -85,8 +94,12 @@ public:
     constexpr uint16_t get_collision() const noexcept {
         return (get_block() >> 13) & 3;
     }
-    constexpr void set_xflip() noexcept { set_block(get_block() | 0x0800); }
-    constexpr void set_yflip() noexcept { set_block(get_block() | 0x1000); }
+    constexpr void set_xflip() noexcept {
+        set_block(get_block() | 0x0800);
+    }
+    constexpr void set_yflip() noexcept {
+        set_block(get_block() | 0x1000);
+    }
     constexpr void clear_xflip() noexcept {
         set_block(get_block() & (~0x0800));
     }
@@ -125,8 +138,12 @@ public:
     constexpr uint16_t get_collision2() const noexcept {
         return (get_block() >> 14) & 3;
     }
-    constexpr void set_xflip() noexcept { set_block(get_block() | 0x0400); }
-    constexpr void set_yflip() noexcept { set_block(get_block() | 0x0800); }
+    constexpr void set_xflip() noexcept {
+        set_block(get_block() | 0x0400);
+    }
+    constexpr void set_yflip() noexcept {
+        set_block(get_block() | 0x0800);
+    }
     constexpr void clear_xflip() noexcept {
         set_block(get_block() & (~0x0400));
     }
@@ -166,7 +183,8 @@ template <unsigned Dim, typename Blk>
 class Chunk {
 private:
     constexpr static size_t const numBlocks = size_t(Dim) * size_t(Dim);
-    Blk                           blocks[numBlocks];
+
+    Blk blocks[numBlocks];
 
 public:
     constexpr void read(istream& in) noexcept {
@@ -175,8 +193,8 @@ public:
         }
     }
     constexpr void write(ostream& out) noexcept {
-        for (size_t ii = 0; ii < numBlocks; ii++) {
-            blocks[ii].write(out);
+        for (auto& elem : blocks) {
+            elem.write(out);
         }
     }
     constexpr bool operator<(Chunk const& other) const noexcept {
@@ -212,9 +230,13 @@ public:
         }
         return true;
     }
-    constexpr Blk const& get_block(int ii) const noexcept { return blocks[ii]; }
-    constexpr Blk&       get_block(int ii) noexcept { return blocks[ii]; }
-    constexpr void       set_block(int ii, Blk const& blk) noexcept {
+    constexpr Blk const& get_block(int ii) const noexcept {
+        return blocks[ii];
+    }
+    constexpr Blk& get_block(int ii) noexcept {
+        return blocks[ii];
+    }
+    constexpr void set_block(int ii, Blk const& blk) noexcept {
         blocks[ii] = blk;
     }
 };
@@ -227,8 +249,8 @@ using ChunkS1 = Chunk<16, BlockS1>;
 using ChunkS2 = Chunk<8, BlockS2>;
 
 void split_chunks(
-    ChunkS1 const& highchunk, ChunkS1 const& lowchunk, ChunkS2& tlchunk,
-    ChunkS2& trchunk, ChunkS2& blchunk, ChunkS2& brchunk) noexcept {
+        ChunkS1 const& highchunk, ChunkS1 const& lowchunk, ChunkS2& tlchunk,
+        ChunkS2& trchunk, ChunkS2& blchunk, ChunkS2& brchunk) noexcept {
     for (int ii = 0; ii < 16; ii++) {
         for (int jj = 0; jj < 16; jj++) {
             ChunkS2& curr = ii < 8 ? (jj < 8 ? tlchunk : blchunk)
@@ -244,7 +266,7 @@ namespace {
     // Some functions to generate lookup tables.
     template <typename Callable, int... ids>
     constexpr auto get_base_remaps(
-        Callable base_remap, integer_sequence<int, ids...>) noexcept {
+            Callable base_remap, integer_sequence<int, ids...>) noexcept {
         return array<uint8_t, sizeof...(ids)>{base_remap(ids)...};
     }
 
@@ -259,12 +281,12 @@ namespace {
     constexpr auto init_remaps(int levelid) {
         if (levelid >= 4 && levelid <= 6) {
             return get_base_remaps(
-                identity_remap, make_integer_sequence<int, 256>{});
+                    identity_remap, make_integer_sequence<int, 256>{});
         }
         return get_base_remaps(
-            increment_remap, make_integer_sequence<int, 256>{});
+                increment_remap, make_integer_sequence<int, 256>{});
     }
-} // namespace
+}    // namespace
 
 auto get_chunk_remaps(int levelid) noexcept {
     auto remaps{init_remaps(levelid)};
@@ -426,8 +448,8 @@ int main(int argc, char* argv[]) {
         }
         chunk--;
         ChunkS1 highchunk = chunkss1[chunk];
-        ChunkS1 lowchunk =
-            needremap[chunk] != 0U ? chunkss1[remaps[chunk]] : highchunk;
+        ChunkS1 lowchunk
+                = needremap[chunk] != 0U ? chunkss1[remaps[chunk]] : highchunk;
         ChunkS2 tlchunk;
         ChunkS2 trchunk;
         ChunkS2 blchunk;

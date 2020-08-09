@@ -19,9 +19,10 @@
 #ifndef __LIB_SINGLEDPLC_H
 #define __LIB_SINGLEDPLC_H
 
+#include <mdtools/ignore_unused_variable_warning.hh>
+
 #include <cstdint>
 #include <iosfwd>
-#include <mdtools/ignore_unused_variable_warning.hh>
 
 class single_dplc {
 private:
@@ -36,11 +37,19 @@ public:
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    uint16_t get_cnt() const { return cnt; }
-    uint16_t get_tile() const { return tile; }
+    uint16_t get_cnt() const {
+        return cnt;
+    }
+    uint16_t get_tile() const {
+        return tile;
+    }
 
-    void set_cnt(uint16_t const c) { cnt = c; }
-    void set_tile(uint16_t const t) { tile = t; }
+    void set_cnt(uint16_t const c) {
+        cnt = c;
+    }
+    void set_tile(uint16_t const t) {
+        tile = t;
+    }
 
     bool operator<(single_dplc const& rhs) const {
         if (cnt < rhs.cnt) {
@@ -56,4 +65,4 @@ public:
     }
 };
 
-#endif // __LIB_SINGLEDPLC_H
+#endif    // __LIB_SINGLEDPLC_H

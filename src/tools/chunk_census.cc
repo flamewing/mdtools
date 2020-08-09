@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mdcomp/kosinski.hh>
+
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
@@ -23,15 +25,13 @@
 #include <iostream>
 #include <sstream>
 
-#include <mdcomp/kosinski.hh>
-
 using std::cerr;
 using std::cout;
 using std::dec;
 using std::endl;
 using std::hex;
-using std::ios;
 using std::ifstream;
+using std::ios;
 using std::ofstream;
 using std::setfill;
 using std::setw;

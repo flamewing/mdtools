@@ -16,15 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/io/ios_state.hpp>
+#include <mdcomp/bigendian_io.hh>
 #include <mdtools/dplcfile.hh>
 
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
-
-#include <boost/io/ios_state.hpp>
-
-#include <mdcomp/bigendian_io.hh>
 
 using std::cerr;
 using std::cout;
@@ -122,7 +120,9 @@ void dplc_file::consolidate(dplc_file const& src) {
     }
 }
 
-void dplc_file::insert(frame_dplc const& val) { frames.push_back(val); }
+void dplc_file::insert(frame_dplc const& val) {
+    frames.push_back(val);
+}
 
 size_t dplc_file::size(int ver) const {
     size_t sz = 2 * frames.size();

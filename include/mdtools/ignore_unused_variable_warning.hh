@@ -22,4 +22,4 @@
 template <typename... T>
 constexpr inline void ignore_unused_variable_warning(T const&...) {}
 
-#endif // __LIB_IGNORE_UNUSED_VARIABLE_WARNING_H
+#endif    // __LIB_IGNORE_UNUSED_VARIABLE_WARNING_H

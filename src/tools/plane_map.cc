@@ -16,19 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <getopt.h>
+#include <mdcomp/bigendian_io.hh>
+#include <mdcomp/enigma.hh>
+#include <mdtools/ignore_unused_variable_warning.hh>
+
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
-
-#include <getopt.h>
-
-#include <mdcomp/bigendian_io.hh>
-#include <mdcomp/enigma.hh>
-
-#include <mdtools/ignore_unused_variable_warning.hh>
 
 using std::cerr;
 using std::endl;
@@ -75,8 +73,8 @@ static void usage() {
 }
 
 static void plane_map(
-    istream& src, ostream& dst, size_t w, size_t h, streamsize pointer,
-    bool sonic2) {
+        istream& src, ostream& dst, size_t w, size_t h, streamsize pointer,
+        bool sonic2) {
     src.seekg(0, ios::end);
     streamsize sz = streamsize(src.tellg()) - pointer;
     src.seekg(pointer);
@@ -116,8 +114,8 @@ struct Position {
 
 using Enigma_map = map<Position, uint16_t>;
 
-static void
-plane_unmap(istream& src, ostream& dst, streamsize pointer, bool sonic2) {
+static void plane_unmap(
+        istream& src, ostream& dst, streamsize pointer, bool sonic2) {
     ignore_unused_variable_warning(pointer);
     streamsize next_loc = src.tellg();
     streamsize last_loc = BigEndian::Read2(src);
@@ -157,11 +155,12 @@ plane_unmap(istream& src, ostream& dst, streamsize pointer, bool sonic2) {
 }
 
 int main(int argc, char* argv[]) {
-    int    sonic2         = 0;
-    option long_options[] = {{"extract", optional_argument, nullptr, 'x'},
-                             {"sonic2", no_argument, &sonic2, 1},
-                             {"compress", no_argument, nullptr, 'c'},
-                             {nullptr, 0, nullptr, 0}};
+    int    sonic2 = 0;
+    option long_options[]
+            = {{"extract", optional_argument, nullptr, 'x'},
+               {"sonic2", no_argument, &sonic2, 1},
+               {"compress", no_argument, nullptr, 'c'},
+               {nullptr, 0, nullptr, 0}};
 
     bool extract  = false;
     bool compress = false;
@@ -172,8 +171,8 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-            argc, argv, "ux::c", static_cast<option*>(long_options),
-            &option_index);
+                argc, argv, "ux::c", static_cast<option*>(long_options),
+                &option_index);
         if (c == -1) {
             break;
         }

@@ -37,4 +37,4 @@ public:
     SSTrackFrame(std::istream& in, bool xflip) noexcept;
 };
 
-#endif // __SSTRACK_H
+#endif    // __SSTRACK_H

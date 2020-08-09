@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mdcomp/bigendian_io.hh>
+#include <mdcomp/kosinski.hh>
 #include <mdtools/ssvram.hh>
 
 #include <cassert>
@@ -23,9 +25,6 @@
 #include <limits>
 #include <sstream>
 #include <vector>
-
-#include <mdcomp/bigendian_io.hh>
-#include <mdcomp/kosinski.hh>
 
 using std::ios;
 using std::istream;
@@ -71,7 +70,9 @@ SSVRAM::SSVRAM(istream& pal, istream& art) noexcept {
     for (size_t ii = 0; ii < palLen; ii++) {
         palette[ii] = BigEndian::Read2(pal);
     }
-    auto const getR = [](uint16_t const clr) -> int { return clr & 0xf; };
+    auto const getR = [](uint16_t const clr) -> int {
+        return clr & 0xf;
+    };
     auto const getG = [](uint16_t const clr) -> int {
         return (clr >> 4) & 0xf;
     };
@@ -81,19 +82,18 @@ SSVRAM::SSVRAM(istream& pal, istream& art) noexcept {
     auto const deltaSquare = [](int const c1, int const c2) -> unsigned {
         return (c1 - c2) * (c1 - c2);
     };
-    auto const distance =
-        [&deltaSquare, &getR, &getG,
-         &getB](uint16_t const c1, uint16_t const c2) -> unsigned {
-        return deltaSquare(getR(c1), getR(c2)) +
-               deltaSquare(getG(c1), getG(c2)) +
-               deltaSquare(getB(c1), getB(c2));
+    auto const distance
+            = [&deltaSquare, &getR, &getG,
+               &getB](uint16_t const c1, uint16_t const c2) -> unsigned {
+        return deltaSquare(getR(c1), getR(c2)) + deltaSquare(getG(c1), getG(c2))
+               + deltaSquare(getB(c1), getB(c2));
     };
     auto& DistTable = get_dist_table();
     for (size_t ii = 0; ii < 16; ii++) {
         DistTable[ii][ii] = 0;
         for (size_t jj = ii + 1; jj < 16; jj++) {
-            DistTable[ii][jj] = DistTable[jj][ii] =
-                distance(palette[ii], palette[jj]);
+            DistTable[ii][jj] = DistTable[jj][ii]
+                    = distance(palette[ii], palette[jj]);
         }
     }
 }
@@ -103,7 +103,8 @@ vector<ShortTile> split_tile(Tile const& tile) noexcept {
     // Check compatibility. We could do away with this if no one else ever were
     // to use this.
     static_assert(
-        Tile::Line_size == ShortTile::Line_size, "Mismatched tile line sizes!");
+            Tile::Line_size == ShortTile::Line_size,
+            "Mismatched tile line sizes!");
     // Reserve space for return value.
     vector<ShortTile> ret;
     ret.reserve(4);
@@ -119,9 +120,9 @@ vector<ShortTile> split_tile(Tile const& tile) noexcept {
 
 // Merges the given 4 short (2-line) tiles into a full-sized tile.
 Tile merge_tiles(
-    ShortTile const& tile0, FlipMode const flip0, ShortTile const& tile1,
-    FlipMode const flip1, ShortTile const& tile2, FlipMode const flip2,
-    ShortTile const& tile3, FlipMode const flip3) noexcept {
+        ShortTile const& tile0, FlipMode const flip0, ShortTile const& tile1,
+        FlipMode const flip1, ShortTile const& tile2, FlipMode const flip2,
+        ShortTile const& tile3, FlipMode const flip3) noexcept {
     Tile dest;
     auto it = dest.begin(NoFlip);
     for (ShortTile::const_iterator src = tile0.begin(flip0);

@@ -16,19 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <getopt.h>
+#include <mdcomp/comper.hh>
+#include <mdcomp/kosinski.hh>
+#include <mdtools/dplcfile.hh>
+
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-#include <getopt.h>
-
-#include <mdcomp/comper.hh>
-#include <mdcomp/kosinski.hh>
-
-#include <mdtools/dplcfile.hh>
 
 using std::cerr;
 using std::endl;
@@ -86,10 +84,11 @@ static void usage(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[] = {{"kosm", no_argument, nullptr, 'm'},
-                                    {"comper", no_argument, nullptr, 'c'},
-                                    {"sonic", required_argument, nullptr, 'z'},
-                                    {nullptr, 0, nullptr, 0}};
+    static option long_options[]
+            = {{"kosm", no_argument, nullptr, 'm'},
+               {"comper", no_argument, nullptr, 'c'},
+               {"sonic", required_argument, nullptr, 'z'},
+               {nullptr, 0, nullptr, 0}};
 
     int64_t compress = 0;
     int64_t sonicver = 2;
@@ -98,8 +97,8 @@ int main(int argc, char* argv[]) {
         int option_index = 0;
 
         int c = getopt_long(
-            argc, argv, "cm", static_cast<option*>(long_options),
-            &option_index);
+                argc, argv, "cm", static_cast<option*>(long_options),
+                &option_index);
         if (c == -1) {
             break;
         }
@@ -183,7 +182,8 @@ int main(int argc, char* argv[]) {
         fname << argv[optind + 2] << hex << setw(2) << setfill('0') << ii
               << ".bin";
         ofstream fout(
-            fname.str().c_str(), ios::in | ios::out | ios::binary | ios::trunc);
+                fname.str().c_str(),
+                ios::in | ios::out | ios::binary | ios::trunc);
         if (!fout.good()) {
             cerr << "Output file '" << fname.str() << "' could not be opened."
                  << endl

@@ -22,20 +22,18 @@
 
 using std::cerr;
 using std::endl;
-using std::ios;
 using std::ifstream;
+using std::ios;
 using std::istream;
 using std::ofstream;
 using std::ostream;
 using std::stringstream;
 
 #include <getopt.h>
-
-#include <mdtools/sstrack.hh>
-#include <mdtools/ssvram.hh>
-
 #include <mdcomp/enigma.hh>
 #include <mdcomp/kosinski.hh>
+#include <mdtools/sstrack.hh>
+#include <mdtools/ssvram.hh>
 
 static void usage(char* prog) {
     cerr << "Usage: " << prog
@@ -47,8 +45,8 @@ static void usage(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[] = {{"flipped", no_argument, nullptr, 'f'},
-                                    {nullptr, 0, nullptr, 0}};
+    static option long_options[] = {
+            {"flipped", no_argument, nullptr, 'f'}, {nullptr, 0, nullptr, 0}};
 
     bool flipped = false;
 
@@ -100,7 +98,7 @@ int main(int argc, char* argv[]) {
     }
 
     ofstream artout(
-        argv[optind + OutArtKos], ios::out | ios::binary | ios::trunc);
+            argv[optind + OutArtKos], ios::out | ios::binary | ios::trunc);
     if (!artout.good()) {
         cerr << "Could not open output art file '" << argv[optind + OutArtKos]
              << "'." << endl;
@@ -108,7 +106,7 @@ int main(int argc, char* argv[]) {
     }
 
     ofstream planekos(
-        argv[optind + OutPlaneKos], ios::out | ios::binary | ios::trunc);
+            argv[optind + OutPlaneKos], ios::out | ios::binary | ios::trunc);
     if (!planekos.good()) {
         cerr << "Could not open output Kosinski-compressed plane map file '"
              << argv[optind + OutPlaneKos] << "'." << endl;
@@ -116,7 +114,7 @@ int main(int argc, char* argv[]) {
     }
 
     ofstream planeeni(
-        argv[optind + OutPlaneEni], ios::out | ios::binary | ios::trunc);
+            argv[optind + OutPlaneEni], ios::out | ios::binary | ios::trunc);
     if (!planeeni.good()) {
         cerr << "Could not open output Enigma-compressed pĺane map file '"
              << argv[optind + OutPlaneEni] << "'." << endl;
@@ -133,14 +131,14 @@ int main(int argc, char* argv[]) {
 
     // First, lets create plane map and art for an equivalent scene.
     for (unsigned curline = 0; curline < SSTrackFrame::Height; curline++) {
-        auto& tline = track[curline];
-        auto& pline = plane[curline];
-        auto  tl0   = tline.cbegin();
-        auto  tl1   = tl0 + PlaneH32V28::Width;
-        auto  tl2   = tl1 + PlaneH32V28::Width;
-        auto  tl3   = tl2 + PlaneH32V28::Width;
-        auto  tlast = tline.cend();
-        auto  it    = pline.begin();
+        auto&       tline = track[curline];
+        auto&       pline = plane[curline];
+        const auto* tl0   = tline.cbegin();
+        const auto* tl1   = tl0 + PlaneH32V28::Width;
+        const auto* tl2   = tl1 + PlaneH32V28::Width;
+        const auto* tl3   = tl2 + PlaneH32V28::Width;
+        const auto* tlast = tline.cend();
+        auto*       it    = pline.begin();
         while (tl3 != tlast) {
             Pattern_Name tp0    = *tl0++;
             Pattern_Name tp1    = *tl1++;
@@ -151,8 +149,8 @@ int main(int argc, char* argv[]) {
             ShortTile&   tile2  = ssvram[tp2];
             ShortTile&   tile3  = ssvram[tp3];
             Tile         merged = merge_tiles(
-                tile0, tp0.get_flip(), tile1, tp1.get_flip(), tile2,
-                tp2.get_flip(), tile3, tp3.get_flip());
+                    tile0, tp0.get_flip(), tile1, tp1.get_flip(), tile2,
+                    tp2.get_flip(), tile3, tp3.get_flip());
             Pattern_Name bestpat;
             unsigned     dist = vram.find_closest(merged, bestpat);
             if (dist != 0) {

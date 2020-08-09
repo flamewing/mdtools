@@ -19,13 +19,13 @@
 #ifndef __TILE_H
 #define __TILE_H
 
+#include <mdtools/pattern_name.hh>
+
 #include <array>
 #include <cassert>
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
-
-#include <mdtools/pattern_name.hh>
 
 using DistTable_t = std::array<std::array<uint32_t, 16>, 16>;
 
@@ -265,7 +265,8 @@ private:
         // turn rhs into lhs.
         template <typename U, typename V>
         static difference_type difference(
-            tile_iterator<U> const& lhs, tile_iterator<V> const& rhs) noexcept {
+                tile_iterator<U> const& lhs,
+                tile_iterator<V> const& rhs) noexcept {
             assert(lhs.tiledata == rhs.tiledata);
             assert(lhs.f == rhs.f);
             difference_type latoff = lhs.loc % lsize;
@@ -293,10 +294,11 @@ private:
         }
         // Checks if two iterators are at the same point in the iteration.
         template <typename U, typename V>
-        static bool equal(
-            tile_iterator<U> const& lhs, tile_iterator<V> const& rhs) noexcept {
-            if (lhs.loc == tile_iterator<U>::Tile_size ||
-                rhs.loc == tile_iterator<V>::Tile_size) {
+        static bool
+                equal(tile_iterator<U> const& lhs,
+                      tile_iterator<V> const& rhs) noexcept {
+            if (lhs.loc == tile_iterator<U>::Tile_size
+                || rhs.loc == tile_iterator<V>::Tile_size) {
                 return lhs.loc == rhs.loc;
             }
             assert(lhs.tiledata == rhs.tiledata);
@@ -305,16 +307,18 @@ private:
         }
         // Checks if lhs is an iteration to a position before rhs.
         template <typename U, typename V>
-        static bool less(
-            tile_iterator<U> const& lhs, tile_iterator<V> const& rhs) noexcept {
+        static bool
+                less(tile_iterator<U> const& lhs,
+                     tile_iterator<V> const& rhs) noexcept {
             return difference(lhs, rhs) < 0;
         }
 
     protected:
         // Constructors.
         tile_iterator(
-            FlipMode const _f, value_type* const _t, bool const ending) noexcept
-            : tiledata(_t), f(_f) {
+                FlipMode const _f, value_type* const _t,
+                bool const ending) noexcept
+                : tiledata(_t), f(_f) {
             // The values of start, finish and loc depend on flip mode:
             switch (f) {
             case NoFlip:
@@ -349,8 +353,8 @@ private:
         // * copies iterator to iterator.
         template <typename U>
         explicit tile_iterator(tile_iterator<U> const& other) noexcept
-            : tiledata(other.tiledata), f(other.f), start(other.start),
-              finish(other.finish), loc(other.loc) {}
+                : tiledata(other.tiledata), f(other.f), start(other.start),
+                  finish(other.finish), loc(other.loc) {}
         // Conversion assignment that does any one of:
         // * convert iterator to const_iterator;
         // * copies const_iterator to const_iterator;
@@ -408,8 +412,8 @@ private:
             return ret;
         }
         // Makes addition of difference_type to iterator commutative.
-        friend tile_iterator<T>
-        operator+(difference_type lhs, tile_iterator<T> const& rhs) noexcept {
+        friend tile_iterator<T> operator+(
+                difference_type lhs, tile_iterator<T> const& rhs) noexcept {
             return rhs + lhs;
         }
         // Subtract amount from iterator. Can add positive or negative values.
@@ -462,10 +466,18 @@ private:
             return !less(rhs, *this);
         }
         // Dereferencing operators.
-        value_type operator*() const noexcept { return tiledata[loc]; }
-        reference  operator*() noexcept { return tiledata[loc]; }
-        pointer    operator->() noexcept { return &(tiledata[loc]); }
-        pointer    operator->() const noexcept { return &(tiledata[loc]); }
+        value_type operator*() const noexcept {
+            return tiledata[loc];
+        }
+        reference operator*() noexcept {
+            return tiledata[loc];
+        }
+        pointer operator->() noexcept {
+            return &(tiledata[loc]);
+        }
+        pointer operator->() const noexcept {
+            return &(tiledata[loc]);
+        }
         value_type operator[](difference_type n) const noexcept {
             return *operator+(n);
         }
@@ -482,21 +494,21 @@ public:
     using const_reverse_iterator = tile_iterator<uint8_t const>;
 
     // Constructors.
-    BaseTile() noexcept = default; // Uninitialized
+    BaseTile() noexcept = default;    // Uninitialized
     // From stream.
     explicit BaseTile(std::istream& in) noexcept;
     // From (start, finish) range in iterators.
     template <typename Iter>
     BaseTile(
-        Iter& start, Iter const& finish, FlipMode f,
-        uint32_t nreps = 1) noexcept;
+            Iter& start, Iter const& finish, FlipMode f,
+            uint32_t nreps = 1) noexcept;
 
     // Computes (square of) distance between two tiles. This distance is defined
     // as being the sum of th squares of the differences between corresponding
     // pixels in the tiles.
     uint32_t distance(
-        DistTable_t const& DistTable, FlipMode flip, const_iterator start,
-        const_iterator const& finish) const noexcept;
+            DistTable_t const& DistTable, FlipMode flip, const_iterator start,
+            const_iterator const& finish) const noexcept;
 
     // Functions for starting iteration. Note how the reverse iterators are the
     // same as forward iterators with X and Y both flipped.
@@ -540,8 +552,8 @@ public:
     // Draws linecnt lines of the tile, starting at the position specified by
     // start iterator, to output stream out.
     void draw_tile(
-        std::ostream& out, const_iterator& start,
-        uint32_t linecnt = nlines) const noexcept;
+            std::ostream& out, const_iterator& start,
+            uint32_t linecnt = nlines) const noexcept;
 };
 
 // Constructs a tile by reading it from a stream.
@@ -565,8 +577,8 @@ BaseTile<lsize, nlines>::BaseTile(std::istream& in) noexcept {
 template <int lsize, int nlines>
 template <typename Iter>
 BaseTile<lsize, nlines>::BaseTile(
-    Iter& start, Iter const& finish, FlipMode const f,
-    uint32_t nreps) noexcept {
+        Iter& start, Iter const& finish, FlipMode const f,
+        uint32_t nreps) noexcept {
     iterator it = begin(f);
     // First nreps-1 repeats.
     for (uint32_t ii = 1; ii < nreps; ii++) {
@@ -587,8 +599,8 @@ BaseTile<lsize, nlines>::BaseTile(
 // Computes distance between this tile and the data at the given iterators.
 template <int lsize, int nlines>
 uint32_t BaseTile<lsize, nlines>::distance(
-    DistTable_t const& DistTable, FlipMode flip, const_iterator start,
-    const_iterator const& finish) const noexcept {
+        DistTable_t const& DistTable, FlipMode flip, const_iterator start,
+        const_iterator const& finish) const noexcept {
     uint32_t dist = 0;
     for (const_iterator it = begin(flip); it != end(flip) && start != finish;
          ++it, ++start) {
@@ -603,7 +615,8 @@ uint32_t BaseTile<lsize, nlines>::distance(
 // stream.
 template <int lsize, int nlines>
 void BaseTile<lsize, nlines>::draw_tile(
-    std::ostream& out, const_iterator& start, uint32_t linecnt) const noexcept {
+        std::ostream& out, const_iterator& start,
+        uint32_t linecnt) const noexcept {
     const_iterator finish = start + linecnt * Line_size;
     while (start != finish) {
         uint8_t c = (*start++) << 4;
@@ -616,4 +629,4 @@ void BaseTile<lsize, nlines>::draw_tile(
 
 using Tile = BaseTile<8, 8>;
 
-#endif // __TILE_H
+#endif    // __TILE_H

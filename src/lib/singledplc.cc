@@ -16,12 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mdcomp/bigendian_io.hh>
 #include <mdtools/singledplc.hh>
 
 #include <iomanip>
 #include <iostream>
-
-#include <mdcomp/bigendian_io.hh>
 
 using std::cout;
 using std::endl;

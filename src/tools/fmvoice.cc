@@ -16,16 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/io/ios_state.hpp>
+#include <mdcomp/bigendian_io.hh>
 #include <mdtools/fmvoice.hh>
 
 #include <cstdint>
 #include <iomanip>
 #include <istream>
 #include <ostream>
-
-#include <boost/io/ios_state.hpp>
-
-#include <mdcomp/bigendian_io.hh>
 
 using std::endl;
 using std::hex;
@@ -161,8 +159,8 @@ void fm_voice::print(ostream& out, int const sonicver, int const id) const {
     out << "\t";
     for (int index : indices) {
         PrintHex2(
-            out, (vcAM[index] << 7) | (vcD1RUnk[index] << 5) | vcD1R[index],
-            index == indices[3]);
+                out, (vcAM[index] << 7) | (vcD1RUnk[index] << 5) | vcD1R[index],
+                index == indices[3]);
     }
     out << endl << ";\t";
     for (int index : indices) {
@@ -187,8 +185,8 @@ void fm_voice::print(ostream& out, int const sonicver, int const id) const {
     out << endl;
 
     PrintMacro(out, "smpsVcUnusedBits");
-    if ((vcD1RUnk[0] != 0U) || (vcD1RUnk[1] != 0U) || (vcD1RUnk[2] != 0U) ||
-        (vcD1RUnk[3] != 0U)) {
+    if ((vcD1RUnk[0] != 0U) || (vcD1RUnk[1] != 0U) || (vcD1RUnk[2] != 0U)
+        || (vcD1RUnk[3] != 0U)) {
         PrintHex2(out, vcUnusedBits, false);
         for (int i = 0; i < 4; i++) {
             PrintHex2(out, vcD1RUnk[i], i == 3);

@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <getopt.h>
+#include <mdcomp/bigendian_io.hh>
+#include <mdcomp/enigma.hh>
+
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
@@ -23,16 +27,11 @@
 #include <set>
 #include <sstream>
 
-#include <getopt.h>
-
-#include <mdcomp/bigendian_io.hh>
-#include <mdcomp/enigma.hh>
-
 using std::cerr;
 using std::cout;
 using std::endl;
-using std::ios;
 using std::ifstream;
+using std::ios;
 using std::ofstream;
 using std::set;
 using std::stringstream;
@@ -61,11 +60,11 @@ static void usage(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[] = {
-        {"size", no_argument, nullptr, 's'},
-        {"palette", required_argument, nullptr, 'p'},
-        {"blacklist", required_argument, nullptr, 'b'},
-        {nullptr, 0, nullptr, 0}};
+    static option long_options[]
+            = {{"size", no_argument, nullptr, 's'},
+               {"palette", required_argument, nullptr, 'p'},
+               {"blacklist", required_argument, nullptr, 'b'},
+               {nullptr, 0, nullptr, 0}};
 
     set<uint16_t> blacklist;
     bool          sizeOnly = false;
@@ -74,8 +73,8 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-            argc, argv, "sb:p:", static_cast<option*>(long_options),
-            &option_index);
+                argc, argv, "sb:p:", static_cast<option*>(long_options),
+                &option_index);
         if (c == -1) {
             break;
         }
@@ -84,13 +83,13 @@ int main(int argc, char* argv[]) {
         case 'p':
             if (optarg != nullptr) {
                 paldelta = static_cast<uint16_t>(
-                    (strtoul(optarg, nullptr, 0) & 3) << 13);
+                        (strtoul(optarg, nullptr, 0) & 3) << 13);
             }
             break;
         case 'b':
             if (optarg != nullptr) {
-                blacklist.insert(
-                    static_cast<uint16_t>(strtoul(optarg, nullptr, 0) & 0x7FF));
+                blacklist.insert(static_cast<uint16_t>(
+                        strtoul(optarg, nullptr, 0) & 0x7FF));
             }
             break;
         case 's':
@@ -152,8 +151,8 @@ int main(int argc, char* argv[]) {
             uint16_t pal   = val & 0x6000;
             uint16_t flags = val & 0x9800;
             if (blacklist.find(tile) == blacklist.cend()) {
-                val = ((tile + delta) & 0x7FF) | ((pal + paldelta) & 0x6000) |
-                      flags;
+                val = ((tile + delta) & 0x7FF) | ((pal + paldelta) & 0x6000)
+                      | flags;
             }
             BigEndian::Write2(outbuffer, val);
             cnt++;

@@ -19,11 +19,11 @@
 #ifndef __VRAM_H
 #define __VRAM_H
 
-#include <iosfwd>
-#include <vector>
-
 #include <mdtools/pattern_name.hh>
 #include <mdtools/tile.hh>
+
+#include <iosfwd>
+#include <vector>
 
 // Template class with basic VRAM functionality.
 template <typename Tile_t>
@@ -37,7 +37,9 @@ private:
 
 public:
     // Constructor.
-    VRAM() noexcept { tiles.reserve(400); }
+    VRAM() noexcept {
+        tiles.reserve(400);
+    }
 
     explicit VRAM(std::istream& in) noexcept {
         tiles.reserve(400);
@@ -52,14 +54,20 @@ public:
         }
     }
 
-    void reserve_tiles(size_t cnt) { tiles.reserve(cnt); }
+    void reserve_tiles(size_t cnt) {
+        tiles.reserve(cnt);
+    }
     Tile_t& new_tile() {
         tiles.emplace_back();
         return tiles.back();
     }
 
-    auto& get_dist_table() const { return distTable; }
-    auto& get_dist_table() { return distTable; }
+    auto& get_dist_table() const {
+        return distTable;
+    }
+    auto& get_dist_table() {
+        return distTable;
+    }
 
     void copy_dist_table(VRAM<Tile_t> const& other) {
         if (this != &other) {
@@ -104,8 +112,8 @@ public:
     // tile. This resemblance is based on the distance function defined in the
     // tile class. Returns the pattern name as a parameter, and the distance as
     // the function return.
-    uint32_t find_closest(Tile_t const& tile, Pattern_Name& best) const
-        noexcept {
+    uint32_t find_closest(
+            Tile_t const& tile, Pattern_Name& best) const noexcept {
         // Start with "infinite" distance.
         uint32_t best_dist = ~0U;
         auto     start     = tile.begin(NoFlip);
@@ -114,7 +122,7 @@ public:
         static FlipMode const modes[] = {NoFlip, XFlip, YFlip, XYFlip};
 
         for (auto it = tiles.begin(); it != tiles.end(); ++it) {
-            for (auto& mode : modes) {
+            for (const auto mode : modes) {
                 unsigned dist = it->distance(distTable, mode, start, finish);
                 if (dist < best_dist) {
                     // Set new best.
@@ -134,4 +142,4 @@ public:
     }
 };
 
-#endif // __VRAM_H
+#endif    // __VRAM_H

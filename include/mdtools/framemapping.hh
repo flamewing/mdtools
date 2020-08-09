@@ -19,9 +19,10 @@
 #ifndef __LIB_FRAMEMAPPING_H
 #define __LIB_FRAMEMAPPING_H
 
-#include <iosfwd>
 #include <mdtools/framedplc.hh>
 #include <mdtools/singlemapping.hh>
+
+#include <iosfwd>
 #include <vector>
 
 class frame_mapping {
@@ -29,7 +30,9 @@ private:
     std::vector<single_mapping> maps;
 
 public:
-    size_t size() const { return maps.size(); }
+    size_t size() const {
+        return maps.size();
+    }
     size_t size(int ver) const {
         return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
     }
@@ -39,12 +42,16 @@ public:
     void split(frame_mapping const& src, frame_dplc& dplc);
     void merge(frame_mapping const& src, frame_dplc const& dplc);
     void change_pal(int srcpal, int dstpal);
-    bool empty() const { return maps.empty(); }
+    bool empty() const {
+        return maps.empty();
+    }
     bool operator<(frame_mapping const& rhs) const;
     bool operator==(frame_mapping const& rhs) const {
         return !(*this < rhs || rhs < *this);
     }
-    single_mapping const& get_maps(size_t i) const { return maps[i]; }
+    single_mapping const& get_maps(size_t i) const {
+        return maps[i];
+    }
 };
 
-#endif // __LIB_FRAMEMAPPING_H
+#endif    // __LIB_FRAMEMAPPING_H

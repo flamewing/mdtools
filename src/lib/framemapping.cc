@@ -16,16 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/io/ios_state.hpp>
+#include <mdcomp/bigendian_io.hh>
 #include <mdtools/framemapping.hh>
 
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <set>
-
-#include <boost/io/ios_state.hpp>
-
-#include <mdcomp/bigendian_io.hh>
 
 using std::cout;
 using std::endl;
@@ -73,8 +71,8 @@ void frame_mapping::print() const {
 }
 
 struct SingleMapCmp {
-    bool
-    operator()(single_mapping const& lhs, single_mapping const& rhs) const {
+    bool operator()(
+            single_mapping const& lhs, single_mapping const& rhs) const {
         return lhs.get_tile() < rhs.get_tile();
     }
 };

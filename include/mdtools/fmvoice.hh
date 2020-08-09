@@ -32,7 +32,7 @@ class fm_voice {
 private:
     unsigned char vcFeedback, vcAlgorithm, vcUnusedBits;
     unsigned char vcDT[4], vcCF[4], vcRS[4], vcAR[4], vcAM[4], vcD1R[4],
-        vcD2R[4], vcDL[4], vcRR[4], vcTL[4], vcD1RUnk[4];
+            vcD2R[4], vcDL[4], vcRR[4], vcTL[4], vcD1RUnk[4];
 
 public:
     void read(std::istream& in, int sonicver);
@@ -40,4 +40,4 @@ public:
     void print(std::ostream& out, int sonicver, int id) const;
 };
 
-#endif // __TOOLS_FMVOICE_H
+#endif    // __TOOLS_FMVOICE_H

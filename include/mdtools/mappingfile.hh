@@ -19,9 +19,10 @@
 #ifndef __LIB_MAPPINGFILE_H
 #define __LIB_MAPPINGFILE_H
 
-#include <iosfwd>
 #include <mdtools/dplcfile.hh>
 #include <mdtools/framemapping.hh>
+
+#include <iosfwd>
 #include <vector>
 
 class mapping_file {
@@ -30,7 +31,9 @@ private:
 
 public:
     size_t size(int ver) const;
-    size_t size() const { return frames.size(); }
+    size_t size() const {
+        return frames.size();
+    }
 
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver, bool nullfirst) const;
@@ -38,10 +41,15 @@ public:
     void split(mapping_file const& src, dplc_file& dplc);
     void merge(mapping_file const& src, dplc_file const& dplc);
     void change_pal(int srcpal, int dstpal);
-    bool empty() const { return frames.empty(); }
+    bool empty() const {
+        return frames.empty();
+    }
     void optimize(
-        mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc);
-    frame_mapping const& get_maps(size_t const i) const { return frames[i]; }
+            mapping_file const& src, dplc_file const& indplc,
+            dplc_file& outdplc);
+    frame_mapping const& get_maps(size_t const i) const {
+        return frames[i];
+    }
 };
 
-#endif // __LIB_MAPPINGFILE_H
+#endif    // __LIB_MAPPINGFILE_H

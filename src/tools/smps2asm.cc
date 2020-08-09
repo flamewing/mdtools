@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <getopt.h>
+
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -31,13 +33,11 @@
 #include <utility>
 #include <vector>
 
-#include <getopt.h>
-
 #ifdef __GNUG__
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
 #endif
-#define FMT_HEADER_ONLY 1
+#define FMT_HEADER_ONLY  1
 #define FMT_STRING_ALIAS 1
 #include <fmt/format.h>
 #ifdef __GNUG__
@@ -46,7 +46,6 @@
 
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/saxman.hh>
-
 #include <mdtools/fmvoice.hh>
 #include <mdtools/ignore_unused_variable_warning.hh>
 #include <mdtools/songtrack.hh>
@@ -174,9 +173,9 @@ static inline string need_loop_label() {
 
 template <typename IO>
 BaseNote* BaseNote::read(
-    istream& in, int sonicver, int offset, string const& projname,
-    LocTraits::LocType tracktype, multimap<int, string>& labels, int& last_voc,
-    uint8_t keydisp) {
+        istream& in, int sonicver, int offset, string const& projname,
+        LocTraits::LocType tracktype, multimap<int, string>& labels,
+        int& last_voc, uint8_t keydisp) {
     uint8_t byte = Read1(in);
     // Initialize to invalid 32-bit address.
     if (byte < 0x80) {
@@ -186,7 +185,6 @@ BaseNote* BaseNote::read(
         switch (tracktype) {
         case LocTraits::eFMInit:
         case LocTraits::eFMTrack:
-            return new FMPSGNote(byte, keydisp);
         case LocTraits::ePSGInit:
         case LocTraits::ePSGTrack:
             return new FMPSGNote(byte, keydisp);
@@ -206,7 +204,7 @@ BaseNote* BaseNote::read(
 
     if (sonicver >= 3) {
         switch (byte) {
-        case 0xff: { // Meta
+        case 0xff: {    // Meta
             uint8_t spec = Read1(in);
             switch (spec) {
             case 0x02:
@@ -216,19 +214,19 @@ BaseNote* BaseNote::read(
             case 0x01:
             case 0x04:
                 return new CoordFlag2ParamBytes<false>(
-                    byte, keydisp, spec, Read1(in));
+                        byte, keydisp, spec, Read1(in));
             case 0x06:
                 return new CoordFlag3ParamBytes<false>(
-                    byte, keydisp, spec, Read1(in), Read1(in));
+                        byte, keydisp, spec, Read1(in), Read1(in));
             case 0x05:
                 return new CoordFlag5ParamBytes<false>(
-                    byte, keydisp, spec, Read1(in), Read1(in), Read1(in),
-                    Read1(in));
+                        byte, keydisp, spec, Read1(in), Read1(in), Read1(in),
+                        Read1(in));
             case 0x03: {
                 int     ptr = IO::read_pointer(in, offset);
                 uint8_t cnt = Read1(in);
                 return new CoordFlagPointer2ParamBytes<false>(
-                    byte, keydisp, spec, cnt, ptr);
+                        byte, keydisp, spec, cnt, ptr);
             }
             default:
                 cerr << "Invalid meta-coordination flag '";
@@ -239,7 +237,7 @@ BaseNote* BaseNote::read(
                 return new NullNote();
             }
         }
-        case 0xf7: { // Loop
+        case 0xf7: {    // Loop
             uint8_t index   = Read1(in);
             uint8_t repeats = Read1(in);
             int     ptr     = IO::read_pointer(in, offset);
@@ -248,20 +246,20 @@ BaseNote* BaseNote::read(
                 labels.emplace(ptr, projname + need_loop_label());
             }
             return new CoordFlagPointer2ParamBytes<false>(
-                byte, keydisp, index, repeats, ptr);
+                    byte, keydisp, index, repeats, ptr);
         }
-        case 0xf0:   // Start modulation
-        case 0xfe: { // FM3 Special mode
+        case 0xf0:      // Start modulation
+        case 0xfe: {    // FM3 Special mode
             uint8_t p1 = Read1(in);
             uint8_t p2 = Read1(in);
             uint8_t p3 = Read1(in);
             uint8_t p4 = Read1(in);
             return new CoordFlag4ParamBytes<false>(
-                byte, keydisp, p1, p2, p3, p4);
+                    byte, keydisp, p1, p2, p3, p4);
         }
-        case 0xf6:   // Jump
-        case 0xf8:   // Call
-        case 0xfc: { // Continuous loop
+        case 0xf6:      // Jump
+        case 0xf8:      // Call
+        case 0xfc: {    // Continuous loop
             int  ptr = IO::read_pointer(in, offset);
             auto it  = labels.find(ptr);
             if (it == labels.end()) {
@@ -280,7 +278,7 @@ BaseNote* BaseNote::read(
             }
             return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
         }
-        case 0xeb: { // Conditional jump
+        case 0xeb: {    // Conditional jump
             uint8_t index = Read1(in);
             int     ptr   = IO::read_pointer(in, offset);
             auto    it    = labels.find(ptr);
@@ -289,20 +287,20 @@ BaseNote* BaseNote::read(
             }
 
             return new CoordFlagPointer1ParamByte<false>(
-                byte, keydisp, index, ptr);
+                    byte, keydisp, index, ptr);
         }
 
         case 0xe5:
         case 0xee:
         case 0xf1:
             return new CoordFlag2ParamBytes<false>(
-                byte, keydisp, Read1(in), Read1(in));
+                    byte, keydisp, Read1(in), Read1(in));
 
         case 0xef: {
             signed char voc = Read1(in);
-            if (tracktype == LocTraits::eFMTrack && voc >= 0 &&
-                voc > last_voc) {
-                last_voc = voc;
+            if (tracktype == LocTraits::eFMTrack && voc >= 0
+                && voc > last_voc) {
+                last_voc = static_cast<uint8_t>(voc);
             }
             if (voc < 0) {
                 uint8_t id = Read1(in) - 0x81;
@@ -331,7 +329,7 @@ BaseNote* BaseNote::read(
         case 0xfb:
             return new CoordFlagChgKeydisp(byte, keydisp, Read1(in));
 
-        case 0xe2: { // Fade to previous
+        case 0xe2: {    // Fade to previous
             uint8_t c = Read1(in);
             if (c == 0xff) {
                 return new CoordFlagNoParams<false>(byte, keydisp);
@@ -349,7 +347,7 @@ BaseNote* BaseNote::read(
         }
     } else {
         switch (byte) {
-        case 0xf7: { // Loop
+        case 0xf7: {    // Loop
             uint8_t index   = Read1(in);
             uint8_t repeats = Read1(in);
             int     ptr     = IO::read_pointer(in, offset);
@@ -358,43 +356,44 @@ BaseNote* BaseNote::read(
                 labels.emplace(ptr, projname + need_loop_label());
             }
             return new CoordFlagPointer2ParamBytes<false>(
-                byte, keydisp, index, repeats, ptr);
+                    byte, keydisp, index, repeats, ptr);
         }
-        case 0xf0: { // Start modulation
+        case 0xf0: {    // Start modulation
             uint8_t wait   = Read1(in);
             uint8_t speed  = Read1(in);
             uint8_t change = Read1(in);
             uint8_t steps  = Read1(in);
             return new CoordFlag4ParamBytes<false>(
-                byte, keydisp, wait, speed, change, steps);
+                    byte, keydisp, wait, speed, change, steps);
         }
-        case 0xf6:   // Jump
-        case 0xf8: { // Call
+        case 0xf6:      // Jump
+        case 0xf8: {    // Call
             int  ptr = IO::read_pointer(in, offset);
             auto it  = labels.find(ptr);
             if (it == labels.end()) {
                 labels.emplace(
-                    ptr, projname + (byte == 0xf6 ? need_jump_label()
-                                                  : need_call_label()));
+                        ptr, projname
+                                     + (byte == 0xf6 ? need_jump_label()
+                                                     : need_call_label()));
             }
             if (byte == 0xf6) {
                 return new CoordFlagPointerParam<true>(byte, keydisp, ptr);
             }
             return new CoordFlagPointerParam<false>(byte, keydisp, ptr);
         }
-        case 0xed: // S1: clear push flag; S2: eat byte
+        case 0xed:    // S1: clear push flag; S2: eat byte
             if (sonicver == 1) {
                 return new CoordFlagNoParams<false>(byte, keydisp);
             } else {
                 return new CoordFlag1ParamByte<false>(byte, keydisp, Read1(in));
             }
-        case 0xee: // S1: Stop special FM4; S2: nop
+        case 0xee:    // S1: Stop special FM4; S2: nop
             if (sonicver == 1) {
                 return new CoordFlagNoParams<true>(byte, keydisp);
             } else {
                 return new CoordFlagNoParams<false>(byte, keydisp);
             }
-        case 0xef: { // Set FM voice
+        case 0xef: {    // Set FM voice
             int voc = Read1(in);
             if (voc > last_voc) {
                 last_voc = voc;
@@ -439,9 +438,10 @@ class DumpSmps {
 
 public:
     DumpSmps(
-        istream& i, ostream& o, int s, int off, string nm, bool tf, bool s3km)
-        : in(i), out(o), projname(std::move(nm)), sonicver(s), offset(off),
-          sfx(tf), s3kmode(s3km) {
+            istream& i, ostream& o, int s, int off, string nm, bool tf,
+            bool s3km)
+            : in(i), out(o), projname(std::move(nm)), sonicver(s), offset(off),
+              sfx(tf), s3kmode(s3km) {
         startloc = in.tellg();
         in.seekg(0, ios::end);
         len = in.tellg();
@@ -579,7 +579,7 @@ public:
                 // Add to queue/label list.
                 if ((chanid & 0x80) != 0) {
                     todo.push(
-                        LocTraits(trackptr, LocTraits::ePSGInit, keydisp));
+                            LocTraits(trackptr, LocTraits::ePSGInit, keydisp));
                 } else {
                     todo.push(LocTraits(trackptr, LocTraits::eFMInit, keydisp));
                 }
@@ -752,15 +752,16 @@ public:
             while (true) {
                 int                  lastloc = in.tellg();
                 shared_ptr<BaseNote> note(BaseNote::read<IO>(
-                    in, sonicver, offset, projname, next_loc.type, labels,
-                    last_voc, next_loc.keydisp));
+                        in, sonicver, offset, projname, next_loc.type, labels,
+                        last_voc, next_loc.keydisp));
                 trackdata.emplace(lastloc, note);
                 next_loc.keydisp = note->get_keydisp();
 
                 // If the data includes a jump target, add it to queue.
                 if (note->has_pointer()) {
                     todo.push(LocTraits(
-                        note->get_pointer(), next_loc.type, next_loc.keydisp));
+                            note->get_pointer(), next_loc.type,
+                            next_loc.keydisp));
                 }
 
                 // Add in freshly explored data to list.
@@ -959,12 +960,13 @@ static void usage() {
          << "\t             \tcombined with --offset unless --saxman is also "
             "used."
          << endl;
-    cerr
-        << "\t-o,--offset  \tAssumes starting pointer for music/sfx within its "
-           "sound bank"
-        << endl
-        << "\t             \tis {offsetval}. Ignored if used with --sonicver 1."
-        << endl;
+    cerr << "\t-o,--offset  \tAssumes starting pointer for music/sfx within "
+            "its "
+            "sound bank"
+         << endl
+         << "\t             \tis {offsetval}. Ignored if used with --sonicver "
+            "1."
+         << endl;
     cerr << "\t-v,--sonicver\tSets Sonic version to {version}. This also sets "
             "underlying"
          << endl
@@ -999,8 +1001,8 @@ static void usage() {
 }
 
 void dump_single_entry(
-    istream& in, ostream& out, string const& projname, int pointer, int offset,
-    int sonicver, bool saxman, bool sfx, bool s3kmode) {
+        istream& in, ostream& out, string const& projname, int pointer,
+        int offset, int sonicver, bool saxman, bool sfx, bool s3kmode) {
     if (pointer != 0) {
         if (saxman) {
             offset = -offset;
@@ -1032,25 +1034,25 @@ void dump_single_entry(
 
     if (sonicver == 1) {
         DumpSmps<S1IO> smps(
-            *src, out, sonicver, offset, projname, sfx, s3kmode);
+                *src, out, sonicver, offset, projname, sfx, s3kmode);
         smps.dump_smps();
     } else {
         DumpSmps<SNIO> smps(
-            *src, out, sonicver, offset, projname, sfx, s3kmode);
+                *src, out, sonicver, offset, projname, sfx, s3kmode);
         smps.dump_smps();
     }
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[] = {
-        {"bank", optional_argument, nullptr, 'b'},
-        {"extract", optional_argument, nullptr, 'x'},
-        {"saxman", no_argument, nullptr, 'u'},
-        {"offset", required_argument, nullptr, 'o'},
-        {"sonicver", required_argument, nullptr, 'v'},
-        {"sfx", no_argument, nullptr, 's'},
-        {"s3kmode", no_argument, nullptr, '3'},
-        {nullptr, 0, nullptr, 0}};
+    static option long_options[]
+            = {{"bank", optional_argument, nullptr, 'b'},
+               {"extract", optional_argument, nullptr, 'x'},
+               {"saxman", no_argument, nullptr, 'u'},
+               {"offset", required_argument, nullptr, 'o'},
+               {"sonicver", required_argument, nullptr, 'v'},
+               {"sfx", no_argument, nullptr, 's'},
+               {"s3kmode", no_argument, nullptr, '3'},
+               {nullptr, 0, nullptr, 0}};
 
     bool    sfx      = false;
     bool    saxman   = false;
@@ -1064,8 +1066,8 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-            argc, argv, "b::x::uo:v:s3", static_cast<option*>(long_options),
-            &option_index);
+                argc, argv, "b::x::uo:v:s3", static_cast<option*>(long_options),
+                &option_index);
         if (c == -1) {
             break;
         }
@@ -1110,10 +1112,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (argc - optind < 3 || sonicver < 1 || sonicver > 5 ||
-        (!saxman && pointer != 0 && offset != 0) ||
-        (bankmode && (pointer != 0 || saxman || sonicver == 1)) ||
-        (s3kmode && sonicver > 2)) {
+    if (argc - optind < 3 || sonicver < 1 || sonicver > 5
+        || (!saxman && pointer != 0 && offset != 0)
+        || (bankmode && (pointer != 0 || saxman || sonicver == 1))
+        || (s3kmode && sonicver > 2)) {
         usage();
         return 1;
     }
@@ -1155,17 +1157,18 @@ int main(int argc, char* argv[]) {
 
         int const width = (pointerTable.size() < 256) ? 2 : 4;
         for (size_t ii = 0; ii < pointerTable.size(); ii++) {
-            string buf = fmt::format(FMT_STRING("{}{:0{}X}"), projname, ii, width);
+            string buf
+                    = fmt::format(FMT_STRING("{}{:0{}X}"), projname, ii, width);
             dump_single_entry(
-                fin, fout, buf, pointerTable[ii] & 0x7FFF, 0, sonicver, saxman,
-                sfx, s3kmode);
+                    fin, fout, buf, pointerTable[ii] & 0x7FFF, 0, sonicver,
+                    saxman, sfx, s3kmode);
             if (ii + 1 < pointerTable.size()) {
                 fout << endl;
             }
         }
     } else {
         dump_single_entry(
-            fin, fout, projname, pointer, offset, sonicver, saxman, sfx,
-            s3kmode);
+                fin, fout, projname, pointer, offset, sonicver, saxman, sfx,
+                s3kmode);
     }
 }

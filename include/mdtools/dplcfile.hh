@@ -19,8 +19,9 @@
 #ifndef __LIB_DPLCFILE_H
 #define __LIB_DPLCFILE_H
 
-#include <iosfwd>
 #include <mdtools/framedplc.hh>
+
+#include <iosfwd>
 #include <vector>
 
 class dplc_file {
@@ -28,7 +29,9 @@ private:
     std::vector<frame_dplc> frames;
 
 public:
-    size_t size() const { return frames.size(); }
+    size_t size() const {
+        return frames.size();
+    }
     size_t size(int ver) const;
 
     void read(std::istream& in, int ver);
@@ -36,9 +39,13 @@ public:
     void print() const;
     void consolidate(dplc_file const& src);
     void insert(frame_dplc const& val);
-    bool empty() const { return frames.empty(); }
+    bool empty() const {
+        return frames.empty();
+    }
 
-    frame_dplc const& get_dplc(size_t const i) const { return frames[i]; }
+    frame_dplc const& get_dplc(size_t const i) const {
+        return frames[i];
+    }
 };
 
-#endif // __LIB_DPLCFILE_H
+#endif    // __LIB_DPLCFILE_H

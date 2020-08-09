@@ -16,16 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/io/ios_state.hpp>
+#include <mdcomp/bigendian_io.hh>
 #include <mdtools/mappingfile.hh>
 
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
 #include <map>
-
-#include <boost/io/ios_state.hpp>
-
-#include <mdcomp/bigendian_io.hh>
 
 using std::cerr;
 using std::cout;
@@ -68,7 +66,7 @@ void mapping_file::read(istream& in, int const ver) {
 }
 
 void mapping_file::write(
-    ostream& out, int const ver, bool const nullfirst) const {
+        ostream& out, int const ver, bool const nullfirst) const {
     map<frame_mapping, size_t>            mappos;
     map<size_t, frame_mapping>            posmap;
     size_t                                sz = 2 * frames.size();
@@ -135,7 +133,7 @@ void mapping_file::merge(mapping_file const& src, dplc_file const& dplc) {
 }
 
 void mapping_file::optimize(
-    mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc) {
+        mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc) {
     for (size_t i = 0; i < src.frames.size(); i++) {
         frame_mapping        endmap;
         frame_dplc           enddplc;

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/io/ios_state.hpp>
 #include <mdtools/songtrack.hh>
 
 #include <iomanip>
@@ -24,13 +25,11 @@
 #include <ostream>
 #include <vector>
 
-#include <boost/io/ios_state.hpp>
-
 #ifdef __GNUG__
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
 #endif
-#define FMT_HEADER_ONLY 1
+#define FMT_HEADER_ONLY  1
 #define FMT_STRING_ALIAS 1
 #include <fmt/format.h>
 #ifdef __GNUG__
@@ -69,19 +68,18 @@ void BaseNote::force_linebreak(ostream& out, bool force) {
 }
 
 void BaseNote::write(ostream& out, int sonicver, size_t offset) const {
-    ignore_unused_variable_warning(out, sonicver, offset);
+    ignore_unused_variable_warning(this, out, sonicver, offset);
 }
 
 void Duration::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     // Note: DAC tracks, PWM tracks and PCM tracks always store the last
     // sample played, rests included. It is only FM and PSG tracks that
     // need this to fix playback of rests when porting from S1/S2 to S3+.
-    if ((tracktype == LocTraits::eFMTrack ||
-         tracktype == LocTraits::ePSGTrack) &&
-        s3kmode && (last_note != nullptr) && last_note->is_rest() &&
-        need_rest) {
+    if ((tracktype == LocTraits::eFMTrack || tracktype == LocTraits::ePSGTrack)
+        && s3kmode && (last_note != nullptr) && last_note->is_rest()
+        && need_rest) {
         last_note->print(out, sonicver, tracktype, labels, s3kmode);
     }
 
@@ -104,192 +102,196 @@ FMVoice::FMVoice(istream& in, int sonicver, int n) : BaseNote(0, 0), id(n) {
 }
 
 void FMVoice::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     voc.print(out, sonicver, id);
 }
 
 static void print_dac_sample(ostream& out, int val, int sonicver, bool flag) {
     static vector<string> s12daclut{
-        "nRst",        "dKick",        "dSnare",    "dClap",      "dScratch",
-        "dTimpani",    "dHiTom",       "dVLowClap", "dHiTimpani", "dMidTimpani",
-        "dLowTimpani", "dVLowTimpani", "dMidTom",   "dLowTom",    "dFloorTom",
-        "dHiClap",     "dMidClap",     "dLowClap"};
+            "nRst",       "dKick",       "dSnare",      "dClap",
+            "dScratch",   "dTimpani",    "dHiTom",      "dVLowClap",
+            "dHiTimpani", "dMidTimpani", "dLowTimpani", "dVLowTimpani",
+            "dMidTom",    "dLowTom",     "dFloorTom",   "dHiClap",
+            "dMidClap",   "dLowClap"};
 
-    static vector<string> s3daclut{"nRst",
-                                   "dSnareS3",
-                                   "dHighTom",
-                                   "dMidTomS3",
-                                   "dLowTomS3",
-                                   "dFloorTomS3",
-                                   "dKickS3",
-                                   "dMuffledSnare",
-                                   "dCrashCymbal",
-                                   "dRideCymbal",
-                                   "dLowMetalHit",
-                                   "dMetalHit",
-                                   "dHighMetalHit",
-                                   "dHigherMetalHit",
-                                   "dMidMetalHit",
-                                   "dClapS3",
-                                   "dElectricHighTom",
-                                   "dElectricMidTom",
-                                   "dElectricLowTom",
-                                   "dElectricFloorTom",
-                                   "dTightSnare",
-                                   "dMidpitchSnare",
-                                   "dLooseSnare",
-                                   "dLooserSnare",
-                                   "dHiTimpaniS3",
-                                   "dLowTimpaniS3",
-                                   "dMidTimpaniS3",
-                                   "dQuickLooseSnare",
-                                   "dClick",
-                                   "dPowerKick",
-                                   "dQuickGlassCrash",
-                                   "dGlassCrashSnare",
-                                   "dGlassCrash",
-                                   "dGlassCrashKick",
-                                   "dQuietGlassCrash",
-                                   "dOddSnareKick",
-                                   "dKickExtraBass",
-                                   "dComeOn",
-                                   "dDanceSnare",
-                                   "dLooseKick",
-                                   "dModLooseKick",
-                                   "dWoo",
-                                   "dGo",
-                                   "dSnareGo",
-                                   "dPowerTom",
-                                   "dHiWoodBlock",
-                                   "dLowWoodBlock",
-                                   "dHiHitDrum",
-                                   "dLowHitDrum",
-                                   "dMetalCrashHit",
-                                   "dEchoedClapHit_S3",
-                                   "dLowerEchoedClapHit_S3",
-                                   "dHipHopHitKick",
-                                   "dHipHopHitPowerKick",
-                                   "dBassHey",
-                                   "dDanceStyleKick",
-                                   "dHipHopHitKick2",
-                                   "dHipHopHitKick3",
-                                   "dReverseFadingWind",
-                                   "dScratchS3",
-                                   "dLooseSnareNoise",
-                                   "dPowerKick2",
-                                   "dCrashingNoiseWoo",
-                                   "dQuickHit",
-                                   "dKickHey",
-                                   "dPowerKickHit",
-                                   "dLowPowerKickHit",
-                                   "dLowerPowerKickHit",
-                                   "dLowestPowerKickHit"};
+    static vector<string> s3daclut{
+            "nRst",
+            "dSnareS3",
+            "dHighTom",
+            "dMidTomS3",
+            "dLowTomS3",
+            "dFloorTomS3",
+            "dKickS3",
+            "dMuffledSnare",
+            "dCrashCymbal",
+            "dRideCymbal",
+            "dLowMetalHit",
+            "dMetalHit",
+            "dHighMetalHit",
+            "dHigherMetalHit",
+            "dMidMetalHit",
+            "dClapS3",
+            "dElectricHighTom",
+            "dElectricMidTom",
+            "dElectricLowTom",
+            "dElectricFloorTom",
+            "dTightSnare",
+            "dMidpitchSnare",
+            "dLooseSnare",
+            "dLooserSnare",
+            "dHiTimpaniS3",
+            "dLowTimpaniS3",
+            "dMidTimpaniS3",
+            "dQuickLooseSnare",
+            "dClick",
+            "dPowerKick",
+            "dQuickGlassCrash",
+            "dGlassCrashSnare",
+            "dGlassCrash",
+            "dGlassCrashKick",
+            "dQuietGlassCrash",
+            "dOddSnareKick",
+            "dKickExtraBass",
+            "dComeOn",
+            "dDanceSnare",
+            "dLooseKick",
+            "dModLooseKick",
+            "dWoo",
+            "dGo",
+            "dSnareGo",
+            "dPowerTom",
+            "dHiWoodBlock",
+            "dLowWoodBlock",
+            "dHiHitDrum",
+            "dLowHitDrum",
+            "dMetalCrashHit",
+            "dEchoedClapHit_S3",
+            "dLowerEchoedClapHit_S3",
+            "dHipHopHitKick",
+            "dHipHopHitPowerKick",
+            "dBassHey",
+            "dDanceStyleKick",
+            "dHipHopHitKick2",
+            "dHipHopHitKick3",
+            "dReverseFadingWind",
+            "dScratchS3",
+            "dLooseSnareNoise",
+            "dPowerKick2",
+            "dCrashingNoiseWoo",
+            "dQuickHit",
+            "dKickHey",
+            "dPowerKickHit",
+            "dLowPowerKickHit",
+            "dLowerPowerKickHit",
+            "dLowestPowerKickHit"};
 
-    static vector<string> skdaclut{"nRst",
-                                   "dSnareS3",
-                                   "dHighTom",
-                                   "dMidTomS3",
-                                   "dLowTomS3",
-                                   "dFloorTomS3",
-                                   "dKickS3",
-                                   "dMuffledSnare",
-                                   "dCrashCymbal",
-                                   "dRideCymbal",
-                                   "dLowMetalHit",
-                                   "dMetalHit",
-                                   "dHighMetalHit",
-                                   "dHigherMetalHit",
-                                   "dMidMetalHit",
-                                   "dClapS3",
-                                   "dElectricHighTom",
-                                   "dElectricMidTom",
-                                   "dElectricLowTom",
-                                   "dElectricFloorTom",
-                                   "dTightSnare",
-                                   "dMidpitchSnare",
-                                   "dLooseSnare",
-                                   "dLooserSnare",
-                                   "dHiTimpaniS3",
-                                   "dLowTimpaniS3",
-                                   "dMidTimpaniS3",
-                                   "dQuickLooseSnare",
-                                   "dClick",
-                                   "dPowerKick",
-                                   "dQuickGlassCrash",
-                                   "dGlassCrashSnare",
-                                   "dGlassCrash",
-                                   "dGlassCrashKick",
-                                   "dQuietGlassCrash",
-                                   "dOddSnareKick",
-                                   "dKickExtraBass",
-                                   "dComeOn",
-                                   "dDanceSnare",
-                                   "dLooseKick",
-                                   "dModLooseKick",
-                                   "dWoo",
-                                   "dGo",
-                                   "dSnareGo",
-                                   "dPowerTom",
-                                   "dHiWoodBlock",
-                                   "dLowWoodBlock",
-                                   "dHiHitDrum",
-                                   "dLowHitDrum",
-                                   "dMetalCrashHit",
-                                   "dEchoedClapHit",
-                                   "dLowerEchoedClapHit",
-                                   "dHipHopHitKick",
-                                   "dHipHopHitPowerKick",
-                                   "dBassHey",
-                                   "dDanceStyleKick",
-                                   "dHipHopHitKick2",
-                                   "dHipHopHitKick3",
-                                   "dReverseFadingWind",
-                                   "dScratchS3",
-                                   "dLooseSnareNoise",
-                                   "dPowerKick2",
-                                   "dCrashingNoiseWoo",
-                                   "dQuickHit",
-                                   "dKickHey",
-                                   "dPowerKickHit",
-                                   "dLowPowerKickHit",
-                                   "dLowerPowerKickHit",
-                                   "dLowestPowerKickHit"};
+    static vector<string> skdaclut{
+            "nRst",
+            "dSnareS3",
+            "dHighTom",
+            "dMidTomS3",
+            "dLowTomS3",
+            "dFloorTomS3",
+            "dKickS3",
+            "dMuffledSnare",
+            "dCrashCymbal",
+            "dRideCymbal",
+            "dLowMetalHit",
+            "dMetalHit",
+            "dHighMetalHit",
+            "dHigherMetalHit",
+            "dMidMetalHit",
+            "dClapS3",
+            "dElectricHighTom",
+            "dElectricMidTom",
+            "dElectricLowTom",
+            "dElectricFloorTom",
+            "dTightSnare",
+            "dMidpitchSnare",
+            "dLooseSnare",
+            "dLooserSnare",
+            "dHiTimpaniS3",
+            "dLowTimpaniS3",
+            "dMidTimpaniS3",
+            "dQuickLooseSnare",
+            "dClick",
+            "dPowerKick",
+            "dQuickGlassCrash",
+            "dGlassCrashSnare",
+            "dGlassCrash",
+            "dGlassCrashKick",
+            "dQuietGlassCrash",
+            "dOddSnareKick",
+            "dKickExtraBass",
+            "dComeOn",
+            "dDanceSnare",
+            "dLooseKick",
+            "dModLooseKick",
+            "dWoo",
+            "dGo",
+            "dSnareGo",
+            "dPowerTom",
+            "dHiWoodBlock",
+            "dLowWoodBlock",
+            "dHiHitDrum",
+            "dLowHitDrum",
+            "dMetalCrashHit",
+            "dEchoedClapHit",
+            "dLowerEchoedClapHit",
+            "dHipHopHitKick",
+            "dHipHopHitPowerKick",
+            "dBassHey",
+            "dDanceStyleKick",
+            "dHipHopHitKick2",
+            "dHipHopHitKick3",
+            "dReverseFadingWind",
+            "dScratchS3",
+            "dLooseSnareNoise",
+            "dPowerKick2",
+            "dCrashingNoiseWoo",
+            "dQuickHit",
+            "dKickHey",
+            "dPowerKickHit",
+            "dLowPowerKickHit",
+            "dLowerPowerKickHit",
+            "dLowestPowerKickHit"};
 
-    static vector<string> s3ddaclut{"nRst",
-                                    "dSnareS3",
-                                    "dHighTom",
-                                    "dMidTomS3",
-                                    "dLowTomS3",
-                                    "dFloorTomS3",
-                                    "dKickS3",
-                                    "dMuffledSnare",
-                                    "dCrashCymbal",
-                                    "dCrashCymbal2",
-                                    "dLowMetalHit",
-                                    "dMetalHit",
-                                    "dHighMetalHit",
-                                    "dHigherMetalHit",
-                                    "dMidMetalHit",
-                                    "dClapS3",
-                                    "dElectricHighTom",
-                                    "dElectricMidTom",
-                                    "dElectricLowTom",
-                                    "dElectricFloorTom",
-                                    "dTightSnare",
-                                    "dMidpitchSnare",
-                                    "dLooseSnare",
-                                    "dLooserSnare",
-                                    "dHiTimpaniS3",
-                                    "dLowTimpaniS3",
-                                    "dMidTimpaniS3",
-                                    "dQuickLooseSnare",
-                                    "dClick",
-                                    "dPowerKick",
-                                    "dQuickGlassCrash",
-                                    "dIntroKick",
-                                    "dFinalFightMetalCrash"};
+    static vector<string> s3ddaclut{
+            "nRst",
+            "dSnareS3",
+            "dHighTom",
+            "dMidTomS3",
+            "dLowTomS3",
+            "dFloorTomS3",
+            "dKickS3",
+            "dMuffledSnare",
+            "dCrashCymbal",
+            "dCrashCymbal2",
+            "dLowMetalHit",
+            "dMetalHit",
+            "dHighMetalHit",
+            "dHigherMetalHit",
+            "dMidMetalHit",
+            "dClapS3",
+            "dElectricHighTom",
+            "dElectricMidTom",
+            "dElectricLowTom",
+            "dElectricFloorTom",
+            "dTightSnare",
+            "dMidpitchSnare",
+            "dLooseSnare",
+            "dLooserSnare",
+            "dHiTimpaniS3",
+            "dLowTimpaniS3",
+            "dMidTimpaniS3",
+            "dQuickLooseSnare",
+            "dClick",
+            "dPowerKick",
+            "dQuickGlassCrash",
+            "dIntroKick",
+            "dFinalFightMetalCrash"};
 
     size_t note = val - 0x80;
     if (sonicver == 5 && note < s3ddaclut.size()) {
@@ -298,9 +300,9 @@ static void print_dac_sample(ostream& out, int val, int sonicver, bool flag) {
         PrintName(out, skdaclut[note], flag);
     } else if (sonicver == 3 && note < s3daclut.size()) {
         PrintName(out, s3daclut[note], flag);
-    } else if (sonicver == 1 && (note < 0x4 || (note >= 0x8 && note <= 0xb))) {
-        PrintName(out, s12daclut[note], flag);
-    } else if (sonicver == 2 && note < s12daclut.size()) {
+    } else if (
+            (sonicver == 1 && (note < 0x4 || (note >= 0x8 && note <= 0xb)))
+            || (sonicver == 2 && note < s12daclut.size())) {
         PrintName(out, s12daclut[note], flag);
     } else {
         PrintHex2Pre(out, val, flag);
@@ -308,8 +310,8 @@ static void print_dac_sample(ostream& out, int val, int sonicver, bool flag) {
 }
 
 void DACNote::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     last_note = this;
     need_rest = false;
@@ -328,8 +330,8 @@ void DACNote::print(
 }
 
 void FMPSGNote::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(labels, s3kmode);
     last_note = this;
     need_rest = false;
@@ -339,24 +341,24 @@ void FMPSGNote::print(
         out << "\tdc.b\t";
     }
 
-    static string fmpsglut[] = {
-        "nRst", "nC0",  "nCs0", "nD0",  "nEb0", "nE0",  "nF0",  "nFs0", "nG0",
-        "nAb0", "nA0",  "nBb0", "nB0",  "nC1",  "nCs1", "nD1",  "nEb1", "nE1",
-        "nF1",  "nFs1", "nG1",  "nAb1", "nA1",  "nBb1", "nB1",  "nC2",  "nCs2",
-        "nD2",  "nEb2", "nE2",  "nF2",  "nFs2", "nG2",  "nAb2", "nA2",  "nBb2",
-        "nB2",  "nC3",  "nCs3", "nD3",  "nEb3", "nE3",  "nF3",  "nFs3", "nG3",
-        "nAb3", "nA3",  "nBb3", "nB3",  "nC4",  "nCs4", "nD4",  "nEb4", "nE4",
-        "nF4",  "nFs4", "nG4",  "nAb4", "nA4",  "nBb4", "nB4",  "nC5",  "nCs5",
-        "nD5",  "nEb5", "nE5",  "nF5",  "nFs5", "nG5",  "nAb5", "nA5",  "nBb5",
-        "nB5",  "nC6",  "nCs6", "nD6",  "nEb6", "nE6",  "nF6",  "nFs6", "nG6",
-        "nAb6", "nA6",  "nBb6", "nB6",  "nC7",  "nCs7", "nD7",  "nEb7", "nE7",
-        "nF7",  "nFs7", "nG7",  "nAb7", "nA7",  "nBb7"};
+    static string fmpsglut[]
+            = {"nRst", "nC0",  "nCs0", "nD0",  "nEb0", "nE0",  "nF0",  "nFs0",
+               "nG0",  "nAb0", "nA0",  "nBb0", "nB0",  "nC1",  "nCs1", "nD1",
+               "nEb1", "nE1",  "nF1",  "nFs1", "nG1",  "nAb1", "nA1",  "nBb1",
+               "nB1",  "nC2",  "nCs2", "nD2",  "nEb2", "nE2",  "nF2",  "nFs2",
+               "nG2",  "nAb2", "nA2",  "nBb2", "nB2",  "nC3",  "nCs3", "nD3",
+               "nEb3", "nE3",  "nF3",  "nFs3", "nG3",  "nAb3", "nA3",  "nBb3",
+               "nB3",  "nC4",  "nCs4", "nD4",  "nEb4", "nE4",  "nF4",  "nFs4",
+               "nG4",  "nAb4", "nA4",  "nBb4", "nB4",  "nC5",  "nCs5", "nD5",
+               "nEb5", "nE5",  "nF5",  "nFs5", "nG5",  "nAb5", "nA5",  "nBb5",
+               "nB5",  "nC6",  "nCs6", "nD6",  "nEb6", "nE6",  "nF6",  "nFs6",
+               "nG6",  "nAb6", "nA6",  "nBb6", "nB6",  "nC7",  "nCs7", "nD7",
+               "nEb7", "nE7",  "nF7",  "nFs7", "nG7",  "nAb7", "nA7",  "nBb7"};
 
     string noteName;
     bool   workAround = false;
-    if ((tracktype == LocTraits::ePSGInit ||
-         tracktype == LocTraits::ePSGTrack) &&
-        get_value() != 0x80) {
+    if ((tracktype == LocTraits::ePSGInit || tracktype == LocTraits::ePSGTrack)
+        && get_value() != 0x80) {
         unsigned char newbyte = (get_value() + get_base_keydisp()) & 0x7f;
         if (sonicver >= 3 && (newbyte == 0x53 || newbyte == 0x54)) {
             noteName = newbyte == 0x54 ? "nMaxPSG2" : "nMaxPSG1";
@@ -372,7 +374,7 @@ void FMPSGNote::print(
     if (noteName.length() != 0) {
         if (get_base_keydisp() != 0) {
             string buf = fmt::format(
-                FMT_STRING("({}-${:X})&$FF"), noteName, get_base_keydisp());
+                    FMT_STRING("({}-${:X})&$FF"), noteName, get_base_keydisp());
             if (workAround) {
                 cerr << "Converting PSG noise note $" << hex << setw(2)
                      << setfill('0') << uppercase
@@ -381,8 +383,8 @@ void FMPSGNote::print(
                      << setw(2) << setfill('0') << uppercase
                      << static_cast<int>(get_base_keydisp()) << nouppercase
                      << "' to '" << buf << "'" << endl;
-                if ((get_value() - get_base_keydisp()) >= 0xE0 ||
-                    (get_value() - get_base_keydisp()) <= 0x80) {
+                if ((get_value() - get_base_keydisp()) >= 0xE0
+                    || (get_value() - get_base_keydisp()) <= 0x80) {
                     cerr << "Error: however, this conversion will result in an "
                             "invalid note.\n"
                          << "You must edit the channel's transposition and the "
@@ -413,8 +415,8 @@ void FMPSGNote::print(
 
 template <bool noret>
 void CoordFlagNoParams<noret>::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     // Note-like macros:
     string s;
@@ -423,7 +425,7 @@ void CoordFlagNoParams<noret>::print(
         switch (get_value()) {
         case 0xe2:
             s = "smpsFade";
-            break; // For $E2, $FF
+            break;    // For $E2, $FF
         case 0xe3:
             s = "smpsStopFM";
             break;
@@ -458,7 +460,7 @@ void CoordFlagNoParams<noret>::print(
             break;
         case 0xed:
             s = "smpsClearPush";
-            break; // Sonic 1 version
+            break;    // Sonic 1 version
         case 0xee:
             if (sonicver == 1) {
                 s = "smpsStopSpecial";
@@ -532,8 +534,8 @@ void BaseNote::print_psg_tone(ostream& out, int tone, int sonicver, bool last) {
 
 template <bool noret>
 void CoordFlag1ParamByte<noret>::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(labels, s3kmode);
     if (notesprinted != 0) {
         out << '\n';
@@ -553,7 +555,7 @@ void CoordFlag1ParamByte<noret>::print(
             break;
         case 0xe2:
             s = "smpsFade";
-            break; // For $E2, XX with XX != $FF
+            break;    // For $E2, XX with XX != $FF
         case 0xe4:
             s = "smpsSetVol";
             break;
@@ -574,7 +576,7 @@ void CoordFlag1ParamByte<noret>::print(
             break;
         case 0xef:
             s = "smpsSetvoice";
-            break; // Case with param >= 0
+            break;    // Case with param >= 0
         case 0xf3:
             s = "smpsPSGform";
             break;
@@ -674,11 +676,10 @@ void CoordFlag1ParamByte<noret>::print(
             break;
         }
         PrintHex2(out, param & 0x3f, true);
-    } else if (get_value() == 0xf5) {
-        BaseNote::print_psg_tone(out, param, sonicver, true);
     } else if (
-        sonicver >= 3 && get_value() == 0xef &&
-        tracktype == LocTraits::ePSGTrack) {
+            get_value() == 0xf5
+            || (sonicver >= 3 && get_value() == 0xef
+                && tracktype == LocTraits::ePSGTrack)) {
         BaseNote::print_psg_tone(out, param, sonicver, true);
     } else if (sonicver >= 3 && get_value() == 0xea) {
         print_dac_sample(out, param, sonicver, true);
@@ -689,8 +690,8 @@ void CoordFlag1ParamByte<noret>::print(
 }
 
 void CoordFlagChgKeydisp::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(sonicver, tracktype, labels, s3kmode);
     if (notesprinted != 0) {
         out << '\n';
@@ -704,8 +705,8 @@ void CoordFlagChgKeydisp::print(
 
 template <bool noret>
 void CoordFlag2ParamBytes<noret>::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     if (notesprinted != 0) {
         out << '\n';
@@ -725,7 +726,7 @@ void CoordFlag2ParamBytes<noret>::print(
             break;
         case 0xef:
             s = "smpsSetvoice";
-            break; // Case with param < 0
+            break;    // Case with param < 0
         case 0xf1:
             s = "smpsModChange2";
             break;
@@ -763,8 +764,8 @@ void CoordFlag2ParamBytes<noret>::print(
 
 template <bool noret>
 void CoordFlag3ParamBytes<noret>::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     if (notesprinted != 0) {
         out << '\n';
@@ -805,8 +806,8 @@ void CoordFlag3ParamBytes<noret>::print(
 
 template <bool noret>
 void CoordFlag4ParamBytes<noret>::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     if (notesprinted != 0) {
         out << '\n';
@@ -852,8 +853,8 @@ void CoordFlag4ParamBytes<noret>::print(
 
 template <bool noret>
 void CoordFlag5ParamBytes<noret>::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     if (notesprinted != 0) {
         out << '\n';
@@ -896,8 +897,8 @@ void CoordFlag5ParamBytes<noret>::print(
 
 template <bool noret>
 void CoordFlagPointerParam<noret>::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(sonicver, tracktype, s3kmode);
     if (notesprinted != 0) {
         out << '\n';
@@ -910,7 +911,7 @@ void CoordFlagPointerParam<noret>::print(
     } else if (get_value() == 0xf8) {
         last_note = nullptr;
         PrintMacro(out, "smpsCall");
-    } else if (get_value() == 0xfc) { // Sonic 3 only
+    } else if (get_value() == 0xfc) {    // Sonic 3 only
         PrintMacro(out, "smpsContinuousLoop");
     }
 
@@ -920,8 +921,8 @@ void CoordFlagPointerParam<noret>::print(
 
 template <bool noret>
 void CoordFlagPointer1ParamByte<noret>::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, s3kmode);
     if (notesprinted != 0) {
         out << '\n';
@@ -956,8 +957,8 @@ void CoordFlagPointer1ParamByte<noret>::print(
 
 template <bool noret>
 void CoordFlagPointer2ParamBytes<noret>::print(
-    ostream& out, int sonicver, LocTraits::LocType tracktype,
-    multimap<int, string>& labels, bool s3kmode) const {
+        ostream& out, int sonicver, LocTraits::LocType tracktype,
+        multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, s3kmode);
     if (notesprinted != 0) {
         out << '\n';

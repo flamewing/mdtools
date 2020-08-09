@@ -16,15 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/io/ios_state.hpp>
+#include <mdcomp/bigendian_io.hh>
 #include <mdtools/framedplc.hh>
 
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
-
-#include <boost/io/ios_state.hpp>
-
-#include <mdcomp/bigendian_io.hh>
 
 using std::cout;
 using std::endl;
@@ -59,7 +57,8 @@ void frame_dplc::write(ostream& out, int const ver) const {
         Write1(out, dplc.size());
     } else if (ver == 4) {
         BigEndian::Write2(
-            out, static_cast<uint16_t>(static_cast<int16_t>(dplc.size()) - 1));
+                out,
+                static_cast<uint16_t>(static_cast<int16_t>(dplc.size()) - 1));
     } else {
         BigEndian::Write2(out, dplc.size());
     }
@@ -129,7 +128,9 @@ void frame_dplc::consolidate(frame_dplc const& src) {
     }
 }
 
-void frame_dplc::insert(single_dplc const& val) { dplc.push_back(val); }
+void frame_dplc::insert(single_dplc const& val) {
+    dplc.push_back(val);
+}
 
 void frame_dplc::build_vram_map(map<size_t, size_t>& vram_map) const {
     for (auto const& sd : dplc) {

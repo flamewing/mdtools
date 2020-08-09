@@ -16,13 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mdcomp/bigendian_io.hh>
 #include <mdtools/singlemapping.hh>
 
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
-
-#include <mdcomp/bigendian_io.hh>
 
 using std::cout;
 using std::dec;
@@ -38,7 +37,7 @@ using std::setw;
 using std::uppercase;
 
 void single_mapping::read(istream& in, int const ver) {
-    yy    = static_cast<signed char>(Read1(in));
+    yy    = static_cast<int8_t>(Read1(in));
     sy    = Read1(in);
     sx    = ((sy & 0xc) >> 2) + 1;
     sy    = (sy & 0x3) + 1;
@@ -49,7 +48,7 @@ void single_mapping::read(istream& in, int const ver) {
         in.ignore(2);
     }
     if (ver == 1) {
-        xx = static_cast<signed char>(Read1(in));
+        xx = static_cast<int8_t>(Read1(in));
     } else {
         xx = BigEndian::Read2(in);
     }
@@ -109,8 +108,8 @@ void single_mapping::print() const {
 }
 
 void single_mapping::split(
-    single_mapping const& src, single_dplc& dplc,
-    map<size_t, size_t>& vram_map) {
+        single_mapping const& src, single_dplc& dplc,
+        map<size_t, size_t>& vram_map) {
     xx    = src.xx;
     yy    = src.yy;
     sx    = src.sx;
@@ -122,7 +121,7 @@ void single_mapping::split(
 }
 
 void single_mapping::merge(
-    single_mapping const& src, map<size_t, size_t>& vram_map) {
+        single_mapping const& src, map<size_t, size_t>& vram_map) {
     xx    = src.xx;
     yy    = src.yy;
     sx    = src.sx;

@@ -51,4 +51,6 @@ CheckOptions:
       value: WinMain,SDL_main
     - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
       value: 1
+    - key: bugprone-signed-char-misuse.CharTypdefsToIgnore
+      value: int8_t
 FormatStyle: 'file'
