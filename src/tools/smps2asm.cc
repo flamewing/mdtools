@@ -36,6 +36,7 @@
 #ifdef __GNUG__
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+#    pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif
 #define FMT_HEADER_ONLY  1
 #define FMT_STRING_ALIAS 1
