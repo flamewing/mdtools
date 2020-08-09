@@ -96,3 +96,7 @@ config.sub
 /intltool-update.in
 /libtool
 /ltmain.sh
+
+#### clangd ####
+.clangd
+test
