@@ -19,6 +19,7 @@
 #include <mdtools/dplcfile.hh>
 #include <mdtools/mappingfile.hh>
 
+#include <array>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -180,22 +181,22 @@ enum FileErrors {
     } while (0)
 
 int main(int argc, char* argv[]) {
-    static option long_options[]
-            = {{"optimize", no_argument, nullptr, 'o'},
-               {"split", no_argument, nullptr, 's'},
-               {"merge", no_argument, nullptr, 'm'},
-               {"fix", no_argument, nullptr, 'f'},
-               {"crush-mappings", no_argument, nullptr, 'c'},
-               {"crush-dplc", no_argument, nullptr, 'k'},
-               {"info", no_argument, nullptr, 'i'},
-               {"dplc", no_argument, nullptr, 'd'},
-               {"no-null", no_argument, nullptr, '0'},
-               {"pal-change", required_argument, nullptr, 'p'},
-               {"pal-dest", required_argument, nullptr, 'a'},
-               {"from-sonic", required_argument, nullptr, 'x'},
-               {"to-sonic", required_argument, nullptr, 'y'},
-               {"sonic", required_argument, nullptr, 'z'},
-               {nullptr, 0, nullptr, 0}};
+    constexpr static const std::array<option, 15> long_options{
+            option{"optimize", no_argument, nullptr, 'o'},
+            option{"split", no_argument, nullptr, 's'},
+            option{"merge", no_argument, nullptr, 'm'},
+            option{"fix", no_argument, nullptr, 'f'},
+            option{"crush-mappings", no_argument, nullptr, 'c'},
+            option{"crush-dplc", no_argument, nullptr, 'k'},
+            option{"info", no_argument, nullptr, 'i'},
+            option{"dplc", no_argument, nullptr, 'd'},
+            option{"no-null", no_argument, nullptr, '0'},
+            option{"pal-change", required_argument, nullptr, 'p'},
+            option{"pal-dest", required_argument, nullptr, 'a'},
+            option{"from-sonic", required_argument, nullptr, 'x'},
+            option{"to-sonic", required_argument, nullptr, 'y'},
+            option{"sonic", required_argument, nullptr, 'z'},
+            option{nullptr, 0, nullptr, 0}};
 
     Actions act          = eNone;
     bool    nullfirst    = true;
@@ -208,7 +209,7 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-                argc, argv, "osmfckidp:a:0", static_cast<option*>(long_options),
+                argc, argv, "osmfckidp:a:0", long_options.data(),
                 &option_index);
         if (c == -1) {
             break;

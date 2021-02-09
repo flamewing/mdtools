@@ -17,6 +17,7 @@
 
 #include <getopt.h>
 
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -297,7 +298,7 @@ BaseNote* BaseNote::read(
                     byte, keydisp, Read1(in), Read1(in));
 
         case 0xef: {
-            signed char voc = Read1(in);
+            int8_t voc = Read1(in);
             if (tracktype == LocTraits::eFMTrack && voc >= 0
                 && voc > last_voc) {
                 last_voc = static_cast<uint8_t>(voc);
@@ -1044,15 +1045,15 @@ void dump_single_entry(
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[]
-            = {{"bank", optional_argument, nullptr, 'b'},
-               {"extract", optional_argument, nullptr, 'x'},
-               {"saxman", no_argument, nullptr, 'u'},
-               {"offset", required_argument, nullptr, 'o'},
-               {"sonicver", required_argument, nullptr, 'v'},
-               {"sfx", no_argument, nullptr, 's'},
-               {"s3kmode", no_argument, nullptr, '3'},
-               {nullptr, 0, nullptr, 0}};
+    constexpr static const std::array<option, 8> long_options{
+            option{"bank", optional_argument, nullptr, 'b'},
+            option{"extract", optional_argument, nullptr, 'x'},
+            option{"saxman", no_argument, nullptr, 'u'},
+            option{"offset", required_argument, nullptr, 'o'},
+            option{"sonicver", required_argument, nullptr, 'v'},
+            option{"sfx", no_argument, nullptr, 's'},
+            option{"s3kmode", no_argument, nullptr, '3'},
+            option{nullptr, 0, nullptr, 0}};
 
     bool    sfx      = false;
     bool    saxman   = false;
@@ -1066,7 +1067,7 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-                argc, argv, "b::x::uo:v:s3", static_cast<option*>(long_options),
+                argc, argv, "b::x::uo:v:s3", long_options.data(),
                 &option_index);
         if (c == -1) {
             break;

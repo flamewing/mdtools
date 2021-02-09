@@ -18,20 +18,33 @@
 #ifndef __TOOLS_FMVOICE_H
 #define __TOOLS_FMVOICE_H
 
+#include <array>
 #include <cstdint>
 #include <iosfwd>
 
 void PrintMacro(std::ostream& out, char const* macro);
-void PrintHex2(std::ostream& out, unsigned char c, bool last);
-void PrintHex2Pre(std::ostream& out, unsigned char c, bool first);
+void PrintHex2(std::ostream& out, uint8_t c, bool last);
+void PrintHex2Pre(std::ostream& out, uint8_t c, bool first);
 void PrintHex4(std::ostream& out, uint16_t c, bool last);
 void PrintName(std::ostream& out, std::string const& s, bool first);
 
 class fm_voice {
 private:
-    unsigned char vcFeedback, vcAlgorithm, vcUnusedBits;
-    unsigned char vcDT[4], vcCF[4], vcRS[4], vcAR[4], vcAM[4], vcD1R[4],
-            vcD2R[4], vcDL[4], vcRR[4], vcTL[4], vcD1RUnk[4];
+    uint8_t vcFeedback;
+    uint8_t vcAlgorithm;
+    uint8_t vcUnusedBits;
+
+    std::array<uint8_t, 4> vcDT;
+    std::array<uint8_t, 4> vcCF;
+    std::array<uint8_t, 4> vcRS;
+    std::array<uint8_t, 4> vcAR;
+    std::array<uint8_t, 4> vcAM;
+    std::array<uint8_t, 4> vcD1R;
+    std::array<uint8_t, 4> vcD2R;
+    std::array<uint8_t, 4> vcDL;
+    std::array<uint8_t, 4> vcRR;
+    std::array<uint8_t, 4> vcTL;
+    std::array<uint8_t, 4> vcD1RUnk;
 
 public:
     void read(std::istream& in, int sonicver);

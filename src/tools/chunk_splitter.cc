@@ -183,7 +183,7 @@ class Chunk {
 private:
     constexpr static size_t const numBlocks = size_t(Dim) * size_t(Dim);
 
-    Blk blocks[numBlocks];
+    std::array<Blk, numBlocks> blocks;
 
 public:
     constexpr void read(istream& in) noexcept {

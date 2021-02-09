@@ -54,14 +54,14 @@ void single_mapping::read(istream& in, int const ver) {
 }
 
 void single_mapping::write(ostream& out, int const ver) const {
-    Write1(out, static_cast<unsigned char>(yy));
+    Write1(out, static_cast<uint8_t>(yy));
     Write1(out, ((sx - 1) << 2) | (sy - 1));
     BigEndian::Write2(out, (flags << 8) | tile);
     if (ver == 2) {
         BigEndian::Write2(out, (flags << 8) | (tile >> 1));
     }
     if (ver == 1) {
-        Write1(out, static_cast<unsigned char>(xx));
+        Write1(out, static_cast<uint8_t>(xx));
     } else {
         BigEndian::Write2(out, xx);
     }

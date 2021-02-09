@@ -88,7 +88,7 @@ static void plane_map(
     for (size_t n = 0; n < nframes; n++, off += 2) {
         BigEndian::Write2(dst, w * h);
         for (size_t j = 0; j < h; j++) {
-            auto y_pos = static_cast<signed char>((j - h / 2) << 3);
+            auto y_pos = static_cast<int8_t>((j - h / 2) << 3);
             for (size_t i = 0; i < w; i++) {
                 dst.put(static_cast<char>(y_pos));
                 dst.put(static_cast<char>(0x00));
@@ -136,7 +136,7 @@ static void plane_unmap(
         Enigma_map engfile;
         for (size_t i = 0; i < count; i++) {
             Position pos{};
-            pos.y = static_cast<signed char>(src.get() & 0xff);
+            pos.y = static_cast<int8_t>(src.get() & 0xff);
             src.ignore(1);
             uint16_t v = BigEndian::Read2(src);
             if (sonic2) {
@@ -154,12 +154,13 @@ static void plane_unmap(
 }
 
 int main(int argc, char* argv[]) {
-    int    sonic2 = 0;
-    option long_options[]
-            = {{"extract", optional_argument, nullptr, 'x'},
-               {"sonic2", no_argument, &sonic2, 1},
-               {"compress", no_argument, nullptr, 'c'},
-               {nullptr, 0, nullptr, 0}};
+    int sonic2 = 0;
+
+    static const std::array<option, 4> long_options{
+            option{"extract", optional_argument, nullptr, 'x'},
+            option{"sonic2", no_argument, &sonic2, 1},
+            option{"compress", no_argument, nullptr, 'c'},
+            option{nullptr, 0, nullptr, 0}};
 
     bool extract  = false;
     bool compress = false;
@@ -170,8 +171,7 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-                argc, argv, "ux::c", static_cast<option*>(long_options),
-                &option_index);
+                argc, argv, "ux::c", long_options.data(), &option_index);
         if (c == -1) {
             break;
         }

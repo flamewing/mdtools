@@ -18,6 +18,7 @@
 #include <boost/io/ios_state.hpp>
 #include <mdtools/songtrack.hh>
 
+#include <array>
 #include <iomanip>
 #include <iostream>
 #include <istream>
@@ -341,27 +342,32 @@ void FMPSGNote::print(
         out << "\tdc.b\t";
     }
 
-    static string fmpsglut[]
-            = {"nRst", "nC0",  "nCs0", "nD0",  "nEb0", "nE0",  "nF0",  "nFs0",
-               "nG0",  "nAb0", "nA0",  "nBb0", "nB0",  "nC1",  "nCs1", "nD1",
-               "nEb1", "nE1",  "nF1",  "nFs1", "nG1",  "nAb1", "nA1",  "nBb1",
-               "nB1",  "nC2",  "nCs2", "nD2",  "nEb2", "nE2",  "nF2",  "nFs2",
-               "nG2",  "nAb2", "nA2",  "nBb2", "nB2",  "nC3",  "nCs3", "nD3",
-               "nEb3", "nE3",  "nF3",  "nFs3", "nG3",  "nAb3", "nA3",  "nBb3",
-               "nB3",  "nC4",  "nCs4", "nD4",  "nEb4", "nE4",  "nF4",  "nFs4",
-               "nG4",  "nAb4", "nA4",  "nBb4", "nB4",  "nC5",  "nCs5", "nD5",
-               "nEb5", "nE5",  "nF5",  "nFs5", "nG5",  "nAb5", "nA5",  "nBb5",
-               "nB5",  "nC6",  "nCs6", "nD6",  "nEb6", "nE6",  "nF6",  "nFs6",
-               "nG6",  "nAb6", "nA6",  "nBb6", "nB6",  "nC7",  "nCs7", "nD7",
-               "nEb7", "nE7",  "nF7",  "nFs7", "nG7",  "nAb7", "nA7",  "nBb7"};
+    // TODO: string -> string_view.
+    static const std::array<string, 96> fmpsglut{
+            "nRst", "nC0",  "nCs0", "nD0",  "nEb0", "nE0",  "nF0",  "nFs0",
+            "nG0",  "nAb0", "nA0",  "nBb0", "nB0",  "nC1",  "nCs1", "nD1",
+            "nEb1", "nE1",  "nF1",  "nFs1", "nG1",  "nAb1", "nA1",  "nBb1",
+            "nB1",  "nC2",  "nCs2", "nD2",  "nEb2", "nE2",  "nF2",  "nFs2",
+            "nG2",  "nAb2", "nA2",  "nBb2", "nB2",  "nC3",  "nCs3", "nD3",
+            "nEb3", "nE3",  "nF3",  "nFs3", "nG3",  "nAb3", "nA3",  "nBb3",
+            "nB3",  "nC4",  "nCs4", "nD4",  "nEb4", "nE4",  "nF4",  "nFs4",
+            "nG4",  "nAb4", "nA4",  "nBb4", "nB4",  "nC5",  "nCs5", "nD5",
+            "nEb5", "nE5",  "nF5",  "nFs5", "nG5",  "nAb5", "nA5",  "nBb5",
+            "nB5",  "nC6",  "nCs6", "nD6",  "nEb6", "nE6",  "nF6",  "nFs6",
+            "nG6",  "nAb6", "nA6",  "nBb6", "nB6",  "nC7",  "nCs7", "nD7",
+            "nEb7", "nE7",  "nF7",  "nFs7", "nG7",  "nAb7", "nA7",  "nBb7"};
 
     string noteName;
     bool   workAround = false;
     if ((tracktype == LocTraits::ePSGInit || tracktype == LocTraits::ePSGTrack)
         && get_value() != 0x80) {
-        unsigned char newbyte = (get_value() + get_base_keydisp()) & 0x7f;
+        uint8_t newbyte = (get_value() + get_base_keydisp()) & 0x7f;
         if (sonicver >= 3 && (newbyte == 0x53 || newbyte == 0x54)) {
-            noteName = newbyte == 0x54 ? "nMaxPSG2" : "nMaxPSG1";
+            if (newbyte == 0x54) {
+                noteName = "nMaxPSG2";
+            } else {
+                noteName = "nMaxPSG1";
+            }
         } else if (sonicver <= 2 && newbyte == 0x46) {
             noteName = "nMaxPSG";
         } else if (sonicver == 1 && (newbyte & 1) == 0 && newbyte >= 0x4c) {

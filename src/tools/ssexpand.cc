@@ -15,6 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <getopt.h>
+#include <mdcomp/enigma.hh>
+#include <mdcomp/kosinski.hh>
+#include <mdtools/sstrack.hh>
+#include <mdtools/ssvram.hh>
+
+#include <array>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -28,12 +35,6 @@ using std::ofstream;
 using std::ostream;
 using std::stringstream;
 
-#include <getopt.h>
-#include <mdcomp/enigma.hh>
-#include <mdcomp/kosinski.hh>
-#include <mdtools/sstrack.hh>
-#include <mdtools/ssvram.hh>
-
 static void usage(char* prog) {
     cerr << "Usage: " << prog
          << " [-f|--flipped] {inpal} {inart} {intrack} {outartkos} "
@@ -44,14 +45,16 @@ static void usage(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[] = {
-            {"flipped", no_argument, nullptr, 'f'}, {nullptr, 0, nullptr, 0}};
+    constexpr static const std::array<option, 2> long_options{
+            option{"flipped", no_argument, nullptr, 'f'},
+            option{nullptr, 0, nullptr, 0}};
 
     bool flipped = false;
 
     while (true) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "f", long_options, &option_index);
+        int c            = getopt_long(
+                argc, argv, "f", long_options.data(), &option_index);
         if (c == -1) {
             break;
         }

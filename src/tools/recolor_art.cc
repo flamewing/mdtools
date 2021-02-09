@@ -19,6 +19,7 @@
 #include <mdcomp/kosinski.hh>
 #include <mdcomp/nemesis.hh>
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -51,9 +52,12 @@ static void usage() {
 
 enum Formats { eInvalid = -1, eUncompressed = 0, eNemesis = 1, eKosinski = 2 };
 
+using ColorMap = std::array<int, 16>;
+
 struct Tile {
-    unsigned char tiledata[64];
-    bool          read(istream& in) {
+    std::array<uint8_t, 64> tiledata;
+
+    bool read(istream& in) {
         for (size_t i = 0; i < sizeof(tiledata); i += 2) {
             size_t col = in.get();
             if (!in.good()) {
@@ -64,19 +68,19 @@ struct Tile {
         }
         return true;
     }
-    bool blacklisted(unsigned char const bll) {
-        for (auto& elem : tiledata) {
-            if (elem == bll) {
-                return true;
-            }
-        }
-        return false;
+
+    bool blacklisted(uint8_t const bll) const {
+        const auto* it
+                = std::find(std::cbegin(tiledata), std::cend(tiledata), bll);
+        return it != std::cend(tiledata);
     }
-    void remap(int const (&colormap)[16]) {
+
+    void remap(ColorMap& colormap) {
         for (auto& elem : tiledata) {
             elem = colormap[elem];
         }
     }
+
     void write(ostream& out) {
         for (size_t i = 0; i < sizeof(tiledata); i += 2) {
             out.put(tiledata[i] | (tiledata[i + 1] << 4));
@@ -84,7 +88,7 @@ struct Tile {
     }
 };
 
-void recolor(istream& in, ostream& out, int const (&colormap)[16]) {
+void recolor(istream& in, ostream& out, ColorMap& colormap) {
     Tile tile{};
     while (true) {
         if (!tile.read(in)) {
@@ -96,24 +100,24 @@ void recolor(istream& in, ostream& out, int const (&colormap)[16]) {
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[]
-            = {{"format", required_argument, nullptr, 'o'},
-               {"moduled", optional_argument, nullptr, 'm'},
-               {nullptr, 0, nullptr, 0}};
+    constexpr static const std::array<option, 3> long_options{
+            option{"format", required_argument, nullptr, 'o'},
+            option{"moduled", optional_argument, nullptr, 'm'},
+            option{nullptr, 0, nullptr, 0}};
 
     bool       moduled    = false;
     streamsize modulesize = 0x1000;
     // Identity map.
-    int      colormap[16] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
-                        0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
-    unsigned numcolors    = 0;
-    Formats  fmt          = eUncompressed;
+    ColorMap colormap{0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+                      0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
+    unsigned numcolors = 0;
+    Formats  fmt       = eUncompressed;
 
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
                 argc, argv, "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
-                static_cast<option*>(long_options), &option_index);
+                long_options.data(), &option_index);
         if (c == -1) {
             break;
         }
@@ -180,7 +184,7 @@ int main(int argc, char* argv[]) {
             } else {
                 c1 = c - 'a' + 10;
             }
-            int d = static_cast<unsigned char>(*optarg);
+            int d = static_cast<uint8_t>(*optarg);
             if (d >= '0' && d <= '9') {
                 colormap[c1] = d - '0';
             } else if (d >= 'a' && d <= 'f') {

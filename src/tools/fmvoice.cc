@@ -19,6 +19,7 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdtools/fmvoice.hh>
 
+#include <array>
 #include <cstdint>
 #include <iomanip>
 #include <istream>
@@ -79,9 +80,9 @@ void fm_voice::read(istream& in, int const sonicver) {
     vcFeedback       = (vc >> 3) & 7;
     vcAlgorithm      = vc & 7;
 
-    constexpr static int const s2_indices[4]     = {3, 1, 2, 0};
-    constexpr static int const normal_indices[4] = {3, 2, 1, 0};
-    int const(&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
+    constexpr static std::array<int, 4> const s2_indices     = {3, 1, 2, 0};
+    constexpr static std::array<int, 4> const normal_indices = {3, 2, 1, 0};
+    const auto& indices = sonicver == 2 ? s2_indices : normal_indices;
 
     for (int index : indices) {
         uint8_t const c = Read1(in);
@@ -114,9 +115,9 @@ void fm_voice::read(istream& in, int const sonicver) {
 
 void fm_voice::write(ostream& out, int const sonicver) const {
     Write1(out, (vcUnusedBits << 6) | (vcFeedback << 3) | vcAlgorithm);
-    constexpr static int const s2_indices[4]     = {3, 1, 2, 0};
-    constexpr static int const normal_indices[4] = {3, 2, 1, 0};
-    int const(&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
+    constexpr static std::array<int, 4> const s2_indices     = {3, 1, 2, 0};
+    constexpr static std::array<int, 4> const normal_indices = {3, 2, 1, 0};
+    const auto& indices = sonicver == 2 ? s2_indices : normal_indices;
 
     for (int index : indices) {
         Write1(out, (vcDT[index] << 4) | vcCF[index]);
@@ -143,9 +144,9 @@ void fm_voice::print(ostream& out, int const sonicver, int const id) const {
     PrintHex2(out, id, true);
     out << endl << ";\t";
     PrintHex2(out, (vcUnusedBits << 6) | (vcFeedback << 3) | vcAlgorithm, true);
-    constexpr static int const s2_indices[4]     = {3, 2, 1, 0};
-    constexpr static int const normal_indices[4] = {3, 2, 1, 0};
-    int const(&indices)[4] = sonicver == 2 ? s2_indices : normal_indices;
+    constexpr static std::array<int, 4> const s2_indices     = {3, 2, 1, 0};
+    constexpr static std::array<int, 4> const normal_indices = {3, 2, 1, 0};
+    const auto& indices = sonicver == 2 ? s2_indices : normal_indices;
 
     out << endl << ";\t";
     for (int index : indices) {

@@ -21,6 +21,7 @@
 #include <mdtools/pattern_name.hh>
 #include <mdtools/tile.hh>
 
+#include <array>
 #include <iosfwd>
 #include <vector>
 
@@ -118,7 +119,8 @@ public:
         auto     start     = tile.begin(NoFlip);
         auto     finish    = tile.end(NoFlip);
         // Want to compare using all possible flips.
-        static FlipMode const modes[] = {NoFlip, XFlip, YFlip, XYFlip};
+        static constexpr std::array<FlipMode, 4> const modes{
+                NoFlip, XFlip, YFlip, XYFlip};
 
         for (auto it = tiles.begin(); it != tiles.end(); ++it) {
             for (const auto mode : modes) {

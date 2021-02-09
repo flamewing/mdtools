@@ -20,6 +20,7 @@
 #include <mdcomp/kosinski.hh>
 #include <mdtools/dplcfile.hh>
 
+#include <array>
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
@@ -41,8 +42,8 @@ using std::stringstream;
 using std::vector;
 
 struct Tile {
-    uint8_t tiledata[32];
-    bool    read(istream& in) {
+    std::array<uint8_t, 32> tiledata;
+    bool                    read(istream& in) {
         for (auto& elem : tiledata) {
             char cc;
             in.get(cc);
@@ -50,6 +51,7 @@ struct Tile {
         }
         return true;
     }
+
     void write(ostream& out) {
         for (auto& elem : tiledata) {
             out.put(elem);
@@ -83,11 +85,11 @@ static void usage(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[]
-            = {{"kosm", no_argument, nullptr, 'm'},
-               {"comper", no_argument, nullptr, 'c'},
-               {"sonic", required_argument, nullptr, 'z'},
-               {nullptr, 0, nullptr, 0}};
+    constexpr static const std::array<option, 4> long_options{
+            option{"kosm", no_argument, nullptr, 'm'},
+            option{"comper", no_argument, nullptr, 'c'},
+            option{"sonic", required_argument, nullptr, 'z'},
+            option{nullptr, 0, nullptr, 0}};
 
     int64_t compress = 0;
     int64_t sonicver = 2;
@@ -96,7 +98,7 @@ int main(int argc, char* argv[]) {
         int option_index = 0;
 
         int c = getopt_long(
-                argc, argv, "cm", static_cast<option*>(long_options),
+                argc, argv, "cm", long_options.data(),
                 &option_index);
         if (c == -1) {
             break;

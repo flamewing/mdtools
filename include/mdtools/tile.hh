@@ -40,7 +40,7 @@ public:
     static constexpr size_t const Byte_size = nlines * lsize / 2;
 
 private:
-    uint8_t tiledata[Tile_size] = {};
+    std::array<uint8_t, Tile_size> tiledata{};
 
     // Complete random-access iterator for pixels in the tile.
     // Being a template class allows code reuse for const/nonconst iterators.
@@ -512,40 +512,40 @@ public:
     // Functions for starting iteration. Note how the reverse iterators are the
     // same as forward iterators with X and Y both flipped.
     iterator begin(FlipMode const f) noexcept {
-        return iterator(f, tiledata, false);
+        return iterator(f, tiledata.data(), false);
     }
     iterator end(FlipMode const f) noexcept {
-        return iterator(f, tiledata, true);
+        return iterator(f, tiledata.data(), true);
     }
     const_iterator begin(FlipMode const f) const noexcept {
-        return const_iterator(f, tiledata, false);
+        return const_iterator(f, tiledata.data(), false);
     }
     const_iterator end(FlipMode const f) const noexcept {
-        return const_iterator(f, tiledata, true);
+        return const_iterator(f, tiledata.data(), true);
     }
     const_iterator cbegin(FlipMode const f) const noexcept {
-        return const_iterator(f, tiledata, false);
+        return const_iterator(f, tiledata.data(), false);
     }
     const_iterator cend(FlipMode const f) const noexcept {
-        return const_iterator(f, tiledata, true);
+        return const_iterator(f, tiledata.data(), true);
     }
     reverse_iterator rbegin(FlipMode const f) noexcept {
         return begin(flip_xy(f));
     }
     reverse_iterator rend(FlipMode const f) noexcept {
-        return end(f, tiledata);
+        return end(f, tiledata.data());
     }
     const_reverse_iterator rbegin(FlipMode const f) const noexcept {
         return begin(flip_xy(f));
     }
     const_reverse_iterator rend(FlipMode const f) const noexcept {
-        return end(f, tiledata);
+        return end(f, tiledata.data());
     }
     const_reverse_iterator crbegin(FlipMode const f) const noexcept {
         return begin(flip_xy(f));
     }
     const_reverse_iterator crend(FlipMode const f) const noexcept {
-        return end(f, tiledata);
+        return end(f, tiledata.data());
     }
 
     // Draws linecnt lines of the tile, starting at the position specified by

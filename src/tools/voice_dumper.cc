@@ -19,6 +19,7 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdtools/fmvoice.hh>
 
+#include <array>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -58,10 +59,10 @@ static void usage() {
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[]
-            = {{"extract", required_argument, nullptr, 'x'},
-               {"sonicver", required_argument, nullptr, 'v'},
-               {nullptr, 0, nullptr, 0}};
+    constexpr static const std::array<option, 3> long_options
+            = {option{"extract", required_argument, nullptr, 'x'},
+               option{"sonicver", required_argument, nullptr, 'v'},
+               option{nullptr, 0, nullptr, 0}};
 
     int64_t pointer  = 0;
     int64_t sonicver = -1;
@@ -69,8 +70,7 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-                argc, argv, "x:v:", static_cast<option*>(long_options),
-                &option_index);
+                argc, argv, "x:v:", long_options.data(), &option_index);
         if (c == -1) {
             break;
         }

@@ -19,6 +19,7 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/enigma.hh>
 
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
@@ -59,11 +60,11 @@ static void usage(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-    static option long_options[]
-            = {{"size", no_argument, nullptr, 's'},
-               {"palette", required_argument, nullptr, 'p'},
-               {"blacklist", required_argument, nullptr, 'b'},
-               {nullptr, 0, nullptr, 0}};
+    constexpr static const std::array<option, 4> long_options{
+            option{"size", no_argument, nullptr, 's'},
+            option{"palette", required_argument, nullptr, 'p'},
+            option{"blacklist", required_argument, nullptr, 'b'},
+            option{nullptr, 0, nullptr, 0}};
 
     set<uint16_t> blacklist;
     bool          sizeOnly = false;
@@ -72,8 +73,7 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-                argc, argv, "sb:p:", static_cast<option*>(long_options),
-                &option_index);
+                argc, argv, "sb:p:", long_options.data(), &option_index);
         if (c == -1) {
             break;
         }
