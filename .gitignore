@@ -81,6 +81,7 @@ config.sub
 /config.status
 /po/POTFILES
 /po/stamp-it
+/config.cache
 
 ##### Anjuta #####
 # Local configuration folder and symbol database
@@ -99,5 +100,7 @@ config.sub
 
 #### clangd ####
 .clangd
-.cache
 test
+.cache
+
+.vscode
