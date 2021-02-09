@@ -70,7 +70,8 @@ private:
         yflip_mask     = 1U << yflip_shift,
         xyflip_mask    = 3U << xyflip_shift,
         palette_mask   = 3U << palette_shift,
-        priority_mask  = 1U << priority_shift
+        priority_mask  = 1U << priority_shift,
+        no_priority    = 0
     };
     uint16_t pn{0U};
 
@@ -110,7 +111,7 @@ public:
         pn = (pn & ~palette_mask) | (static_cast<uint32_t>(p) << palette_shift);
     }
     constexpr void set_priority(bool const b) noexcept {
-        pn = (pn & ~priority_mask) | (b ? priority_mask : 0);
+        pn = (pn & ~priority_mask) | (b ? priority_mask : no_priority);
     }
 
     // Comparison operator for STL containers and algorithms. Only the tile is
