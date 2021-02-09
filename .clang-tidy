@@ -1,6 +1,5 @@
 Checks: "-*,
 bugprone-*,
-cert-dcl21-cpp,
 cert-dcl50-cpp,
 cert-env33-c,
 cert-err34-c,
@@ -14,6 +13,7 @@ clang-analyzer-*,
 clang-analyzer-alpha*,
 cppcoreguidelines-*,
 -cppcoreguidelines-avoid-c-arrays,
+-cppcoreguidelines-avoid-non-const-global-variables,
 -cppcoreguidelines-pro-bounds-constant-array-index,
 -cppcoreguidelines-macro-usage,
 -cppcoreguidelines-pro-type-reinterpret-cast,
@@ -29,6 +29,7 @@ google-readability-casting,
 google-runtime-int,
 google-runtime-operator,
 hicpp-*,
+-hicpp-named-parameter,
 -hicpp-avoid-c-arrays,
 -hicpp-signed-bitwise,
 misc-*,
@@ -46,4 +47,6 @@ CheckOptions:
       value: WinMain,SDL_main
     - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
       value: 1
+    - key: bugprone-signed-char-misuse.CharTypdefsToIgnore
+      value: 'int8_t'
 FormatStyle: 'file'
