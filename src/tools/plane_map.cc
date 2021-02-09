@@ -88,16 +88,16 @@ static void plane_map(
     for (size_t n = 0; n < nframes; n++, off += 2) {
         BigEndian::Write2(dst, w * h);
         for (size_t j = 0; j < h; j++) {
-            auto y_pos = static_cast<int8_t>((j - h / 2) << 3);
+            auto y_pos = static_cast<int8_t>((j - h / 2) << 3U);
             for (size_t i = 0; i < w; i++) {
                 dst.put(static_cast<char>(y_pos));
                 dst.put(static_cast<char>(0x00));
                 uint16_t v = BigEndian::Read2(src);
                 BigEndian::Write2(dst, v);
                 if (sonic2) {
-                    BigEndian::Write2(dst, (v & 0xf800) | ((v & 0x07ff) >> 1));
+                    BigEndian::Write2(dst, (v & 0xf800U) | ((v & 0x07ffU) >> 1U));
                 }
-                BigEndian::Write2(dst, static_cast<uint16_t>((i - w / 2) << 3));
+                BigEndian::Write2(dst, static_cast<uint16_t>((i - w / 2) << 3U));
             }
         }
     }
@@ -136,7 +136,7 @@ static void plane_unmap(
         Enigma_map engfile;
         for (size_t i = 0; i < count; i++) {
             Position pos{};
-            pos.y = static_cast<int8_t>(src.get() & 0xff);
+            pos.y = static_cast<int8_t>(src.get());
             src.ignore(1);
             uint16_t v = BigEndian::Read2(src);
             if (sonic2) {

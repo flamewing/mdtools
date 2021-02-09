@@ -30,21 +30,21 @@ void PrintName(std::ostream& out, std::string const& s, bool first);
 
 class fm_voice {
 private:
-    uint8_t vcFeedback;
-    uint8_t vcAlgorithm;
-    uint8_t vcUnusedBits;
+    uint32_t vcFeedback;
+    uint32_t vcAlgorithm;
+    uint32_t vcUnusedBits;
 
-    std::array<uint8_t, 4> vcDT;
-    std::array<uint8_t, 4> vcCF;
-    std::array<uint8_t, 4> vcRS;
-    std::array<uint8_t, 4> vcAR;
-    std::array<uint8_t, 4> vcAM;
-    std::array<uint8_t, 4> vcD1R;
-    std::array<uint8_t, 4> vcD2R;
-    std::array<uint8_t, 4> vcDL;
-    std::array<uint8_t, 4> vcRR;
-    std::array<uint8_t, 4> vcTL;
-    std::array<uint8_t, 4> vcD1RUnk;
+    std::array<uint32_t, 4> vcDT;
+    std::array<uint32_t, 4> vcCF;
+    std::array<uint32_t, 4> vcRS;
+    std::array<uint32_t, 4> vcAR;
+    std::array<uint32_t, 4> vcAM;
+    std::array<uint32_t, 4> vcD1R;
+    std::array<uint32_t, 4> vcD2R;
+    std::array<uint32_t, 4> vcDL;
+    std::array<uint32_t, 4> vcRR;
+    std::array<uint32_t, 4> vcTL;
+    std::array<uint32_t, 4> vcD1RUnk;
 
 public:
     void read(std::istream& in, int sonicver);

@@ -155,11 +155,11 @@ SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept {
 constexpr static inline Pattern_Name make_block_tile(
         uint16_t addr, uint16_t flx, uint16_t fly, uint16_t pal, uint16_t pri) {
     return Pattern_Name(
-            (((static_cast<unsigned>(pri)) & 1) << 15)
-            | (((static_cast<unsigned>(pal)) & 3) << 13)
-            | (((static_cast<unsigned>(fly)) & 1) << 12)
-            | (((static_cast<unsigned>(flx)) & 1) << 11)
-            | ((static_cast<unsigned>(addr)) & 0x7FF));
+            (((static_cast<unsigned>(pri)) & 1U) << 15U)
+            | (((static_cast<unsigned>(pal)) & 3U) << 13U)
+            | (((static_cast<unsigned>(fly)) & 1U) << 12U)
+            | (((static_cast<unsigned>(flx)) & 1U) << 11U)
+            | ((static_cast<unsigned>(addr)) & 0x7FFU));
 }
 
 vector<Pattern_Name> SSTrackFrame::SymLUT_6bit{

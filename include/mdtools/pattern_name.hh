@@ -59,7 +59,7 @@ constexpr inline PaletteLine
 class Pattern_Name {
 private:
     // NO MAGIC NUMBERS.
-    enum : uint16_t {
+    enum : uint32_t {
         xyflip_shift   = 11,
         xflip_shift    = xyflip_shift,
         yflip_shift    = xyflip_shift + 1,
@@ -104,10 +104,10 @@ public:
         pn = (pn & ~tile_mask) | (t & tile_mask);
     }
     constexpr void set_flip(FlipMode const f) noexcept {
-        pn = (pn & ~xyflip_mask) | (static_cast<uint16_t>(f) << xyflip_shift);
+        pn = (pn & ~xyflip_mask) | (static_cast<uint32_t>(f) << xyflip_shift);
     }
     constexpr void set_palette(PaletteLine const p) noexcept {
-        pn = (pn & ~palette_mask) | (static_cast<uint16_t>(p) << palette_shift);
+        pn = (pn & ~palette_mask) | (static_cast<uint32_t>(p) << palette_shift);
     }
     constexpr void set_priority(bool const b) noexcept {
         pn = (pn & ~priority_mask) | (b ? priority_mask : 0);

@@ -55,18 +55,18 @@ public:
     void write(ostream& out) const noexcept {
         BigEndian::Write2(out, block);
     }
-    constexpr uint16_t get_block() const noexcept {
+    constexpr uint32_t get_block() const noexcept {
         return block;
     }
-    constexpr uint16_t get_index() const noexcept {
-        return block & 0x3FF;
+    constexpr uint32_t get_index() const noexcept {
+        return block & 0x3FFU;
     }
     constexpr void set_block(uint16_t blk) {
         block = blk;
     }
     constexpr void set_index(uint16_t idx) {
-        block &= (~0x3FF);
-        block |= (idx & 0x3FF);
+        block &= (~0x3FFU);
+        block |= (idx & 0x3FFU);
     }
 };
 
@@ -79,35 +79,35 @@ public:
         return !(*this < other || other < *this);
     }
     constexpr bool less(BlockS1 const& other) const noexcept {
-        return (get_block() & (~0x6000)) < (other.get_block() & (~0x6000));
+        return (get_block() & (~0x6000U)) < (other.get_block() & (~0x6000U));
     }
     constexpr bool equal(BlockS1 const& other) const noexcept {
-        return (get_block() & (~0x6000)) == (other.get_block() & (~0x6000));
+        return (get_block() & (~0x6000U)) == (other.get_block() & (~0x6000U));
     }
     constexpr bool get_xflip() const noexcept {
-        return (get_block() & 0x0800) != 0;
+        return (get_block() & 0x0800U) != 0;
     }
     constexpr bool get_yflip() const noexcept {
-        return (get_block() & 0x1000) != 0;
+        return (get_block() & 0x1000U) != 0;
     }
     constexpr uint16_t get_collision() const noexcept {
-        return (get_block() >> 13) & 3;
+        return (get_block() >> 13U) & 3U;
     }
     constexpr void set_xflip() noexcept {
-        set_block(get_block() | 0x0800);
+        set_block(get_block() | 0x0800U);
     }
     constexpr void set_yflip() noexcept {
-        set_block(get_block() | 0x1000);
+        set_block(get_block() | 0x1000U);
     }
     constexpr void clear_xflip() noexcept {
-        set_block(get_block() & (~0x0800));
+        set_block(get_block() & (~0x0800U));
     }
     constexpr void clear_yflip() noexcept {
-        set_block(get_block() & (~0x1000));
+        set_block(get_block() & (~0x1000U));
     }
     constexpr void set_collision(uint16_t col) noexcept {
-        uint16_t blk = get_block() & (~0x6000);
-        set_block(blk | ((col & 3) << 13));
+        uint32_t blk = get_block() & (~0x6000U);
+        set_block(blk | ((col & 3U) << 13U));
     }
 };
 
@@ -120,42 +120,42 @@ public:
         return !(*this < other || other < *this);
     }
     constexpr bool less(BlockS2 const& other) const noexcept {
-        return (get_block() & (~0xF000)) < (other.get_block() & (~0xF000));
+        return (get_block() & (~0xF000U)) < (other.get_block() & (~0xF000U));
     }
     constexpr bool equal(BlockS2 const& other) const noexcept {
-        return (get_block() & (~0xF000)) == (other.get_block() & (~0xF000));
+        return (get_block() & (~0xF000U)) == (other.get_block() & (~0xF000U));
     }
     constexpr bool get_xflip() const noexcept {
-        return (get_block() & 0x0400) != 0;
+        return (get_block() & 0x0400U) != 0;
     }
     constexpr bool get_yflip() const noexcept {
-        return (get_block() & 0x0800) != 0;
+        return (get_block() & 0x0800U) != 0;
     }
     constexpr uint16_t get_collision1() const noexcept {
-        return (get_block() >> 12) & 3;
+        return (get_block() >> 12U) & 3U;
     }
     constexpr uint16_t get_collision2() const noexcept {
-        return (get_block() >> 14) & 3;
+        return (get_block() >> 14U) & 3U;
     }
     constexpr void set_xflip() noexcept {
-        set_block(get_block() | 0x0400);
+        set_block(get_block() | 0x0400U);
     }
     constexpr void set_yflip() noexcept {
-        set_block(get_block() | 0x0800);
+        set_block(get_block() | 0x0800U);
     }
     constexpr void clear_xflip() noexcept {
-        set_block(get_block() & (~0x0400));
+        set_block(get_block() & (~0x0400U));
     }
     constexpr void clear_yflip() noexcept {
-        set_block(get_block() & (~0x0800));
+        set_block(get_block() & (~0x0800U));
     }
     constexpr void set_collision1(uint16_t col) noexcept {
-        uint16_t blk = get_block() & (~0x3000);
-        set_block(blk | ((col & 3) << 12));
+        uint16_t blk = get_block() & (~0x3000U);
+        set_block(blk | ((col & 3U) << 12U));
     }
     constexpr void set_collision2(uint16_t col) noexcept {
-        uint16_t blk = get_block() & (~0xC000);
-        set_block(blk | ((col & 3) << 14));
+        uint16_t blk = get_block() & (~0xC000U);
+        set_block(blk | ((col & 3U) << 14U));
     }
     constexpr BlockS2& merge(BlockS1 const& high, BlockS1 const& low) noexcept {
         assert(high.get_index() == low.get_index());
@@ -269,12 +269,12 @@ namespace {
         return array<uint8_t, sizeof...(ids)>{base_remap(ids)...};
     }
 
-    constexpr auto identity_remap(int cc) {
-        return static_cast<uint8_t>(cc & 0x7F);
+    constexpr auto identity_remap(uint32_t cc) {
+        return static_cast<uint8_t>(cc & 0x7FU);
     }
 
-    constexpr auto increment_remap(int cc) {
-        return static_cast<uint8_t>((cc + 1) & 0x7F);
+    constexpr auto increment_remap(uint32_t cc) {
+        return static_cast<uint8_t>((cc + 1U) & 0x7FU);
     }
 
     constexpr auto init_remaps(int levelid) {
@@ -402,13 +402,13 @@ int main(int argc, char* argv[]) {
             flayout.get(cc);
             auto uc     = static_cast<uint8_t>(cc);
             vlayout[ii] = uc;
-            if ((uc & 0x80) != 0) {
-                needremap[uc & 0x7F] = 1;
+            if ((uc & 0x80U) != 0) {
+                needremap[uc & 0x7FU] = 1;
                 // usedchunks.insert(remaps[uc & 0x7F]);
             }
-            usedchunks.insert(uc & 0x7F);
-            if ((uc & 0x7F) != 0) {
-                uniquechunks.insert(chunkss1[(uc & 0x7F) - 1]);
+            usedchunks.insert(uc & 0x7FU);
+            if ((uc & 0x7FU) != 0) {
+                uniquechunks.insert(chunkss1[(uc & 0x7FU) - 1]);
             }
         }
         flayout.close();

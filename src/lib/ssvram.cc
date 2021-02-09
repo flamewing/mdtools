@@ -53,9 +53,9 @@ SSVRAM::SSVRAM(istream& pal, istream& art) noexcept {
         auto dst2   = dst1 + ShortTile::Line_size;
         auto finish = tile.end(NoFlip);
         for (; sout.good() && dst2 != finish; ++dst1, ++dst2) {
-            auto cc = static_cast<uint8_t>(sout.get());
-            *dst1++ = *dst2++ = (cc >> 4) & 0xf;
-            *dst1 = *dst2 = cc & 0xf;
+            uint32_t cc = static_cast<uint8_t>(sout.get());
+            *dst1++ = *dst2++ = (cc >> 4U) & 0xfU;
+            *dst1 = *dst2 = cc & 0xfU;
         }
     }
 
@@ -69,14 +69,14 @@ SSVRAM::SSVRAM(istream& pal, istream& art) noexcept {
     for (size_t ii = 0; ii < palLen; ii++) {
         palette[ii] = BigEndian::Read2(pal);
     }
-    auto const getR = [](uint16_t const clr) -> int {
-        return clr & 0xf;
+    auto const getR = [](uint32_t const clr) -> uint32_t {
+        return clr & 0xfU;
     };
-    auto const getG = [](uint16_t const clr) -> int {
-        return (clr >> 4) & 0xf;
+    auto const getG = [](uint32_t const clr) -> uint32_t {
+        return (clr >> 4U) & 0xfU;
     };
-    auto const getB = [](uint16_t const clr) -> int {
-        return (clr >> 8) & 0xf;
+    auto const getB = [](uint32_t const clr) -> uint32_t {
+        return (clr >> 8U) & 0xfU;
     };
     auto const deltaSquare = [](int const c1, int const c2) -> unsigned {
         return (c1 - c2) * (c1 - c2);

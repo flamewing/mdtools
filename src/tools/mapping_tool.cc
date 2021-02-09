@@ -247,14 +247,14 @@ int main(int argc, char* argv[]) {
             ARG_CASE('d', eDplc, 1, )
             ARG_CASE(
                     'p', ePalChange, 2,
-                    srcpal = (strtol(optarg, nullptr, 0) & 3) << 5)
+                    srcpal = (strtoul(optarg, nullptr, 0) & 3U) << 5U)
         case 'a':
             if (act != ePalChange) {
                 usage();
                 return eInvalidArgs;
             }
             nargs  = 2;
-            dstpal = (strtol(optarg, nullptr, 0) & 3) << 5;
+            dstpal = (strtoul(optarg, nullptr, 0) & 3U) << 5U;
             break;
         default:
             break;

@@ -560,14 +560,14 @@ template <int lsize, int nlines>
 BaseTile<lsize, nlines>::BaseTile(std::istream& in) noexcept {
     // Unpack nibbles to bytes as we go along.
     for (uint32_t ii = 0; ii < Tile_size; ii += 2) {
-        int chr = in.get();
+        unsigned chr = in.get();
         // If we reach the end-of-stream, fill the rest with zeroes.
         if (!in.good()) {
             tiledata[ii + 0] = 0;
             tiledata[ii + 1] = 0;
         } else {
-            tiledata[ii + 0] = (chr >> 4) & 0x0f;
-            tiledata[ii + 1] = (chr)&0x0f;
+            tiledata[ii + 0] = (chr >> 4U) & 0x0fU;
+            tiledata[ii + 1] = chr & 0x0fU;
         }
     }
 }

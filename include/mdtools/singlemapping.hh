@@ -48,7 +48,7 @@ public:
             split(single_mapping const& src, single_dplc& dplc,
                   std::map<size_t, size_t>& vram_map);
     void merge(single_mapping const& src, std::map<size_t, size_t>& vram_map);
-    void change_pal(int srcpal, int dstpal);
+    void change_pal(uint32_t srcpal, uint32_t dstpal);
 
     uint16_t get_flags() const {
         return flags;

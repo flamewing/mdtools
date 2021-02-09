@@ -82,13 +82,13 @@ int main(int argc, char* argv[]) {
         case 'p':
             if (optarg != nullptr) {
                 paldelta = static_cast<uint16_t>(
-                        (strtoul(optarg, nullptr, 0) & 3) << 13);
+                        (strtoul(optarg, nullptr, 0) & 3U) << 13U);
             }
             break;
         case 'b':
             if (optarg != nullptr) {
                 blacklist.insert(static_cast<uint16_t>(
-                        strtoul(optarg, nullptr, 0) & 0x7FF));
+                        strtoul(optarg, nullptr, 0) & 0x7FFU));
             }
             break;
         case 's':
@@ -105,11 +105,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int64_t delta = 0;
+    int32_t delta = 0;
     if (!sizeOnly) {
         delta = strtol(argv[optind++], nullptr, 0);
         if ((delta == 0) && (paldelta == 0U)) {
-            cerr << "Adding zero to file... aborting." << endl << endl;
+            cerr << "Adding zero to tile... aborting." << endl << endl;
             return 2;
         }
     }
@@ -146,11 +146,11 @@ int main(int argc, char* argv[]) {
             if (!inbuffer.good()) {
                 break;
             }
-            uint16_t tile  = val & 0x7FF;
-            uint16_t pal   = val & 0x6000;
-            uint16_t flags = val & 0x9800;
+            uint32_t tile  = val & 0x7FFU;
+            uint32_t pal   = val & 0x6000U;
+            uint32_t flags = val & 0x9800U;
             if (blacklist.find(tile) == blacklist.cend()) {
-                val = ((tile + delta) & 0x7FF) | ((pal + paldelta) & 0x6000)
+                val = ((tile + delta) & 0x7FFU) | ((pal + paldelta) & 0x6000U)
                       | flags;
             }
             BigEndian::Write2(outbuffer, val);

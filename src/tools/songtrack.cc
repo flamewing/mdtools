@@ -361,7 +361,7 @@ void FMPSGNote::print(
     bool   workAround = false;
     if ((tracktype == LocTraits::ePSGInit || tracktype == LocTraits::ePSGTrack)
         && get_value() != 0x80) {
-        uint8_t newbyte = (get_value() + get_base_keydisp()) & 0x7f;
+        uint8_t newbyte = uint32_t(get_value() + get_base_keydisp()) & 0x7fU;
         if (sonicver >= 3 && (newbyte == 0x53 || newbyte == 0x54)) {
             if (newbyte == 0x54) {
                 noteName = "nMaxPSG2";
@@ -370,7 +370,7 @@ void FMPSGNote::print(
             }
         } else if (sonicver <= 2 && newbyte == 0x46) {
             noteName = "nMaxPSG";
-        } else if (sonicver == 1 && (newbyte & 1) == 0 && newbyte >= 0x4c) {
+        } else if (sonicver == 1 && (newbyte & 1U) == 0 && newbyte >= 0x4c) {
             // Workaround for xm2smps/xm3smps/xm4smps songs.
             workAround = true;
             noteName   = "nMaxPSG";
@@ -666,7 +666,7 @@ void CoordFlag1ParamByte<noret>::print(
     }
 
     if (get_value() == 0xe0) {
-        int dir = param & 0xc0;
+        int dir = param & 0xc0U;
         switch (dir) {
         case 0x40:
             out << "panRight, ";
@@ -681,7 +681,7 @@ void CoordFlag1ParamByte<noret>::print(
             out << "panNone, ";
             break;
         }
-        PrintHex2(out, param & 0x3f, true);
+        PrintHex2(out, param & 0x3fU, true);
     } else if (
             get_value() == 0xf5
             || (sonicver >= 3 && get_value() == 0xef

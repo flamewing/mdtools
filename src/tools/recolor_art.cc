@@ -63,8 +63,8 @@ struct Tile {
             if (!in.good()) {
                 return false;
             }
-            tiledata[i + 0] = col & 0x0f;
-            tiledata[i + 1] = (col & 0xf0) >> 4;
+            tiledata[i + 0] = col & 0x0fU;
+            tiledata[i + 1] = (col & 0xf0U) >> 4U;
         }
         return true;
     }
@@ -83,7 +83,7 @@ struct Tile {
 
     void write(ostream& out) {
         for (size_t i = 0; i < sizeof(tiledata); i += 2) {
-            out.put(tiledata[i] | (tiledata[i + 1] << 4));
+            out.put(tiledata[i] | uint32_t(tiledata[i + 1] << 4U));
         }
     }
 };

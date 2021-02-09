@@ -134,16 +134,16 @@ struct SNIO {
 
     template <typename T>
     static inline int read_header_pointer(T& in, int base) {
-        return static_cast<uint16_t>(Read2(in) & 0x7fff) + base;
+        return static_cast<uint16_t>(Read2(in) % 0x8000) + base;
     }
 
     template <typename T>
     static inline int read_pointer(T& in, int base) {
-        return static_cast<uint16_t>(Read2(in) & 0x7fff) + base;
+        return static_cast<uint16_t>(Read2(in) % 0x8000) + base;
     }
 
     static inline int int2headerpointer(int val, int base) {
-        return static_cast<uint16_t>(val & 0x7fff) + base;
+        return static_cast<uint16_t>(val % 0x8000) + base;
     }
 };
 
@@ -306,7 +306,7 @@ BaseNote* BaseNote::read(
             if (voc < 0) {
                 uint8_t id = Read1(in) - 0x81;
                 if (tracktype == LocTraits::eFMTrack) {
-                    voc &= 0x7f;
+                    voc %= 0x80;
                 }
                 return new CoordFlag2ParamBytes<false>(byte, keydisp, voc, id);
             }
@@ -470,7 +470,7 @@ public:
         bool ext_vocs;
         // Also using a hack for null pointer here.
         bool uses_uvb = (sonicver >= 3 && vocptr == 0x17d8) || (vocptr == 0);
-        int  last_voc = -1;
+        int last_voc = -1;
 
         if (vocptr == 0) {
             // Null voice bank.
@@ -517,11 +517,11 @@ public:
             // Time to output headers for all tracks then queue uptheir data
             // for exploration.
             for (int i = 0; i < nchan; i++) {
-                int playctrl = Read1(in);
-                int chanid   = Read1(in);
-                int trackptr = IO::read_header_pointer(in, offset);
-                int keydisp  = Read1(in);
-                int initvol  = Read1(in);
+                int      playctrl = Read1(in);
+                uint32_t chanid   = Read1(in);
+                int      trackptr = IO::read_header_pointer(in, offset);
+                int      keydisp  = Read1(in);
+                int      initvol  = Read1(in);
 
                 // Special case for non-ordinary playback control bytes.
                 if (playctrl != 0x80) {
@@ -539,7 +539,7 @@ public:
                 case 0x80:
                 case 0xA0:
                 case 0xC0: {
-                    auto c = static_cast<char>(((chanid & 0x60) >> 5) + '1');
+                    auto c = static_cast<char>(((chanid & 0x60U) >> 5U) + '1');
                     out << "cPSG" << c << ", ";
                     lbl += "_PSG";
                     lbl += c;
@@ -559,7 +559,7 @@ public:
                 case 0x04:
                 case 0x05:
                 case 0x06: {
-                    auto c = static_cast<char>((chanid & 0x07) + '0');
+                    auto c = static_cast<char>((chanid & 0x07U) + '0');
                     out << "cFM" << c << ", ";
                     lbl += "_FM";
                     lbl += c;
@@ -578,7 +578,7 @@ public:
                 out << endl;
 
                 // Add to queue/label list.
-                if ((chanid & 0x80) != 0) {
+                if ((chanid & 0x80U) != 0) {
                     todo.push(
                             LocTraits(trackptr, LocTraits::ePSGInit, keydisp));
                 } else {
@@ -1010,7 +1010,7 @@ void dump_single_entry(
         } else {
             offset = pointer;
             if (sonicver != 1) {
-                offset &= ~0x7fff;
+                offset -= (offset % 0x8000);
             }
         }
     } else if (sonicver != 1) {
@@ -1145,7 +1145,7 @@ int main(int argc, char* argv[]) {
         int         leastptr = 0xFFFF;
         pointerTable.reserve(128);
 
-        while (fin.good() && fin.tellg() < (leastptr & 0x7FFF)) {
+        while (fin.good() && fin.tellg() < (leastptr % 0x8000)) {
             int ptr = LittleEndian::Read2(fin);
             if (ptr < 0x8000) {
                 break;
@@ -1161,7 +1161,7 @@ int main(int argc, char* argv[]) {
             string buf
                     = fmt::format(FMT_STRING("{}{:0{}X}"), projname, ii, width);
             dump_single_entry(
-                    fin, fout, buf, pointerTable[ii] & 0x7FFF, 0, sonicver,
+                    fin, fout, buf, pointerTable[ii] % 0x8000, 0, sonicver,
                     saxman, sfx, s3kmode);
             if (ii + 1 < pointerTable.size()) {
                 fout << endl;

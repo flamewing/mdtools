@@ -38,8 +38,8 @@ using std::uppercase;
 void single_mapping::read(istream& in, int const ver) {
     yy    = static_cast<int8_t>(Read1(in));
     sy    = Read1(in);
-    sx    = ((sy & 0xc) >> 2) + 1;
-    sy    = (sy & 0x3) + 1;
+    sx    = ((sy & 0xcU) >> 2U) + 1;
+    sy    = (sy & 0x3U) + 1;
     tile  = BigEndian::Read2(in);
     flags = ((tile & 0xf800U) >> 8U);
     tile &= 0x07ffU;
@@ -55,10 +55,11 @@ void single_mapping::read(istream& in, int const ver) {
 
 void single_mapping::write(ostream& out, int const ver) const {
     Write1(out, static_cast<uint8_t>(yy));
-    Write1(out, ((sx - 1) << 2) | (sy - 1));
-    BigEndian::Write2(out, (flags << 8) | tile);
+    Write1(out, ((unsigned(sx) - 1) << 2U) | (unsigned(sy) - 1));
+    BigEndian::Write2(out, (unsigned(flags) << 8U) | tile);
     if (ver == 2) {
-        BigEndian::Write2(out, (flags << 8) | (tile >> 1));
+        BigEndian::Write2(
+                out, (unsigned(flags) << 8U) | (unsigned(tile) >> 1U));
     }
     if (ver == 1) {
         Write1(out, static_cast<uint8_t>(xx));
@@ -129,8 +130,8 @@ void single_mapping::merge(
     tile  = vram_map[src.tile];
 }
 
-void single_mapping::change_pal(int const srcpal, int const dstpal) {
-    if ((flags & 0x60) == srcpal) {
-        flags = (flags & 0x9f) | dstpal;
+void single_mapping::change_pal(uint32_t const srcpal, uint32_t const dstpal) {
+    if ((flags & 0x60U) == srcpal) {
+        flags = (flags & 0x9fU) | dstpal;
     }
 }
