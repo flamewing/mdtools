@@ -22,6 +22,5 @@ libstaticanalyzer_a_SOURCES = \
 	tile.cc \
 	vram.cc
 
-AM_LDFLAGS = -no-undefined -L$(srcdir)/../../mdcomp/src/lib/.libs
-AM_CPPFLAGS = -I$(srcdir)/../../include -I$(srcdir)/../../mdcomp/include -I$(srcdir)/../../fmt/include
-
+AM_LDFLAGS = -no-undefined -L$(abs_top_srcdir)/mdcomp/src/lib/.libs
+AM_CPPFLAGS = -I$(abs_top_srcdir)/include -I$(abs_top_srcdir)/mdcomp/include -I$(abs_top_srcdir)/fmt/include

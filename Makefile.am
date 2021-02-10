@@ -34,4 +34,3 @@ include_HEADERS = \
 # Remove doc directory on uninstall
 uninstall-local:
 	-rm -r $(mdtoolsdocdir)
-
