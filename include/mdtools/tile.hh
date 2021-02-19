@@ -293,9 +293,9 @@ private:
         }
         // Checks if two iterators are at the same point in the iteration.
         template <typename U, typename V>
-        static bool
-                equal(tile_iterator<U> const& lhs,
-                      tile_iterator<V> const& rhs) noexcept {
+        static bool equal(
+                tile_iterator<U> const& lhs,
+                tile_iterator<V> const& rhs) noexcept {
             if (lhs.loc == tile_iterator<U>::Tile_size
                 || rhs.loc == tile_iterator<V>::Tile_size) {
                 return lhs.loc == rhs.loc;
@@ -306,9 +306,9 @@ private:
         }
         // Checks if lhs is an iteration to a position before rhs.
         template <typename U, typename V>
-        static bool
-                less(tile_iterator<U> const& lhs,
-                     tile_iterator<V> const& rhs) noexcept {
+        static bool less(
+                tile_iterator<U> const& lhs,
+                tile_iterator<V> const& rhs) noexcept {
             return difference(lhs, rhs) < 0;
         }
 

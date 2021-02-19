@@ -470,7 +470,7 @@ public:
         bool ext_vocs;
         // Also using a hack for null pointer here.
         bool uses_uvb = (sonicver >= 3 && vocptr == 0x17d8) || (vocptr == 0);
-        int last_voc = -1;
+        int  last_voc = -1;
 
         if (vocptr == 0) {
             // Null voice bank.

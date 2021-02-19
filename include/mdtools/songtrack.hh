@@ -84,9 +84,9 @@ public:
                  uint8_t keydisp);
     void    write(std::ostream& out, int sonicver, size_t offset) const;
     virtual void
-                print(std::ostream& out, int sonicver, LocTraits::LocType tracktype,
-                      std::multimap<int, std::string>& labels,
-                      bool                             s3kmode) const = 0;
+            print(std::ostream& out, int sonicver, LocTraits::LocType tracktype,
+                  std::multimap<int, std::string>& labels,
+                  bool                             s3kmode) const = 0;
     static void force_linebreak(std::ostream& out, bool force = false);
     static void print_psg_tone(
             std::ostream& out, int tone, int sonicver, bool last);

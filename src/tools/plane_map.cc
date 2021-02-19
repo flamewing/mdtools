@@ -95,9 +95,11 @@ static void plane_map(
                 uint16_t v = BigEndian::Read2(src);
                 BigEndian::Write2(dst, v);
                 if (sonic2) {
-                    BigEndian::Write2(dst, (v & 0xf800U) | ((v & 0x07ffU) >> 1U));
+                    BigEndian::Write2(
+                            dst, (v & 0xf800U) | ((v & 0x07ffU) >> 1U));
                 }
-                BigEndian::Write2(dst, static_cast<uint16_t>((i - w / 2) << 3U));
+                BigEndian::Write2(
+                        dst, static_cast<uint16_t>((i - w / 2) << 3U));
             }
         }
     }

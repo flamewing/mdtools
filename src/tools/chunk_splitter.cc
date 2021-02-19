@@ -252,8 +252,8 @@ void split_chunks(
         ChunkS2& trchunk, ChunkS2& blchunk, ChunkS2& brchunk) noexcept {
     for (int ii = 0; ii < 16; ii++) {
         for (int jj = 0; jj < 16; jj++) {
-            ChunkS2& curr = ii < 8 ? (jj < 8 ? tlchunk : blchunk)
-                                   : (jj < 8 ? trchunk : brchunk);
+            ChunkS2&       curr    = ii < 8 ? (jj < 8 ? tlchunk : blchunk)
+                                            : (jj < 8 ? trchunk : brchunk);
             BlockS1 const& highblk = highchunk.get_block(jj * 16 + ii);
             BlockS1 const& lowblk  = lowchunk.get_block(jj * 16 + ii);
             curr.get_block((jj % 8) * 8 + (ii % 8)).merge(highblk, lowblk);

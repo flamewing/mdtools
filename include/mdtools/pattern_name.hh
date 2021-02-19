@@ -26,8 +26,8 @@
 enum FlipMode : uint16_t { NoFlip = 0, XFlip = 1, YFlip = 2, XYFlip = 3 };
 
 // Convenience operator for flip modes.
-constexpr inline FlipMode
-        operator^(FlipMode const lhs, FlipMode const rhs) noexcept {
+constexpr inline FlipMode operator^(
+        FlipMode const lhs, FlipMode const rhs) noexcept {
     return static_cast<FlipMode>(
             static_cast<uint16_t>(lhs) ^ static_cast<uint16_t>(rhs));
 }
@@ -46,12 +46,12 @@ constexpr inline FlipMode flip_xy(FlipMode const src) noexcept {
 enum PaletteLine : uint16_t { Line0 = 0, Line1 = 1, Line2 = 2, Line3 = 3 };
 
 // Convenience operators for palette lines.
-constexpr inline PaletteLine
-        operator+(PaletteLine const lhs, uint32_t const rhs) noexcept {
+constexpr inline PaletteLine operator+(
+        PaletteLine const lhs, uint32_t const rhs) noexcept {
     return static_cast<PaletteLine>((static_cast<uint32_t>(lhs) + rhs) % 4);
 }
-constexpr inline PaletteLine
-        operator-(PaletteLine const lhs, uint32_t const rhs) noexcept {
+constexpr inline PaletteLine operator-(
+        PaletteLine const lhs, uint32_t const rhs) noexcept {
     return static_cast<PaletteLine>((static_cast<uint32_t>(lhs) - rhs) % 4);
 }
 
@@ -137,8 +137,8 @@ public:
         return ret += delta;
     }
     // Get new pattern name equal to old plus offset. Saturates at tile_mask.
-    constexpr friend Pattern_Name
-            operator+(uint16_t const delta, Pattern_Name const& rhs) noexcept {
+    constexpr friend Pattern_Name operator+(
+            uint16_t const delta, Pattern_Name const& rhs) noexcept {
         return rhs + delta;
     }
     // Prefix increment pattern name. Saturates at tile_mask.
