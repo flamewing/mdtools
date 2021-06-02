@@ -266,6 +266,7 @@ function(define_exe TARGETNAME SRCFILE LIBNAME EXENAME)
         PUBLIC
             "include"
             "fmt/include"
+            "mdcomp/include"
     )
     if(NOT "${LIBNAME}" STREQUAL "")
         target_link_libraries(${TARGETNAME} PUBLIC ${LIBNAME})
@@ -292,7 +293,11 @@ add_library(mappings
         "${COMMON_HEADERS}"
 )
 add_library(mdtools::mappings ALIAS mappings)
-target_include_directories(mappings PUBLIC include)
+target_include_directories(mappings
+    PUBLIC
+        "include"
+        "mdcomp/include"
+)
 set_target_properties(mappings
     PROPERTIES
         CXX_STANDARD 14

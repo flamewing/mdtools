@@ -2,7 +2,7 @@ name: snapshots-windows
 
 on:
   schedule:
-    - cron: "0 00 * * *" # Daily at 00:00 UTC
+    - cron: "0 01 * * *" # Daily at 01:00 UTC
   workflow_dispatch:
 
 jobs:
