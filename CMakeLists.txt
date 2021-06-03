@@ -15,6 +15,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         set(CMAKE_INSTALL_PREFIX "$ENV{MSYSTEM_PREFIX}" CACHE PATH "Default install prefix" FORCE)
     endif(DEFINED ENV{MSYSTEM_PREFIX})
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+include(GNUInstallDirs)
 
 find_package(Boost 1.54 REQUIRED)
 
@@ -205,6 +206,22 @@ elseif (MSVC)
     add_compile_options("/wd4800") # warning C4800: 'const SymbolDatabase *' : forcing value to bool 'true' or 'false' (performance warning)
 endif()
 
+if(CMAKE_GENERATOR MATCHES "Visual Studio")
+    # If Microsoft SDK is installed create script run-msbuild.bat that
+    # calls SetEnv.cmd to set up build environment and runs msbuild.
+    # It is useful when building Visual Studio projects with the SDK
+    # toolchain rather than Visual Studio.
+    include(FindSetEnv)
+    if (WINSDK_SETENV)
+        set(MSBUILD_SETUP "call \"${WINSDK_SETENV}\"")
+    endif ()
+    # Set FrameworkPathOverride to get rid of MSB3644 warnings.
+    set(netfxpath "C:\\Program Files\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.0")
+    file(WRITE run-msbuild.bat "
+    ${MSBUILD_SETUP}
+    ${CMAKE_MAKE_PROGRAM} -p:FrameworkPathOverride=\"${netfxpath}\" %*")
+endif()
+
 set(COMMON_HEADERS
     "include/mdtools/ignore_unused_variable_warning.hh"
 )
@@ -237,7 +254,7 @@ set(VRASSTRACK_HEADERS
 
 # Dummy library for generating compile_commands.json that
 # sets flags for headers without corresponding cc files.
-add_library(dummy2
+add_library(dummy-mdtools
     "src/lib/fmvoice.cc"
     "src/lib/ignore_unused_variable_warning.cc"
     "src/lib/pattern_name.cc"
@@ -249,8 +266,22 @@ add_library(dummy2
     "${SMPS_HEADERS}"
     "${COMMON_HEADERS}"
 )
-target_include_directories(dummy2 PRIVATE include)
-set_target_properties(dummy2
+target_include_directories(dummy-mdtools
+    PRIVATE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_include_directories(dummy-mdtools
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/mdcomp/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries(dummy-mdtools
+    INTERFACE
+        mdcomp::bigendian_io
+)
+set_target_properties(dummy-mdtools
     PROPERTIES
         CXX_STANDARD 14
         CXX_STANDARD_REQUIRED YES
@@ -295,8 +326,13 @@ add_library(mappings
 add_library(mdtools::mappings ALIAS mappings)
 target_include_directories(mappings
     PUBLIC
-        "include"
-        "mdcomp/include"
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/mdcomp/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries(mappings
+    INTERFACE
+        mdcomp::bigendian_io
 )
 set_target_properties(mappings
     PROPERTIES
@@ -318,8 +354,12 @@ add_library(sstrack
 add_library(mdtools::sstrack ALIAS sstrack)
 target_include_directories(sstrack
     PUBLIC
-        "include"
-        "mdcomp/include"
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries(sstrack
+    INTERFACE
+        mdcomp::bigendian_io
 )
 target_link_libraries(sstrack
     PUBLIC
