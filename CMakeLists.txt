@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 
 project(mdtools
     VERSION 0.2.0
-    DESCRIPTION "Assorted compression formats for the Sega Mega Drive"
+    DESCRIPTION "Assorted tools for the Sega Mega Drive"
     LANGUAGES CXX ASM
 )
 
