@@ -271,11 +271,9 @@ target_include_directories(dummy-mdtools
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_include_directories(dummy-mdtools
+target_include_directories(dummy-mdtools SYSTEM
     PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/mdcomp/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_link_libraries(dummy-mdtools
     INTERFACE
@@ -295,9 +293,13 @@ function(define_exe TARGETNAME SRCFILE LIBNAME EXENAME)
     )
     target_include_directories(${TARGETNAME}
         PUBLIC
-            "include"
-            "fmt/include"
-            "mdcomp/include"
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
+    target_include_directories(${TARGETNAME} SYSTEM
+        PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/fmt/include>
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/mdcomp/include>
     )
     if(NOT "${LIBNAME}" STREQUAL "")
         target_link_libraries(${TARGETNAME} PUBLIC ${LIBNAME})
@@ -327,8 +329,11 @@ add_library(mdtools::mappings ALIAS mappings)
 target_include_directories(mappings
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/mdcomp/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_include_directories(mappings SYSTEM
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/mdcomp/include>
 )
 target_link_libraries(mappings
     INTERFACE
