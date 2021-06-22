@@ -83,7 +83,7 @@ struct SingleDPLCCmp {
 };
 
 void frame_mapping::split(frame_mapping const& src, frame_dplc& dplc) {
-    // Coalesce the mappings tiles into tile ranges, reodering adjacent DPLCs
+    // Coalesce the mappings tiles into tile ranges, reordering adjacent DPLCs
     // that are neighbours in art to coalesce the ranges as needed.
     vector<pair<size_t, size_t>> ranges;
     for (auto const& sd : src.maps) {

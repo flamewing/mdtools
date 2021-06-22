@@ -44,7 +44,7 @@ static void usage() {
     cerr << "\t-x,--extract \tExtract {num_voices} from {pointer} address in "
             "{input_filename}."
          << endl
-         << "\t             \tIf ommitted, {pointer} is assumed to be zero."
+         << "\t             \tIf omitted, {pointer} is assumed to be zero."
          << endl;
     cerr << "\t-v,--sonicver\tSets Sonic version to {version}. This also sets "
             "underlying"
