@@ -39,7 +39,6 @@
 #    pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif
 #define FMT_HEADER_ONLY  1
-#define FMT_STRING_ALIAS 1
 #include <fmt/format.h>
 #ifdef __GNUG__
 #    pragma GCC diagnostic pop
@@ -514,7 +513,7 @@ public:
             PrintHex2(out, nchan, true);
             out << endl << endl;
 
-            // Time to output headers for all tracks then queue uptheir data
+            // Time to output headers for all tracks then queue up their data
             // for exploration.
             for (int i = 0; i < nchan; i++) {
                 int      playctrl = Read1(in);

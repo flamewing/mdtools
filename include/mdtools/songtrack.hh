@@ -124,7 +124,7 @@ public:
                   bool                             s3kmode) const final;
 };
 
-class NullNote : public BaseNote {
+class NullNote final : public BaseNote {
 public:
     NullNote() : BaseNote(0, 0) {}
     void
@@ -136,7 +136,7 @@ public:
     }
 };
 
-class FMVoice : public BaseNote {
+class FMVoice final : public BaseNote {
     fm_voice voc{};
     int      id;
 
