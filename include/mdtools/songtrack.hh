@@ -63,10 +63,10 @@ private:
     uint8_t keydisp;
 
 protected:
-    uint8_t get_value() const noexcept {
+    [[nodiscard]] uint8_t get_value() const noexcept {
         return val;
     }
-    uint8_t get_base_keydisp() const noexcept {
+    [[nodiscard]] uint8_t get_base_keydisp() const noexcept {
         return keydisp;
     }
 
@@ -90,19 +90,19 @@ public:
     static void force_linebreak(std::ostream& out, bool force = false);
     static void print_psg_tone(
             std::ostream& out, int tone, int sonicver, bool last);
-    virtual bool ends_track() const noexcept {
+    [[nodiscard]] virtual bool ends_track() const noexcept {
         return false;
     }
-    virtual bool has_pointer() const noexcept {
+    [[nodiscard]] virtual bool has_pointer() const noexcept {
         return false;
     }
-    virtual int get_pointer() const noexcept {
+    [[nodiscard]] virtual int get_pointer() const noexcept {
         return 0;
     }
-    virtual bool is_rest() const noexcept {
+    [[nodiscard]] virtual bool is_rest() const noexcept {
         return false;
     }
-    virtual uint8_t get_keydisp() const noexcept {
+    [[nodiscard]] virtual uint8_t get_keydisp() const noexcept {
         return keydisp;
     }
 };
@@ -110,7 +110,7 @@ public:
 class RealNote : public BaseNote {
 public:
     RealNote(uint8_t v, uint8_t k) noexcept : BaseNote(v, k) {}
-    bool is_rest() const noexcept final {
+    [[nodiscard]] bool is_rest() const noexcept final {
         return get_value() == 0x80;
     }
 };
@@ -168,7 +168,7 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    bool ends_track() const noexcept final {
+    [[nodiscard]] bool ends_track() const noexcept final {
         return noret;
     }
 };
@@ -184,7 +184,7 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    bool ends_track() const noexcept final {
+    [[nodiscard]] bool ends_track() const noexcept final {
         return noret;
     }
 };
@@ -199,7 +199,7 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    uint8_t get_keydisp() const noexcept final {
+    [[nodiscard]] uint8_t get_keydisp() const noexcept final {
         return get_base_keydisp() + param;
     }
 };
@@ -215,7 +215,7 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    bool ends_track() const noexcept final {
+    [[nodiscard]] bool ends_track() const noexcept final {
         return noret;
     }
 };
@@ -232,7 +232,7 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    bool ends_track() const noexcept final {
+    [[nodiscard]] bool ends_track() const noexcept final {
         return noret;
     }
 };
@@ -250,7 +250,7 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    bool ends_track() const noexcept final {
+    [[nodiscard]] bool ends_track() const noexcept final {
         return noret;
     }
 };
@@ -269,7 +269,7 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    bool ends_track() const noexcept final {
+    [[nodiscard]] bool ends_track() const noexcept final {
         return noret;
     }
 };
@@ -285,13 +285,13 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    bool ends_track() const noexcept final {
+    [[nodiscard]] bool ends_track() const noexcept final {
         return noret;
     }
-    bool has_pointer() const noexcept final {
+    [[nodiscard]] bool has_pointer() const noexcept final {
         return true;
     }
-    int get_pointer() const noexcept final {
+    [[nodiscard]] int get_pointer() const noexcept final {
         return jumptarget;
     }
 };
@@ -309,13 +309,13 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    bool ends_track() const noexcept final {
+    [[nodiscard]] bool ends_track() const noexcept final {
         return noret;
     }
-    bool has_pointer() const noexcept final {
+    [[nodiscard]] bool has_pointer() const noexcept final {
         return true;
     }
-    int get_pointer() const noexcept final {
+    [[nodiscard]] int get_pointer() const noexcept final {
         return jumptarget;
     }
 };
@@ -333,13 +333,13 @@ public:
     void print(
             std::ostream& out, int sonicver, LocTraits::LocType tracktype,
             std::multimap<int, std::string>& labels, bool s3kmode) const final;
-    bool ends_track() const noexcept final {
+    [[nodiscard]] bool ends_track() const noexcept final {
         return noret;
     }
-    bool has_pointer() const noexcept final {
+    [[nodiscard]] bool has_pointer() const noexcept final {
         return true;
     }
-    int get_pointer() const noexcept final {
+    [[nodiscard]] int get_pointer() const noexcept final {
         return jumptarget;
     }
 };

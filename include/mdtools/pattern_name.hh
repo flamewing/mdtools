@@ -87,16 +87,16 @@ public:
     ~Pattern_Name() noexcept                         = default;
 
     // Getters.
-    constexpr uint16_t get_tile() const noexcept {
+    [[nodiscard]] constexpr uint16_t get_tile() const noexcept {
         return (pn & tile_mask);
     }
-    constexpr FlipMode get_flip() const noexcept {
+    [[nodiscard]] constexpr FlipMode get_flip() const noexcept {
         return static_cast<FlipMode>((pn & xyflip_mask) >> xyflip_shift);
     }
-    constexpr PaletteLine get_palette() const noexcept {
+    [[nodiscard]] constexpr PaletteLine get_palette() const noexcept {
         return static_cast<PaletteLine>((pn & palette_mask) >> palette_shift);
     }
-    constexpr bool high_priority() const noexcept {
+    [[nodiscard]] constexpr bool high_priority() const noexcept {
         return (pn & priority_mask) != 0;
     }
 

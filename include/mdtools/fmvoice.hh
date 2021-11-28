@@ -21,12 +21,13 @@
 #include <array>
 #include <cstdint>
 #include <iosfwd>
+#include <string_view>
 
-void PrintMacro(std::ostream& out, char const* macro);
+void PrintMacro(std::ostream& out, std::string_view macro);
 void PrintHex2(std::ostream& out, uint8_t c, bool last);
 void PrintHex2Pre(std::ostream& out, uint8_t c, bool first);
 void PrintHex4(std::ostream& out, uint16_t c, bool last);
-void PrintName(std::ostream& out, std::string const& s, bool first);
+void PrintName(std::ostream& out, std::string_view s, bool first);
 
 class fm_voice {
 private:

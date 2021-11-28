@@ -1043,7 +1043,7 @@ void dump_single_entry(
 }
 
 int main(int argc, char* argv[]) {
-    constexpr static const std::array<option, 8> long_options{
+    constexpr static const std::array long_options{
             option{"bank", optional_argument, nullptr, 'b'},
             option{"extract", optional_argument, nullptr, 'x'},
             option{"saxman", no_argument, nullptr, 'u'},

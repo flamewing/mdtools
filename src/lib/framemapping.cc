@@ -118,9 +118,7 @@ void frame_mapping::split(frame_mapping const& src, frame_dplc& dplc) {
 
     // Build VRAM map for coalesced ranges.
     map<size_t, size_t> vram_map;
-    for (auto const& elem : ranges) {
-        size_t const ss = elem.first;
-        size_t const sz = elem.second;
+    for (auto const& [ss, sz] : ranges) {
         for (size_t i = ss; i < ss + sz; i++) {
             if (vram_map.find(i) == vram_map.end()) {
                 vram_map.emplace(i, vram_map.size());
@@ -140,8 +138,7 @@ void frame_mapping::split(frame_mapping const& src, frame_dplc& dplc) {
         single_dplc nd{};
         nd.set_tile(ss);
         nd.set_cnt(sz);
-        auto const sit = uniquedplcs.find(nd);
-        if (sit == uniquedplcs.end()) {
+        if (auto const sit = uniquedplcs.find(nd); sit == uniquedplcs.end()) {
             newdplc.insert(nd);
             uniquedplcs.insert(nd);
         }

@@ -36,10 +36,10 @@ public:
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    uint16_t get_cnt() const noexcept {
+    [[nodiscard]] uint16_t get_cnt() const noexcept {
         return cnt;
     }
-    uint16_t get_tile() const noexcept {
+    [[nodiscard]] uint16_t get_tile() const noexcept {
         return tile;
     }
 

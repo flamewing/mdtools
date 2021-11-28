@@ -50,22 +50,22 @@ public:
     void merge(single_mapping const& src, std::map<size_t, size_t>& vram_map);
     void change_pal(uint32_t srcpal, uint32_t dstpal);
 
-    uint16_t get_flags() const noexcept {
+    [[nodiscard]] uint16_t get_flags() const noexcept {
         return flags;
     }
-    uint16_t get_tile() const noexcept {
+    [[nodiscard]] uint16_t get_tile() const noexcept {
         return tile;
     }
-    int16_t get_xx() const noexcept {
+    [[nodiscard]] int16_t get_xx() const noexcept {
         return xx;
     }
-    int16_t get_yy() const noexcept {
+    [[nodiscard]] int16_t get_yy() const noexcept {
         return yy;
     }
-    uint8_t get_sx() const noexcept {
+    [[nodiscard]] uint8_t get_sx() const noexcept {
         return sx;
     }
-    uint8_t get_sy() const noexcept {
+    [[nodiscard]] uint8_t get_sy() const noexcept {
         return sy;
     }
 

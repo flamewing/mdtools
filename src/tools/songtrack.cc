@@ -23,6 +23,7 @@
 #include <iostream>
 #include <istream>
 #include <ostream>
+#include <string_view>
 #include <vector>
 
 #ifdef __GNUG__
@@ -38,6 +39,7 @@
 
 #include <mdcomp/bigendian_io.hh>
 
+using std::array;
 using std::cerr;
 using std::endl;
 using std::hex;
@@ -46,11 +48,14 @@ using std::istream;
 using std::multimap;
 using std::nouppercase;
 using std::ostream;
+using std::pair;
 using std::setfill;
 using std::setw;
 using std::string;
+using std::string_view;
 using std::uppercase;
-using std::vector;
+
+using namespace std::literals::string_view_literals;
 
 size_t          BaseNote::notesprinted = 0;
 BaseNote const* BaseNote::last_note    = nullptr;
@@ -110,189 +115,189 @@ void FMVoice::print(
 }
 
 static void print_dac_sample(ostream& out, int val, int sonicver, bool flag) {
-    static vector<string> s12daclut{
-            "nRst",       "dKick",       "dSnare",      "dClap",
-            "dScratch",   "dTimpani",    "dHiTom",      "dVLowClap",
-            "dHiTimpani", "dMidTimpani", "dLowTimpani", "dVLowTimpani",
-            "dMidTom",    "dLowTom",     "dFloorTom",   "dHiClap",
-            "dMidClap",   "dLowClap"};
+    constexpr const static array s12daclut{
+            "nRst"sv,       "dKick"sv,       "dSnare"sv,      "dClap"sv,
+            "dScratch"sv,   "dTimpani"sv,    "dHiTom"sv,      "dVLowClap"sv,
+            "dHiTimpani"sv, "dMidTimpani"sv, "dLowTimpani"sv, "dVLowTimpani"sv,
+            "dMidTom"sv,    "dLowTom"sv,     "dFloorTom"sv,   "dHiClap"sv,
+            "dMidClap"sv,   "dLowClap"sv};
 
-    static vector<string> s3daclut{
-            "nRst",
-            "dSnareS3",
-            "dHighTom",
-            "dMidTomS3",
-            "dLowTomS3",
-            "dFloorTomS3",
-            "dKickS3",
-            "dMuffledSnare",
-            "dCrashCymbal",
-            "dRideCymbal",
-            "dLowMetalHit",
-            "dMetalHit",
-            "dHighMetalHit",
-            "dHigherMetalHit",
-            "dMidMetalHit",
-            "dClapS3",
-            "dElectricHighTom",
-            "dElectricMidTom",
-            "dElectricLowTom",
-            "dElectricFloorTom",
-            "dTightSnare",
-            "dMidpitchSnare",
-            "dLooseSnare",
-            "dLooserSnare",
-            "dHiTimpaniS3",
-            "dLowTimpaniS3",
-            "dMidTimpaniS3",
-            "dQuickLooseSnare",
-            "dClick",
-            "dPowerKick",
-            "dQuickGlassCrash",
-            "dGlassCrashSnare",
-            "dGlassCrash",
-            "dGlassCrashKick",
-            "dQuietGlassCrash",
-            "dOddSnareKick",
-            "dKickExtraBass",
-            "dComeOn",
-            "dDanceSnare",
-            "dLooseKick",
-            "dModLooseKick",
-            "dWoo",
-            "dGo",
-            "dSnareGo",
-            "dPowerTom",
-            "dHiWoodBlock",
-            "dLowWoodBlock",
-            "dHiHitDrum",
-            "dLowHitDrum",
-            "dMetalCrashHit",
-            "dEchoedClapHit_S3",
-            "dLowerEchoedClapHit_S3",
-            "dHipHopHitKick",
-            "dHipHopHitPowerKick",
-            "dBassHey",
-            "dDanceStyleKick",
-            "dHipHopHitKick2",
-            "dHipHopHitKick3",
-            "dReverseFadingWind",
-            "dScratchS3",
-            "dLooseSnareNoise",
-            "dPowerKick2",
-            "dCrashingNoiseWoo",
-            "dQuickHit",
-            "dKickHey",
-            "dPowerKickHit",
-            "dLowPowerKickHit",
-            "dLowerPowerKickHit",
-            "dLowestPowerKickHit"};
+    constexpr const static array s3daclut{
+            "nRst"sv,
+            "dSnareS3"sv,
+            "dHighTom"sv,
+            "dMidTomS3"sv,
+            "dLowTomS3"sv,
+            "dFloorTomS3"sv,
+            "dKickS3"sv,
+            "dMuffledSnare"sv,
+            "dCrashCymbal"sv,
+            "dRideCymbal"sv,
+            "dLowMetalHit"sv,
+            "dMetalHit"sv,
+            "dHighMetalHit"sv,
+            "dHigherMetalHit"sv,
+            "dMidMetalHit"sv,
+            "dClapS3"sv,
+            "dElectricHighTom"sv,
+            "dElectricMidTom"sv,
+            "dElectricLowTom"sv,
+            "dElectricFloorTom"sv,
+            "dTightSnare"sv,
+            "dMidpitchSnare"sv,
+            "dLooseSnare"sv,
+            "dLooserSnare"sv,
+            "dHiTimpaniS3"sv,
+            "dLowTimpaniS3"sv,
+            "dMidTimpaniS3"sv,
+            "dQuickLooseSnare"sv,
+            "dClick"sv,
+            "dPowerKick"sv,
+            "dQuickGlassCrash"sv,
+            "dGlassCrashSnare"sv,
+            "dGlassCrash"sv,
+            "dGlassCrashKick"sv,
+            "dQuietGlassCrash"sv,
+            "dOddSnareKick"sv,
+            "dKickExtraBass"sv,
+            "dComeOn"sv,
+            "dDanceSnare"sv,
+            "dLooseKick"sv,
+            "dModLooseKick"sv,
+            "dWoo"sv,
+            "dGo"sv,
+            "dSnareGo"sv,
+            "dPowerTom"sv,
+            "dHiWoodBlock"sv,
+            "dLowWoodBlock"sv,
+            "dHiHitDrum"sv,
+            "dLowHitDrum"sv,
+            "dMetalCrashHit"sv,
+            "dEchoedClapHit_S3"sv,
+            "dLowerEchoedClapHit_S3"sv,
+            "dHipHopHitKick"sv,
+            "dHipHopHitPowerKick"sv,
+            "dBassHey"sv,
+            "dDanceStyleKick"sv,
+            "dHipHopHitKick2"sv,
+            "dHipHopHitKick3"sv,
+            "dReverseFadingWind"sv,
+            "dScratchS3"sv,
+            "dLooseSnareNoise"sv,
+            "dPowerKick2"sv,
+            "dCrashingNoiseWoo"sv,
+            "dQuickHit"sv,
+            "dKickHey"sv,
+            "dPowerKickHit"sv,
+            "dLowPowerKickHit"sv,
+            "dLowerPowerKickHit"sv,
+            "dLowestPowerKickHit"sv};
 
-    static vector<string> skdaclut{
-            "nRst",
-            "dSnareS3",
-            "dHighTom",
-            "dMidTomS3",
-            "dLowTomS3",
-            "dFloorTomS3",
-            "dKickS3",
-            "dMuffledSnare",
-            "dCrashCymbal",
-            "dRideCymbal",
-            "dLowMetalHit",
-            "dMetalHit",
-            "dHighMetalHit",
-            "dHigherMetalHit",
-            "dMidMetalHit",
-            "dClapS3",
-            "dElectricHighTom",
-            "dElectricMidTom",
-            "dElectricLowTom",
-            "dElectricFloorTom",
-            "dTightSnare",
-            "dMidpitchSnare",
-            "dLooseSnare",
-            "dLooserSnare",
-            "dHiTimpaniS3",
-            "dLowTimpaniS3",
-            "dMidTimpaniS3",
-            "dQuickLooseSnare",
-            "dClick",
-            "dPowerKick",
-            "dQuickGlassCrash",
-            "dGlassCrashSnare",
-            "dGlassCrash",
-            "dGlassCrashKick",
-            "dQuietGlassCrash",
-            "dOddSnareKick",
-            "dKickExtraBass",
-            "dComeOn",
-            "dDanceSnare",
-            "dLooseKick",
-            "dModLooseKick",
-            "dWoo",
-            "dGo",
-            "dSnareGo",
-            "dPowerTom",
-            "dHiWoodBlock",
-            "dLowWoodBlock",
-            "dHiHitDrum",
-            "dLowHitDrum",
-            "dMetalCrashHit",
-            "dEchoedClapHit",
-            "dLowerEchoedClapHit",
-            "dHipHopHitKick",
-            "dHipHopHitPowerKick",
-            "dBassHey",
-            "dDanceStyleKick",
-            "dHipHopHitKick2",
-            "dHipHopHitKick3",
-            "dReverseFadingWind",
-            "dScratchS3",
-            "dLooseSnareNoise",
-            "dPowerKick2",
-            "dCrashingNoiseWoo",
-            "dQuickHit",
-            "dKickHey",
-            "dPowerKickHit",
-            "dLowPowerKickHit",
-            "dLowerPowerKickHit",
-            "dLowestPowerKickHit"};
+    constexpr const static array skdaclut{
+            "nRst"sv,
+            "dSnareS3"sv,
+            "dHighTom"sv,
+            "dMidTomS3"sv,
+            "dLowTomS3"sv,
+            "dFloorTomS3"sv,
+            "dKickS3"sv,
+            "dMuffledSnare"sv,
+            "dCrashCymbal"sv,
+            "dRideCymbal"sv,
+            "dLowMetalHit"sv,
+            "dMetalHit"sv,
+            "dHighMetalHit"sv,
+            "dHigherMetalHit"sv,
+            "dMidMetalHit"sv,
+            "dClapS3"sv,
+            "dElectricHighTom"sv,
+            "dElectricMidTom"sv,
+            "dElectricLowTom"sv,
+            "dElectricFloorTom"sv,
+            "dTightSnare"sv,
+            "dMidpitchSnare"sv,
+            "dLooseSnare"sv,
+            "dLooserSnare"sv,
+            "dHiTimpaniS3"sv,
+            "dLowTimpaniS3"sv,
+            "dMidTimpaniS3"sv,
+            "dQuickLooseSnare"sv,
+            "dClick"sv,
+            "dPowerKick"sv,
+            "dQuickGlassCrash"sv,
+            "dGlassCrashSnare"sv,
+            "dGlassCrash"sv,
+            "dGlassCrashKick"sv,
+            "dQuietGlassCrash"sv,
+            "dOddSnareKick"sv,
+            "dKickExtraBass"sv,
+            "dComeOn"sv,
+            "dDanceSnare"sv,
+            "dLooseKick"sv,
+            "dModLooseKick"sv,
+            "dWoo"sv,
+            "dGo"sv,
+            "dSnareGo"sv,
+            "dPowerTom"sv,
+            "dHiWoodBlock"sv,
+            "dLowWoodBlock"sv,
+            "dHiHitDrum"sv,
+            "dLowHitDrum"sv,
+            "dMetalCrashHit"sv,
+            "dEchoedClapHit"sv,
+            "dLowerEchoedClapHit"sv,
+            "dHipHopHitKick"sv,
+            "dHipHopHitPowerKick"sv,
+            "dBassHey"sv,
+            "dDanceStyleKick"sv,
+            "dHipHopHitKick2"sv,
+            "dHipHopHitKick3"sv,
+            "dReverseFadingWind"sv,
+            "dScratchS3"sv,
+            "dLooseSnareNoise"sv,
+            "dPowerKick2"sv,
+            "dCrashingNoiseWoo"sv,
+            "dQuickHit"sv,
+            "dKickHey"sv,
+            "dPowerKickHit"sv,
+            "dLowPowerKickHit"sv,
+            "dLowerPowerKickHit"sv,
+            "dLowestPowerKickHit"sv};
 
-    static vector<string> s3ddaclut{
-            "nRst",
-            "dSnareS3",
-            "dHighTom",
-            "dMidTomS3",
-            "dLowTomS3",
-            "dFloorTomS3",
-            "dKickS3",
-            "dMuffledSnare",
-            "dCrashCymbal",
-            "dCrashCymbal2",
-            "dLowMetalHit",
-            "dMetalHit",
-            "dHighMetalHit",
-            "dHigherMetalHit",
-            "dMidMetalHit",
-            "dClapS3",
-            "dElectricHighTom",
-            "dElectricMidTom",
-            "dElectricLowTom",
-            "dElectricFloorTom",
-            "dTightSnare",
-            "dMidpitchSnare",
-            "dLooseSnare",
-            "dLooserSnare",
-            "dHiTimpaniS3",
-            "dLowTimpaniS3",
-            "dMidTimpaniS3",
-            "dQuickLooseSnare",
-            "dClick",
-            "dPowerKick",
-            "dQuickGlassCrash",
-            "dIntroKick",
-            "dFinalFightMetalCrash"};
+    constexpr const static array s3ddaclut{
+            "nRst"sv,
+            "dSnareS3"sv,
+            "dHighTom"sv,
+            "dMidTomS3"sv,
+            "dLowTomS3"sv,
+            "dFloorTomS3"sv,
+            "dKickS3"sv,
+            "dMuffledSnare"sv,
+            "dCrashCymbal"sv,
+            "dCrashCymbal2"sv,
+            "dLowMetalHit"sv,
+            "dMetalHit"sv,
+            "dHighMetalHit"sv,
+            "dHigherMetalHit"sv,
+            "dMidMetalHit"sv,
+            "dClapS3"sv,
+            "dElectricHighTom"sv,
+            "dElectricMidTom"sv,
+            "dElectricLowTom"sv,
+            "dElectricFloorTom"sv,
+            "dTightSnare"sv,
+            "dMidpitchSnare"sv,
+            "dLooseSnare"sv,
+            "dLooserSnare"sv,
+            "dHiTimpaniS3"sv,
+            "dLowTimpaniS3"sv,
+            "dMidTimpaniS3"sv,
+            "dQuickLooseSnare"sv,
+            "dClick"sv,
+            "dPowerKick"sv,
+            "dQuickGlassCrash"sv,
+            "dIntroKick"sv,
+            "dFinalFightMetalCrash"sv};
 
     size_t note = val - 0x80;
     if (sonicver == 5 && note < s3ddaclut.size()) {
@@ -342,42 +347,48 @@ void FMPSGNote::print(
         out << "\tdc.b\t";
     }
 
-    // TODO: string -> string_view.
-    static const std::array<string, 96> fmpsglut{
-            "nRst", "nC0",  "nCs0", "nD0",  "nEb0", "nE0",  "nF0",  "nFs0",
-            "nG0",  "nAb0", "nA0",  "nBb0", "nB0",  "nC1",  "nCs1", "nD1",
-            "nEb1", "nE1",  "nF1",  "nFs1", "nG1",  "nAb1", "nA1",  "nBb1",
-            "nB1",  "nC2",  "nCs2", "nD2",  "nEb2", "nE2",  "nF2",  "nFs2",
-            "nG2",  "nAb2", "nA2",  "nBb2", "nB2",  "nC3",  "nCs3", "nD3",
-            "nEb3", "nE3",  "nF3",  "nFs3", "nG3",  "nAb3", "nA3",  "nBb3",
-            "nB3",  "nC4",  "nCs4", "nD4",  "nEb4", "nE4",  "nF4",  "nFs4",
-            "nG4",  "nAb4", "nA4",  "nBb4", "nB4",  "nC5",  "nCs5", "nD5",
-            "nEb5", "nE5",  "nF5",  "nFs5", "nG5",  "nAb5", "nA5",  "nBb5",
-            "nB5",  "nC6",  "nCs6", "nD6",  "nEb6", "nE6",  "nF6",  "nFs6",
-            "nG6",  "nAb6", "nA6",  "nBb6", "nB6",  "nC7",  "nCs7", "nD7",
-            "nEb7", "nE7",  "nF7",  "nFs7", "nG7",  "nAb7", "nA7",  "nBb7"};
+    constexpr const static array fmpsglut{
+            "nRst"sv, "nC0"sv,  "nCs0"sv, "nD0"sv,  "nEb0"sv, "nE0"sv,
+            "nF0"sv,  "nFs0"sv, "nG0"sv,  "nAb0"sv, "nA0"sv,  "nBb0"sv,
+            "nB0"sv,  "nC1"sv,  "nCs1"sv, "nD1"sv,  "nEb1"sv, "nE1"sv,
+            "nF1"sv,  "nFs1"sv, "nG1"sv,  "nAb1"sv, "nA1"sv,  "nBb1"sv,
+            "nB1"sv,  "nC2"sv,  "nCs2"sv, "nD2"sv,  "nEb2"sv, "nE2"sv,
+            "nF2"sv,  "nFs2"sv, "nG2"sv,  "nAb2"sv, "nA2"sv,  "nBb2"sv,
+            "nB2"sv,  "nC3"sv,  "nCs3"sv, "nD3"sv,  "nEb3"sv, "nE3"sv,
+            "nF3"sv,  "nFs3"sv, "nG3"sv,  "nAb3"sv, "nA3"sv,  "nBb3"sv,
+            "nB3"sv,  "nC4"sv,  "nCs4"sv, "nD4"sv,  "nEb4"sv, "nE4"sv,
+            "nF4"sv,  "nFs4"sv, "nG4"sv,  "nAb4"sv, "nA4"sv,  "nBb4"sv,
+            "nB4"sv,  "nC5"sv,  "nCs5"sv, "nD5"sv,  "nEb5"sv, "nE5"sv,
+            "nF5"sv,  "nFs5"sv, "nG5"sv,  "nAb5"sv, "nA5"sv,  "nBb5"sv,
+            "nB5"sv,  "nC6"sv,  "nCs6"sv, "nD6"sv,  "nEb6"sv, "nE6"sv,
+            "nF6"sv,  "nFs6"sv, "nG6"sv,  "nAb6"sv, "nA6"sv,  "nBb6"sv,
+            "nB6"sv,  "nC7"sv,  "nCs7"sv, "nD7"sv,  "nEb7"sv, "nE7"sv,
+            "nF7"sv,  "nFs7"sv, "nG7"sv,  "nAb7"sv, "nA7"sv,  "nBb7"sv};
 
-    string noteName;
-    bool   workAround = false;
-    if ((tracktype == LocTraits::ePSGInit || tracktype == LocTraits::ePSGTrack)
-        && get_value() != 0x80) {
-        uint8_t newbyte = uint32_t(get_value() + get_base_keydisp()) & 0x7fU;
-        if (sonicver >= 3 && (newbyte == 0x53 || newbyte == 0x54)) {
-            if (newbyte == 0x54) {
-                noteName = "nMaxPSG2";
-            } else {
-                noteName = "nMaxPSG1";
+    const auto [noteName, workAround] = [&]() -> pair<string_view, bool> {
+        if ((tracktype == LocTraits::ePSGInit
+             || tracktype == LocTraits::ePSGTrack)
+            && get_value() != 0x80) {
+            const uint8_t newbyte
+                    = uint32_t(get_value() + get_base_keydisp()) & 0x7fU;
+            if (sonicver >= 3 && (newbyte == 0x53 || newbyte == 0x54)) {
+                if (newbyte == 0x54) {
+                    return {"nMaxPSG2"sv, false};
+                }
+                return {"nMaxPSG1"sv, false};
             }
-        } else if (sonicver <= 2 && newbyte == 0x46) {
-            noteName = "nMaxPSG";
-        } else if (sonicver == 1 && (newbyte & 1U) == 0 && newbyte >= 0x4c) {
-            // Workaround for xm2smps/xm3smps/xm4smps songs.
-            workAround = true;
-            noteName   = "nMaxPSG";
+            if (sonicver <= 2 && newbyte == 0x46) {
+                return {"nMaxPSG"sv, false};
+            }
+            if (sonicver == 1 && (newbyte & 1U) == 0 && newbyte >= 0x4c) {
+                // Workaround for xm2smps/xm3smps/xm4smps songs.
+                return {"nMaxPSG"sv, true};
+            }
         }
-    }
+        return {""sv, false};
+    }();
 
-    if (noteName.length() != 0) {
+    if (!noteName.empty()) {
         if (get_base_keydisp() != 0) {
             string buf = fmt::format(
                     FMT_STRING("({}-${:X})&$FF"), noteName, get_base_keydisp());
@@ -425,67 +436,51 @@ void CoordFlagNoParams<noret>::print(
         multimap<int, string>& labels, bool s3kmode) const {
     ignore_unused_variable_warning(tracktype, labels, s3kmode);
     // Note-like macros:
-    string s;
-    bool   notelike = false;
-    if (sonicver >= 3) {
-        switch (get_value()) {
-        case 0xe2:
-            s = "smpsFade";
-            break;    // For $E2, $FF
-        case 0xe3:
-            s = "smpsStopFM";
-            break;
-        case 0xe7:
-            s        = "smpsNoAttack";
-            notelike = true;
-            break;
-        case 0xe9:
-            s = "smpsSpindashRev";
-            break;
-        case 0xf2:
-            s = "smpsStop";
-            break;
-        case 0xf9:
-            s = "smpsReturn";
-            break;
-        case 0xfa:
-            s = "smpsModOff";
-            break;
-        }
-    } else {
-        switch (get_value()) {
-        case 0xe3:
-            s = "smpsReturn";
-            break;
-        case 0xe4:
-            s = "smpsFade";
-            break;
-        case 0xe7:
-            s        = "smpsNoAttack";
-            notelike = true;
-            break;
-        case 0xed:
-            s = "smpsClearPush";
-            break;    // Sonic 1 version
-        case 0xee:
-            if (sonicver == 1) {
-                s = "smpsStopSpecial";
+    const auto [s, notelike] = [&]() -> pair<string_view, bool> {
+        if (sonicver >= 3) {
+            switch (get_value()) {
+            case 0xe2:
+                return {"smpsFade"sv, false};    // For $E2, $FF
+            case 0xe3:
+                return {"smpsStopFM"sv, false};
+            case 0xe7:
+                return {"smpsNoAttack"sv, true};
+            case 0xe9:
+                return {"smpsSpindashRev"sv, false};
+            case 0xf2:
+                return {"smpsStop"sv, false};
+            case 0xf9:
+                return {"smpsReturn"sv, false};
+            case 0xfa:
+                return {"smpsModOff"sv, false};
             }
-            break;
-        case 0xf1:
-            s = "smpsModOn";
-            break;
-        case 0xf2:
-            s = "smpsStop";
-            break;
-        case 0xf4:
-            s = "smpsModOff";
-            break;
-        case 0xf9:
-            s = "smpsMaxRelRate";
-            break;
+        } else {
+            switch (get_value()) {
+            case 0xe3:
+                return {"smpsReturn"sv, false};
+            case 0xe4:
+                return {"smpsFade"sv, false};
+            case 0xe7:
+                return {"smpsNoAttack"sv, true};
+            case 0xed:
+                return {"smpsClearPush"sv, false};
+            case 0xee:
+                if (sonicver == 1) {
+                    return {"smpsStopSpecial"sv, false};
+                }
+                break;
+            case 0xf1:
+                return {"smpsModOn"sv, false};
+            case 0xf2:
+                return {"smpsStop"sv, false};
+            case 0xf4:
+                return {"smpsModOff"sv, false};
+            case 0xf9:
+                return {"smpsMaxRelRate"sv, false};
+            }
         }
-    }
+        return {""sv, false};
+    }();
     need_rest = true;
 
     if (notelike) {
@@ -549,112 +544,82 @@ void CoordFlag1ParamByte<noret>::print(
     notesprinted = 0;
     need_rest    = true;
 
-    string s;
-    bool   metacf = false;
-    if (sonicver >= 3) {
-        switch (get_value()) {
-        case 0xe0:
-            s = "smpsPan";
-            break;
-        case 0xe1:
-            s = "smpsDetune";
-            break;
-        case 0xe2:
-            s = "smpsFade";
-            break;    // For $E2, XX with XX != $FF
-        case 0xe4:
-            s = "smpsSetVol";
-            break;
-        case 0xe6:
-            s = "smpsFMAlterVol";
-            break;
-        case 0xe8:
-            s = "smpsNoteFill";
-            break;
-        case 0xea:
-            s = "smpsPlayDACSample";
-            break;
-        case 0xec:
-            s = "smpsPSGAlterVol";
-            break;
-        case 0xed:
-            s = "smpsSetNote";
-            break;
-        case 0xef:
-            s = "smpsSetvoice";
-            break;    // Case with param >= 0
-        case 0xf3:
-            s = "smpsPSGform";
-            break;
-        case 0xf4:
-            s = "smpsModChange";
-            break;
-        case 0xf5:
-            s = "smpsPSGvoice";
-            break;
-        case 0xfb:
-            s = "smpsChangeTransposition";
-            break;
-        case 0xfd:
-            s = "smpsAlternameSMPS";
-            break;
-        case 0xff:
-            metacf = true;
-            switch (param) {
-            case 0x02:
-                s = "smpsHaltMusic";
-                break;
-            case 0x07:
-                s = "smpsResetSpindashRev";
-                break;
+    const auto [s, metacf] = [&]() -> pair<string_view, bool> {
+        if (sonicver >= 3) {
+            switch (get_value()) {
+            case 0xe0:
+                return {"smpsPan"sv, false};
+            case 0xe1:
+                return {"smpsDetune"sv, false};
+            case 0xe2:
+                return {"smpsFade"sv, false};    // For $E2, XX with XX != $FF
+            case 0xe4:
+                return {"smpsSetVol"sv, false};
+            case 0xe6:
+                return {"smpsFMAlterVol"sv, false};
+            case 0xe8:
+                return {"smpsNoteFill"sv, false};
+            case 0xea:
+                return {"smpsPlayDACSample"sv, false};
+            case 0xec:
+                return {"smpsPSGAlterVol"sv, false};
+            case 0xed:
+                return {"smpsSetNote"sv, false};
+            case 0xef:
+                return {"smpsSetvoice"sv, false};    // Case with param >= 0
+            case 0xf3:
+                return {"smpsPSGform"sv, false};
+            case 0xf4:
+                return {"smpsModChange"sv, false};
+            case 0xf5:
+                return {"smpsPSGvoice"sv, false};
+            case 0xfb:
+                return {"smpsChangeTransposition"sv, false};
+            case 0xfd:
+                return {"smpsAlternameSMPS"sv, false};
+            case 0xff:
+                switch (param) {
+                case 0x02:
+                    return {"smpsHaltMusic"sv, true};
+                case 0x07:
+                    return {"smpsResetSpindashRev"sv, true};
+                }
+                return {""sv, true};
             }
-            break;
+        } else {
+            switch (get_value()) {
+            case 0xe0:
+                return {"smpsPan"sv, false};
+            case 0xe1:
+                return {"smpsDetune"sv, false};
+            case 0xe2:
+                return {"smpsNop"sv, false};
+            case 0xe5:
+                return {"smpsChanTempoDiv"sv, false};
+            case 0xe6:
+                return {"smpsAlterVol"sv, false};
+            case 0xe8:
+                return {"smpsNoteFill"sv, false};
+            case 0xe9:
+                return {"smpsChangeTransposition"sv, false};
+            case 0xea:
+                return {"smpsSetTempoMod"sv, false};
+            case 0xeb:
+                return {"smpsSetTempoDiv"sv, false};
+            case 0xec:
+                return {"smpsPSGAlterVol"sv, false};
+            case 0xef:
+                return {"smpsSetvoice"sv, false};
+            case 0xf3:
+                return {"smpsPSGform"sv, false};
+            case 0xf5:
+                return {"smpsPSGvoice"sv, false};
+                // case 0xed:
+                //     return {""sv, false};    // Sonic 2 version
+            }
         }
-    } else {
-        switch (get_value()) {
-        case 0xe0:
-            s = "smpsPan";
-            break;
-        case 0xe1:
-            s = "smpsDetune";
-            break;
-        case 0xe2:
-            s = "smpsNop";
-            break;
-        case 0xe5:
-            s = "smpsChanTempoDiv";
-            break;
-        case 0xe6:
-            s = "smpsAlterVol";
-            break;
-        case 0xe8:
-            s = "smpsNoteFill";
-            break;
-        case 0xe9:
-            s = "smpsChangeTransposition";
-            break;
-        case 0xea:
-            s = "smpsSetTempoMod";
-            break;
-        case 0xeb:
-            s = "smpsSetTempoDiv";
-            break;
-        case 0xec:
-            s = "smpsPSGAlterVol";
-            break;
-        case 0xef:
-            s = "smpsSetvoice";
-            break;
-        case 0xf3:
-            s = "smpsPSGform";
-            break;
-        case 0xf5:
-            s = "smpsPSGvoice";
-            break;
-            // case 0xed:  s = ""; break;  // Sonic 2 version
-        }
-    }
-
+        return {""sv, false};
+    }();
     if (s.empty()) {
         out << "\tdc.b\t";
         PrintHex2(out, get_value(), false);
@@ -662,7 +627,7 @@ void CoordFlag1ParamByte<noret>::print(
         out << "\t" << s << '\n';
         return;
     } else {
-        PrintMacro(out, s.c_str());
+        PrintMacro(out, s);
     }
 
     if (get_value() == 0xe0) {
@@ -704,7 +669,7 @@ void CoordFlagChgKeydisp::print(
     }
     notesprinted = 0;
     need_rest    = true;
-    PrintMacro(out, "smpsChangeTransposition");
+    PrintMacro(out, "smpsChangeTransposition"sv);
     PrintHex2(out, param, true);
     out << '\n';
 }
@@ -720,44 +685,37 @@ void CoordFlag2ParamBytes<noret>::print(
     notesprinted = 0;
     need_rest    = true;
 
-    string s;
-    bool   metacf = false;
-    if (sonicver >= 3) {
-        switch (get_value()) {
-        case 0xe5:
-            s = "smpsFMAlterVol";
-            break;
-        case 0xee:
-            s = "smpsFMICommand";
-            break;
-        case 0xef:
-            s = "smpsSetvoice";
-            break;    // Case with param < 0
-        case 0xf1:
-            s = "smpsModChange2";
-            break;
-        case 0xff:
-            metacf = true;
-            switch (param1) {
-            case 0x00:
-                s = "smpsSetTempoMod";
-                break;
-            case 0x01:
-                s = "smpsPlaySound";
-                break;
-            case 0x04:
-                s = "smpsSetTempoDiv";
-                break;
+    const auto [s, metacf] = [&]() -> pair<string_view, bool> {
+        if (sonicver >= 3) {
+            switch (get_value()) {
+            case 0xe5:
+                return {"smpsFMAlterVol"sv, false};
+            case 0xee:
+                return {"smpsFMICommand"sv, false};
+            case 0xef:
+                return {"smpsSetvoice"sv, false};    // Case with param < 0
+            case 0xf1:
+                return {"smpsModChange2"sv, false};
+            case 0xff:
+                switch (param1) {
+                case 0x00:
+                    return {"smpsSetTempoMod"sv, true};
+                case 0x01:
+                    return {"smpsPlaySound"sv, true};
+                case 0x04:
+                    return {"smpsSetTempoDiv"sv, true};
+                }
+                return {""sv, true};
             }
-            break;
         }
-    }
+        return {""sv, false};
+    }();
 
     if (s.empty()) {
         out << "\tdc.b\t";
         PrintHex2(out, get_value(), false);
     } else {
-        PrintMacro(out, s.c_str());
+        PrintMacro(out, s);
     }
 
     if (!metacf) {
@@ -779,26 +737,25 @@ void CoordFlag3ParamBytes<noret>::print(
     notesprinted = 0;
     need_rest    = true;
 
-    string s;
-    bool   metacf = false;
-    if (sonicver >= 3) {
-        switch (get_value()) {
-        case 0xff:
-            metacf = true;
-            switch (param1) {
-            case 0x06:
-                s = "smpsFMVolEnv";
-                break;
+    const auto [s, metacf] = [&]() -> pair<string_view, bool> {
+        if (sonicver >= 3) {
+            switch (get_value()) {
+            case 0xff:
+                switch (param1) {
+                case 0x06:
+                    return {"smpsFMVolEnv"sv, true};
+                }
+                return {""sv, true};
             }
-            break;
         }
-    }
+        return {""sv, false};
+    }();
 
     if (s.empty()) {
         out << "\tdc.b\t";
         PrintHex2(out, get_value(), false);
     } else {
-        PrintMacro(out, s.c_str());
+        PrintMacro(out, s);
     }
 
     if (!metacf) {
@@ -821,30 +778,28 @@ void CoordFlag4ParamBytes<noret>::print(
     notesprinted = 0;
     need_rest    = true;
 
-    string s;
-    bool   metacf = false;
-    if (sonicver >= 3) {
-        switch (get_value()) {
-        case 0xf0:
-            s = "smpsModSet";
-            break;
-        case 0xfe:
-            s = "smpsFM3SpecialMode";
-            break;
+    const auto [s, metacf] = [&]() -> pair<string_view, bool> {
+        if (sonicver >= 3) {
+            switch (get_value()) {
+            case 0xf0:
+                return {"smpsModSet"sv, false};
+            case 0xfe:
+                return {"smpsFM3SpecialMode"sv, false};
+            }
+        } else {
+            switch (get_value()) {
+            case 0xf0:
+                return {"smpsModSet"sv, false};
+            }
         }
-    } else {
-        switch (get_value()) {
-        case 0xf0:
-            s = "smpsModSet";
-            break;
-        }
-    }
+        return {""sv, false};
+    }();
 
     if (s.empty()) {
         out << "\tdc.b\t";
         PrintHex2(out, get_value(), false);
     } else {
-        PrintMacro(out, s.c_str());
+        PrintMacro(out, s);
     }
 
     if (!metacf) {
@@ -868,26 +823,25 @@ void CoordFlag5ParamBytes<noret>::print(
     notesprinted = 0;
     need_rest    = true;
 
-    string s;
-    bool   metacf = false;
-    if (sonicver >= 3) {
-        switch (get_value()) {
-        case 0xff:
-            metacf = true;
-            switch (param1) {
-            case 0x05:
-                s = "smpsSSGEG";
-                break;
+    const auto [s, metacf] = [&]() -> pair<string_view, bool> {
+        if (sonicver >= 3) {
+            switch (get_value()) {
+            case 0xff:
+                switch (param1) {
+                case 0x05:
+                    return {"smpsSSGEG"sv, true};
+                }
+                return {""sv, true};
             }
-            break;
         }
-    }
+        return {""sv, false};
+    }();
 
     if (s.empty()) {
         out << "\tdc.b\t";
         PrintHex2(out, get_value(), false);
     } else {
-        PrintMacro(out, s.c_str());
+        PrintMacro(out, s);
     }
 
     if (!metacf) {
@@ -913,12 +867,12 @@ void CoordFlagPointerParam<noret>::print(
     need_rest    = true;
 
     if (get_value() == 0xf6) {
-        PrintMacro(out, "smpsJump");
+        PrintMacro(out, "smpsJump"sv);
     } else if (get_value() == 0xf8) {
         last_note = nullptr;
-        PrintMacro(out, "smpsCall");
+        PrintMacro(out, "smpsCall"sv);
     } else if (get_value() == 0xfc) {    // Sonic 3 only
-        PrintMacro(out, "smpsContinuousLoop");
+        PrintMacro(out, "smpsContinuousLoop"sv);
     }
 
     auto it = labels.find(jumptarget);
@@ -936,21 +890,21 @@ void CoordFlagPointer1ParamByte<noret>::print(
     notesprinted = 0;
     need_rest    = true;
 
-    string s;
-    bool   metacf = false;
-    if (sonicver >= 3) {
-        switch (get_value()) {
-        case 0xeb:
-            s = "smpsConditionalJump";
-            break;
+    const auto [s, metacf] = [&]() -> pair<string_view, bool> {
+        if (sonicver >= 3) {
+            switch (get_value()) {
+            case 0xeb:
+                return {"smpsConditionalJump"sv, false};
+            }
         }
-    }
+        return {""sv, false};
+    }();
 
     if (s.empty()) {
         out << "\tdc.b\t";
         PrintHex2(out, get_value(), false);
     } else {
-        PrintMacro(out, s.c_str());
+        PrintMacro(out, s);
     }
 
     if (!metacf) {
@@ -972,35 +926,32 @@ void CoordFlagPointer2ParamBytes<noret>::print(
     notesprinted = 0;
     need_rest    = true;
 
-    string s;
-    bool   metacf = false;
-    if (sonicver >= 3) {
-        switch (get_value()) {
-        case 0xf7:
-            s = "smpsLoop";
-            break;
-        case 0xff:
-            metacf = true;
-            switch (param1) {
-            case 0x03:
-                s = "smpsCopyData";
-                break;
+    const auto [s, metacf] = [&]() -> pair<string_view, bool> {
+        if (sonicver >= 3) {
+            switch (get_value()) {
+            case 0xf7:
+                return {"smpsLoop"sv, false};
+            case 0xff:
+                switch (param1) {
+                case 0x03:
+                    return {"smpsCopyData"sv, true};
+                }
+                return {"smpsCopyData"sv, true};
             }
-            break;
+        } else {
+            switch (get_value()) {
+            case 0xf7:
+                return {"smpsLoop"sv, false};
+            }
         }
-    } else {
-        switch (get_value()) {
-        case 0xf7:
-            s = "smpsLoop";
-            break;
-        }
-    }
+        return {""sv, false};
+    }();
 
     if (s.empty()) {
         out << "\tdc.b\t";
         PrintHex2(out, get_value(), false);
     } else {
-        PrintMacro(out, s.c_str());
+        PrintMacro(out, s);
     }
 
     if (!metacf) {
@@ -1008,8 +959,7 @@ void CoordFlagPointer2ParamBytes<noret>::print(
         PrintHex2(out, param2, false);
     }
 
-    auto it = labels.find(jumptarget);
-    if (it != labels.end()) {
+    if (auto it = labels.find(jumptarget); it != labels.end()) {
         out << it->second;
     } else {
         PrintHex4(out, jumptarget, true);

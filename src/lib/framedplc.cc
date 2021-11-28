@@ -35,14 +35,15 @@ using std::setw;
 using std::uppercase;
 
 void frame_dplc::read(istream& in, int const ver) {
-    size_t cnt;
-    if (ver == 1) {
-        cnt = Read1(in);
-    } else if (ver == 4) {
-        cnt = static_cast<int16_t>(BigEndian::Read2(in)) + 1;
-    } else {
-        cnt = BigEndian::Read2(in);
-    }
+    size_t cnt = [&]() -> size_t {
+        if (ver == 1) {
+            return Read1(in);
+        }
+        if (ver == 4) {
+            return static_cast<int16_t>(BigEndian::Read2(in)) + 1;
+        }
+        return BigEndian::Read2(in);
+    }();
 
     for (size_t i = 0; i < cnt; i++) {
         single_dplc sd{};

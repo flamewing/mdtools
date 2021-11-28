@@ -69,11 +69,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options("-Wall")
     add_compile_options("-Wextra")
     add_compile_options("-pedantic")
-    add_compile_options("-Wc++14-compat")
-    add_compile_options("-Wc++17-compat")
     add_compile_options_safe("-Wc++20-compat")
-    add_compile_options_safe("-Wc++14-compat-pedantic")
-    add_compile_options_safe("-Wc++17-compat-pedantic")
     add_compile_options_safe("-Wc++20-compat-pedantic")
     add_compile_options_safe("-Walloc-zero")
     add_compile_options("-Walloca")
@@ -281,7 +277,7 @@ target_link_libraries(dummy-mdtools
 )
 set_target_properties(dummy-mdtools
     PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 20
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
         POSITION_INDEPENDENT_CODE ON
@@ -306,7 +302,7 @@ function(define_exe TARGETNAME SRCFILE LIBNAME EXENAME)
     endif()
     set_target_properties(${TARGETNAME}
         PROPERTIES
-            CXX_STANDARD 14
+            CXX_STANDARD 20
             CXX_STANDARD_REQUIRED YES
             CXX_EXTENSIONS NO
             POSITION_INDEPENDENT_CODE ON
@@ -341,7 +337,7 @@ target_link_libraries(mappings
 )
 set_target_properties(mappings
     PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 20
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
         POSITION_INDEPENDENT_CODE ON
@@ -373,7 +369,7 @@ target_link_libraries(sstrack
 )
 set_target_properties(sstrack
     PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 20
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
         POSITION_INDEPENDENT_CODE ON

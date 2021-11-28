@@ -47,11 +47,10 @@ SSVRAM::SSVRAM(istream& pal, istream& art) noexcept {
     reserve_tiles(cnt);
 
     for (unsigned ii = 0; ii < cnt; ii++) {
-        ShortTile& tile = new_tile();
-
-        auto dst1   = tile.begin(NoFlip);
-        auto dst2   = dst1 + ShortTile::Line_size;
-        auto finish = tile.end(NoFlip);
+        auto& tile   = new_tile();
+        auto  dst1   = tile.begin(NoFlip);
+        auto  dst2   = dst1 + ShortTile::Line_size;
+        auto  finish = tile.end(NoFlip);
         for (; sout.good() && dst2 != finish; ++dst1, ++dst2) {
             uint32_t cc = static_cast<uint8_t>(sout.get());
             *dst1++ = *dst2++ = (cc >> 4U) & 0xfU;
@@ -108,10 +107,10 @@ vector<ShortTile> split_tile(Tile const& tile) noexcept {
     vector<ShortTile> ret;
     ret.reserve(4);
 
-    Tile::const_iterator start = tile.begin(NoFlip);
+    auto start = tile.begin(NoFlip);
     for (unsigned ii = 0; ii < Tile::Num_lines / ShortTile::Num_lines; ii++) {
         // Want to copy 2 lines.
-        Tile::const_iterator const finish = start + 2 * ShortTile::Line_size;
+        auto const finish = start + 2 * ShortTile::Line_size;
         ret.emplace_back(start, finish, NoFlip, 1);
     }
     return ret;
@@ -124,19 +123,19 @@ Tile merge_tiles(
         ShortTile const& tile3, FlipMode const flip3) noexcept {
     Tile dest;
     auto it = dest.begin(NoFlip);
-    for (ShortTile::const_iterator src = tile0.begin(flip0);
+    for (auto src = tile0.begin(flip0);
          it != dest.end(NoFlip) && src != tile0.end(flip0); ++it, ++src) {
         *it = *src;
     }
-    for (ShortTile::const_iterator src = tile1.begin(flip1);
+    for (auto src = tile1.begin(flip1);
          it != dest.end(NoFlip) && src != tile1.end(flip1); ++it, ++src) {
         *it = *src;
     }
-    for (ShortTile::const_iterator src = tile2.begin(flip2);
+    for (auto src = tile2.begin(flip2);
          it != dest.end(NoFlip) && src != tile2.end(flip2); ++it, ++src) {
         *it = *src;
     }
-    for (ShortTile::const_iterator src = tile3.begin(flip3);
+    for (auto src = tile3.begin(flip3);
          it != dest.end(NoFlip) && src != tile3.end(flip3); ++it, ++src) {
         *it = *src;
     }

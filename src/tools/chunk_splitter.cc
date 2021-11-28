@@ -55,10 +55,10 @@ public:
     void write(ostream& out) const noexcept {
         BigEndian::Write2(out, block);
     }
-    constexpr uint32_t get_block() const noexcept {
+    [[nodiscard]] constexpr uint32_t get_block() const noexcept {
         return block;
     }
-    constexpr uint32_t get_index() const noexcept {
+    [[nodiscard]] constexpr uint32_t get_index() const noexcept {
         return block & 0x3FFU;
     }
     constexpr void set_block(uint16_t blk) {
@@ -78,19 +78,19 @@ public:
     constexpr bool operator==(BlockS1 const& other) const noexcept {
         return !(*this < other || other < *this);
     }
-    constexpr bool less(BlockS1 const& other) const noexcept {
+    [[nodiscard]] constexpr bool less(BlockS1 const& other) const noexcept {
         return (get_block() & (~0x6000U)) < (other.get_block() & (~0x6000U));
     }
-    constexpr bool equal(BlockS1 const& other) const noexcept {
+    [[nodiscard]] constexpr bool equal(BlockS1 const& other) const noexcept {
         return (get_block() & (~0x6000U)) == (other.get_block() & (~0x6000U));
     }
-    constexpr bool get_xflip() const noexcept {
+    [[nodiscard]] constexpr bool get_xflip() const noexcept {
         return (get_block() & 0x0800U) != 0;
     }
-    constexpr bool get_yflip() const noexcept {
+    [[nodiscard]] constexpr bool get_yflip() const noexcept {
         return (get_block() & 0x1000U) != 0;
     }
-    constexpr uint16_t get_collision() const noexcept {
+    [[nodiscard]] constexpr uint16_t get_collision() const noexcept {
         return (get_block() >> 13U) & 3U;
     }
     constexpr void set_xflip() noexcept {
@@ -119,22 +119,22 @@ public:
     constexpr bool operator==(BlockS2 const& other) const noexcept {
         return !(*this < other || other < *this);
     }
-    constexpr bool less(BlockS2 const& other) const noexcept {
+    [[nodiscard]] constexpr bool less(BlockS2 const& other) const noexcept {
         return (get_block() & (~0xF000U)) < (other.get_block() & (~0xF000U));
     }
-    constexpr bool equal(BlockS2 const& other) const noexcept {
+    [[nodiscard]] constexpr bool equal(BlockS2 const& other) const noexcept {
         return (get_block() & (~0xF000U)) == (other.get_block() & (~0xF000U));
     }
-    constexpr bool get_xflip() const noexcept {
+    [[nodiscard]] constexpr bool get_xflip() const noexcept {
         return (get_block() & 0x0400U) != 0;
     }
-    constexpr bool get_yflip() const noexcept {
+    [[nodiscard]] constexpr bool get_yflip() const noexcept {
         return (get_block() & 0x0800U) != 0;
     }
-    constexpr uint16_t get_collision1() const noexcept {
+    [[nodiscard]] constexpr uint16_t get_collision1() const noexcept {
         return (get_block() >> 12U) & 3U;
     }
-    constexpr uint16_t get_collision2() const noexcept {
+    [[nodiscard]] constexpr uint16_t get_collision2() const noexcept {
         return (get_block() >> 14U) & 3U;
     }
     constexpr void set_xflip() noexcept {
@@ -210,7 +210,7 @@ public:
     constexpr bool operator==(Chunk const& other) const noexcept {
         return !(*this < other || other < *this);
     }
-    constexpr bool less(Chunk const& other) const noexcept {
+    [[nodiscard]] constexpr bool less(Chunk const& other) const noexcept {
         for (size_t ii = 0; ii < numBlocks; ii++) {
             if (blocks[ii].less(other.blocks[ii])) {
                 return true;
@@ -221,7 +221,7 @@ public:
         }
         return false;
     }
-    constexpr bool equal(Chunk const& other) const noexcept {
+    [[nodiscard]] constexpr bool equal(Chunk const& other) const noexcept {
         for (size_t ii = 0; ii < numBlocks; ii++) {
             if (!blocks[ii].equal(other.blocks[ii])) {
                 return false;
@@ -229,7 +229,7 @@ public:
         }
         return true;
     }
-    constexpr Blk const& get_block(int ii) const noexcept {
+    [[nodiscard]] constexpr Blk const& get_block(int ii) const noexcept {
         return blocks[ii];
     }
     constexpr Blk& get_block(int ii) noexcept {

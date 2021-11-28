@@ -29,8 +29,8 @@ private:
     std::vector<frame_mapping> frames;
 
 public:
-    size_t size(int ver) const noexcept;
-    size_t size() const noexcept {
+    [[nodiscard]] size_t size(int ver) const noexcept;
+    [[nodiscard]] size_t size() const noexcept {
         return frames.size();
     }
 
@@ -40,13 +40,14 @@ public:
     void split(mapping_file const& src, dplc_file& dplc);
     void merge(mapping_file const& src, dplc_file const& dplc);
     void change_pal(int srcpal, int dstpal);
-    bool empty() const noexcept {
+
+    [[nodiscard]] bool empty() const noexcept {
         return frames.empty();
     }
     void optimize(
             mapping_file const& src, dplc_file const& indplc,
             dplc_file& outdplc);
-    frame_mapping const& get_maps(size_t const i) const noexcept {
+    [[nodiscard]] frame_mapping const& get_maps(size_t const i) const noexcept {
         return frames[i];
     }
 };

@@ -35,7 +35,9 @@ using std::setw;
 using std::string;
 using std::uppercase;
 
-void PrintMacro(ostream& out, char const* macro) {
+using namespace std::literals::string_view_literals;
+
+void PrintMacro(ostream& out, std::string_view macro) {
     boost::io::ios_all_saver flags(out);
     out << "\t" << setw(19) << setfill(' ') << left << macro << " ";
 }
@@ -58,7 +60,7 @@ void PrintHex2Pre(ostream& out, uint8_t const c, bool const first) {
         << static_cast<unsigned int>(c);
 }
 
-void PrintName(ostream& out, string const& s, bool const first) {
+void PrintName(ostream& out, std::string_view s, bool const first) {
     if (!first) {
         out << ", ";
     }
@@ -80,8 +82,8 @@ void fm_voice::read(istream& in, int const sonicver) {
     vcFeedback        = (vc >> 3U) & 7U;
     vcAlgorithm       = vc & 7U;
 
-    constexpr static std::array<int, 4> const s2_indices     = {3, 1, 2, 0};
-    constexpr static std::array<int, 4> const normal_indices = {3, 2, 1, 0};
+    constexpr static std::array const s2_indices     = {3, 1, 2, 0};
+    constexpr static std::array const normal_indices = {3, 2, 1, 0};
     const auto& indices = sonicver == 2 ? s2_indices : normal_indices;
 
     for (int index : indices) {
@@ -115,8 +117,8 @@ void fm_voice::read(istream& in, int const sonicver) {
 
 void fm_voice::write(ostream& out, int const sonicver) const {
     Write1(out, (vcUnusedBits << 6U) | (vcFeedback << 3U) | vcAlgorithm);
-    constexpr static std::array<int, 4> const s2_indices     = {3, 1, 2, 0};
-    constexpr static std::array<int, 4> const normal_indices = {3, 2, 1, 0};
+    constexpr static std::array const s2_indices     = {3, 1, 2, 0};
+    constexpr static std::array const normal_indices = {3, 2, 1, 0};
     const auto& indices = sonicver == 2 ? s2_indices : normal_indices;
 
     for (int index : indices) {
@@ -146,8 +148,8 @@ void fm_voice::print(ostream& out, int const sonicver, int const id) const {
     out << endl << ";\t";
     PrintHex2(
             out, (vcUnusedBits << 6U) | (vcFeedback << 3U) | vcAlgorithm, true);
-    constexpr static std::array<int, 4> const s2_indices     = {3, 2, 1, 0};
-    constexpr static std::array<int, 4> const normal_indices = {3, 2, 1, 0};
+    constexpr static std::array const s2_indices     = {3, 2, 1, 0};
+    constexpr static std::array const normal_indices = {3, 2, 1, 0};
     const auto& indices = sonicver == 2 ? s2_indices : normal_indices;
 
     out << endl << ";\t";
@@ -179,15 +181,15 @@ void fm_voice::print(ostream& out, int const sonicver, int const id) const {
     }
     out << endl;
 
-    PrintMacro(out, "smpsVcAlgorithm");
+    PrintMacro(out, "smpsVcAlgorithm"sv);
     PrintHex2(out, vcAlgorithm, true);
     out << endl;
 
-    PrintMacro(out, "smpsVcFeedback");
+    PrintMacro(out, "smpsVcFeedback"sv);
     PrintHex2(out, vcFeedback, true);
     out << endl;
 
-    PrintMacro(out, "smpsVcUnusedBits");
+    PrintMacro(out, "smpsVcUnusedBits"sv);
     if ((vcD1RUnk[0] != 0U) || (vcD1RUnk[1] != 0U) || (vcD1RUnk[2] != 0U)
         || (vcD1RUnk[3] != 0U)) {
         PrintHex2(out, vcUnusedBits, false);
@@ -199,57 +201,57 @@ void fm_voice::print(ostream& out, int const sonicver, int const id) const {
     }
     out << endl;
 
-    PrintMacro(out, "smpsVcDetune");
+    PrintMacro(out, "smpsVcDetune"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcDT[i], i == 3);
     }
     out << endl;
-    PrintMacro(out, "smpsVcCoarseFreq");
+    PrintMacro(out, "smpsVcCoarseFreq"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcCF[i], i == 3);
     }
     out << endl;
 
-    PrintMacro(out, "smpsVcRateScale");
+    PrintMacro(out, "smpsVcRateScale"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcRS[i], i == 3);
     }
     out << endl;
-    PrintMacro(out, "smpsVcAttackRate");
+    PrintMacro(out, "smpsVcAttackRate"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcAR[i], i == 3);
     }
     out << endl;
 
-    PrintMacro(out, "smpsVcAmpMod");
+    PrintMacro(out, "smpsVcAmpMod"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcAM[i], i == 3);
     }
     out << endl;
-    PrintMacro(out, "smpsVcDecayRate1");
+    PrintMacro(out, "smpsVcDecayRate1"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcD1R[i], i == 3);
     }
     out << endl;
 
-    PrintMacro(out, "smpsVcDecayRate2");
+    PrintMacro(out, "smpsVcDecayRate2"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcD2R[i], i == 3);
     }
     out << endl;
 
-    PrintMacro(out, "smpsVcDecayLevel");
+    PrintMacro(out, "smpsVcDecayLevel"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcDL[i], i == 3);
     }
     out << endl;
-    PrintMacro(out, "smpsVcReleaseRate");
+    PrintMacro(out, "smpsVcReleaseRate"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcRR[i], i == 3);
     }
     out << endl;
 
-    PrintMacro(out, "smpsVcTotalLevel");
+    PrintMacro(out, "smpsVcTotalLevel"sv);
     for (int i = 0; i < 4; i++) {
         PrintHex2(out, vcTL[i], i == 3);
     }

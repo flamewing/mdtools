@@ -69,7 +69,7 @@ struct Tile {
         return true;
     }
 
-    bool blacklisted(uint8_t const bll) const {
+    [[nodiscard]] bool blacklisted(uint8_t const bll) const {
         const auto* it
                 = std::find(std::cbegin(tiledata), std::cend(tiledata), bll);
         return it != std::cend(tiledata);
@@ -100,7 +100,7 @@ void recolor(istream& in, ostream& out, ColorMap& colormap) {
 }
 
 int main(int argc, char* argv[]) {
-    constexpr static const std::array<option, 3> long_options{
+    constexpr static const std::array long_options{
             option{"format", required_argument, nullptr, 'o'},
             option{"moduled", optional_argument, nullptr, 'm'},
             option{nullptr, 0, nullptr, 0}};

@@ -45,7 +45,7 @@ static void usage(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-    constexpr static const std::array<option, 2> long_options{
+    constexpr static const std::array long_options{
             option{"flipped", no_argument, nullptr, 'f'},
             option{nullptr, 0, nullptr, 0}};
 
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
     ofstream planeeni(
             argv[optind + OutPlaneEni], ios::out | ios::binary | ios::trunc);
     if (!planeeni.good()) {
-        cerr << "Could not open output Enigma-compressed pĺane map file '"
+        cerr << "Could not open output Enigma-compressed plane map file '"
              << argv[optind + OutPlaneEni] << "'." << endl;
         return OutPlaneEni + 2;
     }

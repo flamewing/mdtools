@@ -29,10 +29,10 @@ private:
     std::vector<single_mapping> maps;
 
 public:
-    size_t size() const noexcept {
+    [[nodiscard]] size_t size() const noexcept {
         return maps.size();
     }
-    size_t size(int ver) const noexcept {
+    [[nodiscard]] size_t size(int ver) const noexcept {
         return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
     }
     void read(std::istream& in, int ver);
@@ -41,14 +41,15 @@ public:
     void split(frame_mapping const& src, frame_dplc& dplc);
     void merge(frame_mapping const& src, frame_dplc const& dplc);
     void change_pal(int srcpal, int dstpal);
-    bool empty() const noexcept {
+
+    [[nodiscard]] bool empty() const noexcept {
         return maps.empty();
     }
     bool operator<(frame_mapping const& rhs) const noexcept;
     bool operator==(frame_mapping const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
     }
-    single_mapping const& get_maps(size_t i) const noexcept {
+    [[nodiscard]] single_mapping const& get_maps(size_t i) const noexcept {
         return maps[i];
     }
 };

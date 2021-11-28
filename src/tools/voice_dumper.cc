@@ -59,7 +59,7 @@ static void usage() {
 }
 
 int main(int argc, char* argv[]) {
-    constexpr static const std::array<option, 3> long_options
+    constexpr static const std::array long_options
             = {option{"extract", required_argument, nullptr, 'x'},
                option{"sonicver", required_argument, nullptr, 'v'},
                option{nullptr, 0, nullptr, 0}};

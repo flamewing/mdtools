@@ -85,7 +85,7 @@ static void usage(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-    constexpr static const std::array<option, 4> long_options{
+    constexpr static const std::array long_options{
             option{"kosm", no_argument, nullptr, 'm'},
             option{"comper", no_argument, nullptr, 'c'},
             option{"sonic", required_argument, nullptr, 'z'},
@@ -169,10 +169,10 @@ int main(int argc, char* argv[]) {
     indplc.close();
 
     for (size_t ii = 0; ii < srcdplc.size(); ii++) {
-        stringstream      buffer(ios::in | ios::out | ios::binary);
-        frame_dplc const& frame = srcdplc.get_dplc(ii);
+        stringstream buffer(ios::in | ios::out | ios::binary);
+        auto const&  frame = srcdplc.get_dplc(ii);
         for (size_t jj = 0; jj < frame.size(); jj++) {
-            single_dplc const& dplc = frame.get_dplc(jj);
+            auto const& dplc = frame.get_dplc(jj);
             for (size_t kk = 0; kk < dplc.get_cnt(); kk++) {
                 tiles[dplc.get_tile() + kk].write(buffer);
             }

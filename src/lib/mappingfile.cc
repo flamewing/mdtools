@@ -23,6 +23,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <numeric>
 
 using std::cerr;
 using std::cout;
@@ -66,11 +67,11 @@ void mapping_file::read(istream& in, int const ver) {
 
 void mapping_file::write(
         ostream& out, int const ver, bool const nullfirst) const {
-    map<frame_mapping, size_t>            mappos;
-    map<size_t, frame_mapping>            posmap;
-    size_t                                sz = 2 * frames.size();
-    vector<frame_mapping>::const_iterator it;
-    it = frames.begin();
+    map<frame_mapping, size_t> mappos;
+    map<size_t, frame_mapping> posmap;
+    size_t                     sz = 2 * frames.size();
+
+    auto it = frames.begin();
 
     if (nullfirst && it != frames.end() && it->empty()) {
         mappos.emplace(*it, 0);
@@ -87,12 +88,12 @@ void mapping_file::write(
             sz += it->size(ver);
         }
     }
-    for (auto const& elem : posmap) {
-        if (elem.first == size_t(out.tellp())) {
-            (elem.second).write(out, ver);
-        } else if (elem.first != 0U) {
+    for (auto const& [pos, maps] : posmap) {
+        if (pos == size_t(out.tellp())) {
+            maps.write(out, ver);
+        } else if (pos != 0U) {
             cerr << "Missed write at " << out.tellp() << endl;
-            (elem.second).print();
+            maps.print();
         }
     }
 }
@@ -134,11 +135,11 @@ void mapping_file::merge(mapping_file const& src, dplc_file const& dplc) {
 void mapping_file::optimize(
         mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc) {
     for (size_t i = 0; i < src.frames.size(); i++) {
-        frame_mapping        endmap;
-        frame_dplc           enddplc;
-        frame_mapping const& intmap  = src.frames[i];
-        frame_dplc const&    intdplc = indplc.get_dplc(i);
-        if ((!intdplc.empty()) && (!intmap.empty())) {
+        frame_mapping endmap;
+        frame_dplc    enddplc;
+        auto const&   intmap  = src.frames[i];
+        auto const&   intdplc = indplc.get_dplc(i);
+        if (!intdplc.empty() && !intmap.empty()) {
             frame_mapping mm;
             frame_dplc    dd;
             mm.merge(intmap, intdplc);
@@ -162,9 +163,9 @@ void mapping_file::change_pal(int const srcpal, int const dstpal) {
 }
 
 size_t mapping_file::size(int const ver) const noexcept {
-    size_t sz = 2 * frames.size();
-    for (auto const& elem : frames) {
-        sz += elem.size(ver);
-    }
-    return sz;
+    return std::accumulate(
+            frames.cbegin(), frames.cend(), 2 * frames.size(),
+            [ver](size_t sz, auto const& elem) {
+                return sz + elem.size(ver);
+            });
 }

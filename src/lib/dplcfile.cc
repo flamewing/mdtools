@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 
 using std::cerr;
 using std::cout;
@@ -77,8 +78,7 @@ void dplc_file::write(ostream& out, int const ver, bool const nullfirst) const {
         posmap.emplace(0, *it);
     }
     for (; it != frames.end(); ++it) {
-        auto const it2 = mappos.find(*it);
-        if (it2 != mappos.end()) {
+        if (auto const it2 = mappos.find(*it); it2 != mappos.end()) {
             BigEndian::Write2(out, it2->second);
         } else {
             mappos.emplace(*it, sz);
@@ -87,12 +87,12 @@ void dplc_file::write(ostream& out, int const ver, bool const nullfirst) const {
             sz += it->size(ver);
         }
     }
-    for (auto const& elem : posmap) {
-        if (elem.first == size_t(out.tellp())) {
-            (elem.second).write(out, ver);
-        } else if (elem.first != 0U) {
+    for (auto const& [pos, dplc] : posmap) {
+        if (pos == size_t(out.tellp())) {
+            dplc.write(out, ver);
+        } else if (pos != 0U) {
             cerr << "Missed write at " << out.tellp() << endl;
-            (elem.second).print();
+            dplc.print();
         }
     }
 }
@@ -124,9 +124,9 @@ void dplc_file::insert(frame_dplc const& val) {
 }
 
 size_t dplc_file::size(int ver) const noexcept {
-    size_t sz = 2 * frames.size();
-    for (auto const& sd : frames) {
-        sz += sd.size(ver);
-    }
-    return sz;
+    return std::accumulate(
+            frames.cbegin(), frames.cend(), 2 * frames.size(),
+            [ver](size_t sz, auto const& elem) {
+                return sz + elem.size(ver);
+            });
 }

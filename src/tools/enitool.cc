@@ -60,7 +60,7 @@ static void usage(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-    constexpr static const std::array<option, 4> long_options{
+    constexpr static const std::array long_options{
             option{"size", no_argument, nullptr, 's'},
             option{"palette", required_argument, nullptr, 'p'},
             option{"blacklist", required_argument, nullptr, 'b'},

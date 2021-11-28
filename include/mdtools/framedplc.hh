@@ -29,10 +29,10 @@ private:
     std::vector<single_dplc> dplc;
 
 public:
-    size_t size() const noexcept {
+    [[nodiscard]] size_t size() const noexcept {
         return dplc.size();
     }
-    size_t size(int ver) const noexcept {
+    [[nodiscard]] size_t size(int ver) const noexcept {
         return (ver == 1 ? 1 : 2) + single_dplc::size(ver) * dplc.size();
     }
     void read(std::istream& in, int ver);
@@ -41,14 +41,15 @@ public:
     void consolidate(frame_dplc const& src);
     void insert(single_dplc const& val);
     void build_vram_map(std::map<size_t, size_t>& vram_map) const;
-    bool empty() const noexcept {
+
+    [[nodiscard]] bool empty() const noexcept {
         return dplc.empty();
     }
     bool operator<(frame_dplc const& rhs) const noexcept;
     bool operator==(frame_dplc const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
     }
-    single_dplc const& get_dplc(size_t const i) const noexcept {
+    [[nodiscard]] single_dplc const& get_dplc(size_t const i) const noexcept {
         return dplc[i];
     }
 };

@@ -181,7 +181,7 @@ enum FileErrors {
     } while (0)
 
 int main(int argc, char* argv[]) {
-    constexpr static const std::array<option, 15> long_options{
+    constexpr static const std::array long_options{
             option{"optimize", no_argument, nullptr, 'o'},
             option{"split", no_argument, nullptr, 's'},
             option{"merge", no_argument, nullptr, 'm'},
