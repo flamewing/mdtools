@@ -123,7 +123,7 @@ void dplc_file::insert(frame_dplc const& val) {
     frames.push_back(val);
 }
 
-size_t dplc_file::size(int ver) const {
+size_t dplc_file::size(int ver) const noexcept {
     size_t sz = 2 * frames.size();
     for (auto const& sd : frames) {
         sz += sd.size(ver);

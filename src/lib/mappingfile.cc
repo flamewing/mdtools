@@ -161,7 +161,7 @@ void mapping_file::change_pal(int const srcpal, int const dstpal) {
     }
 }
 
-size_t mapping_file::size(int const ver) const {
+size_t mapping_file::size(int const ver) const noexcept {
     size_t sz = 2 * frames.size();
     for (auto const& elem : frames) {
         sz += elem.size(ver);

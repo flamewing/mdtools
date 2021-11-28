@@ -141,7 +141,7 @@ void frame_dplc::build_vram_map(map<size_t, size_t>& vram_map) const {
     }
 }
 
-bool frame_dplc::operator<(frame_dplc const& rhs) const {
+bool frame_dplc::operator<(frame_dplc const& rhs) const noexcept {
     if (dplc.size() < rhs.dplc.size()) {
         return true;
     }

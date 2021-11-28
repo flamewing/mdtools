@@ -28,21 +28,21 @@ private:
     std::vector<frame_dplc> frames;
 
 public:
-    size_t size() const {
+    size_t size() const noexcept {
         return frames.size();
     }
-    size_t size(int ver) const;
+    size_t size(int ver) const noexcept;
 
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver, bool nullfirst) const;
     void print() const;
     void consolidate(dplc_file const& src);
     void insert(frame_dplc const& val);
-    bool empty() const {
+    bool empty() const noexcept {
         return frames.empty();
     }
 
-    frame_dplc const& get_dplc(size_t const i) const {
+    frame_dplc const& get_dplc(size_t const i) const noexcept {
         return frames[i];
     }
 };

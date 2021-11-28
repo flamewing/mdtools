@@ -174,7 +174,7 @@ void frame_mapping::change_pal(int const srcpal, int const dstpal) {
     }
 }
 
-bool frame_mapping::operator<(frame_mapping const& rhs) const {
+bool frame_mapping::operator<(frame_mapping const& rhs) const noexcept {
     if (maps.size() < rhs.maps.size()) {
         return true;
     }

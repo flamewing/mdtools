@@ -31,7 +31,7 @@ private:
     enum MapSizes : size_t { sizeS1 = 5, sizeS2 = 8, sizeS3 = 6 };
 
 public:
-    static size_t size(int const ver) {
+    static size_t size(int const ver) noexcept {
         switch (ver) {
         case 1:
             return sizeS1;
@@ -50,44 +50,44 @@ public:
     void merge(single_mapping const& src, std::map<size_t, size_t>& vram_map);
     void change_pal(uint32_t srcpal, uint32_t dstpal);
 
-    uint16_t get_flags() const {
+    uint16_t get_flags() const noexcept {
         return flags;
     }
-    uint16_t get_tile() const {
+    uint16_t get_tile() const noexcept {
         return tile;
     }
-    int16_t get_xx() const {
+    int16_t get_xx() const noexcept {
         return xx;
     }
-    int16_t get_yy() const {
+    int16_t get_yy() const noexcept {
         return yy;
     }
-    uint8_t get_sx() const {
+    uint8_t get_sx() const noexcept {
         return sx;
     }
-    uint8_t get_sy() const {
+    uint8_t get_sy() const noexcept {
         return sy;
     }
 
-    void set_flags(uint16_t const t) {
+    void set_flags(uint16_t const t) noexcept {
         flags = t;
     }
-    void set_tile(uint16_t const t) {
+    void set_tile(uint16_t const t) noexcept {
         tile = t;
     }
-    void set_xx(int16_t t) {
+    void set_xx(int16_t t) noexcept {
         xx = t;
     }
-    void set_yy(int16_t t) {
+    void set_yy(int16_t t) noexcept {
         yy = t;
     }
-    void set_sx(int8_t const t) {
+    void set_sx(int8_t const t) noexcept {
         sx = t;
     }
-    void set_sy(int8_t const t) {
+    void set_sy(int8_t const t) noexcept {
         sy = t;
     }
-    bool operator<(single_mapping const& rhs) const {
+    bool operator<(single_mapping const& rhs) const noexcept {
         if (tile < rhs.tile) {
             return true;
         }
@@ -124,7 +124,7 @@ public:
         /*if (yy > rhs.yy)*/
         return false;
     }
-    bool operator==(single_mapping const& rhs) const {
+    bool operator==(single_mapping const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
     }
 };

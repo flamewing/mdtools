@@ -28,7 +28,7 @@ private:
     uint16_t cnt, tile;
 
 public:
-    static size_t size(int const ver) {
+    static size_t size(int const ver) noexcept {
         ignore_unused_variable_warning(ver);
         return 2;
     }
@@ -36,21 +36,21 @@ public:
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    uint16_t get_cnt() const {
+    uint16_t get_cnt() const noexcept {
         return cnt;
     }
-    uint16_t get_tile() const {
+    uint16_t get_tile() const noexcept {
         return tile;
     }
 
-    void set_cnt(uint16_t const c) {
+    void set_cnt(uint16_t const c) noexcept {
         cnt = c;
     }
-    void set_tile(uint16_t const t) {
+    void set_tile(uint16_t const t) noexcept {
         tile = t;
     }
 
-    bool operator<(single_dplc const& rhs) const {
+    bool operator<(single_dplc const& rhs) const noexcept {
         if (cnt < rhs.cnt) {
             return true;
         }
@@ -59,7 +59,7 @@ public:
         }
         return tile < rhs.tile;
     }
-    bool operator==(single_dplc const& rhs) const {
+    bool operator==(single_dplc const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
     }
 };

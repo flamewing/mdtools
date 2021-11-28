@@ -59,10 +59,10 @@ public:
             }
         }
     }
-    Pattern_Name_Table(Pattern_Name_Table const&)     = default;
-    Pattern_Name_Table(Pattern_Name_Table&&) noexcept = default;
-    virtual ~Pattern_Name_Table() noexcept            = default;
-    Pattern_Name_Table& operator=(Pattern_Name_Table const&) = default;
+    Pattern_Name_Table(Pattern_Name_Table const&) noexcept = default;
+    Pattern_Name_Table(Pattern_Name_Table&&) noexcept      = default;
+    virtual ~Pattern_Name_Table() noexcept                 = default;
+    Pattern_Name_Table& operator=(Pattern_Name_Table const&) noexcept = default;
     Pattern_Name_Table& operator=(Pattern_Name_Table&&) noexcept = default;
 
     Line const& operator[](size_t const n) const noexcept {
