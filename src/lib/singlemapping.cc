@@ -30,21 +30,12 @@
 #endif
 
 #include <cstdint>
-#include <iomanip>
 #include <iostream>
 
-using std::cout;
-using std::dec;
-using std::endl;
-using std::hex;
 using std::ios;
 using std::istream;
 using std::map;
-using std::nouppercase;
 using std::ostream;
-using std::setfill;
-using std::setw;
-using std::uppercase;
 
 void single_mapping::read(istream& in, int const ver) {
     yy    = static_cast<int8_t>(Read1(in));
@@ -104,17 +95,18 @@ void single_mapping::print() const {
     std::fputc('\n', stdout);
 }
 
-void single_mapping::split(
-        single_mapping const& src, single_dplc& dplc,
-        map<size_t, size_t>& vram_map) {
+single_dplc single_mapping::split(
+        single_mapping const& src, map<size_t, size_t>& vram_map) {
     xx    = src.xx;
     yy    = src.yy;
     sx    = src.sx;
     sy    = src.sy;
     flags = src.flags;
     tile  = vram_map[src.tile];
+    single_dplc dplc{};
     dplc.set_cnt(sx * sy);
     dplc.set_tile(src.tile);
+    return dplc;
 }
 
 void single_mapping::merge(

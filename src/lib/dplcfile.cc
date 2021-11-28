@@ -30,13 +30,9 @@
 #endif
 
 #include <cstdint>
-#include <iomanip>
 #include <iostream>
 #include <numeric>
 
-using std::cerr;
-using std::cout;
-using std::endl;
 using std::ios;
 using std::istream;
 using std::map;

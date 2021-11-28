@@ -30,22 +30,14 @@
 #endif
 
 #include <cstdint>
-#include <iomanip>
 #include <iostream>
 #include <map>
 #include <numeric>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::hex;
 using std::ios;
 using std::istream;
 using std::map;
 using std::ostream;
-using std::setfill;
-using std::setw;
-using std::uppercase;
 using std::vector;
 
 void mapping_file::read(istream& in, int const ver) {
@@ -116,16 +108,17 @@ void mapping_file::print() const {
     }
 }
 
-void mapping_file::split(mapping_file const& src, dplc_file& dplc) {
+dplc_file mapping_file::split(mapping_file const& src) {
+    dplc_file dplc;
     for (auto const& elem : src.frames) {
         frame_mapping nn;
-        frame_dplc    interm;
         frame_dplc    dd;
-        nn.split(elem, interm);
+        frame_dplc    interm = nn.split(elem);
         dd.consolidate(interm);
         frames.push_back(nn);
         dplc.insert(dd);
     }
+    return dplc;
 }
 
 void mapping_file::merge(mapping_file const& src, dplc_file const& dplc) {
@@ -145,9 +138,8 @@ void mapping_file::optimize(
         auto const&   intdplc = indplc.get_dplc(i);
         if (!intdplc.empty() && !intmap.empty()) {
             frame_mapping mm;
-            frame_dplc    dd;
             mm.merge(intmap, intdplc);
-            endmap.split(mm, dd);
+            frame_dplc dd = endmap.split(mm);
             enddplc.consolidate(dd);
         } else if (!intdplc.empty()) {
             enddplc.consolidate(intdplc);

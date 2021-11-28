@@ -29,19 +29,11 @@
 #    pragma GCC diagnostic pop
 #endif
 
-#include <iomanip>
 #include <iostream>
 
-using std::cout;
-using std::endl;
-using std::hex;
 using std::ios;
 using std::istream;
-using std::nouppercase;
 using std::ostream;
-using std::setfill;
-using std::setw;
-using std::uppercase;
 
 void single_dplc::read(istream& in, int const ver) {
     tile = BigEndian::Read2(in);

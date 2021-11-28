@@ -310,8 +310,7 @@ int main(int argc, char* argv[]) {
         inmaps.close();
 
         mapping_file dstmaps;
-        dplc_file    dstdplc;
-        dstmaps.split(srcmaps, dstdplc);
+        dplc_file    dstdplc = dstmaps.split(srcmaps);
 
         ofstream outmaps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
         ofstream outdplc(argv[optind + 2], ios::out | ios::binary | ios::trunc);

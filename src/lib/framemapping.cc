@@ -17,6 +17,7 @@
 
 #include <mdcomp/bigendian_io.hh>
 #include <mdtools/framemapping.hh>
+#include <mdtools/ignore_unused_variable_warning.hh>
 
 #ifdef __GNUG__
 #    pragma GCC diagnostic push
@@ -30,23 +31,14 @@
 #endif
 
 #include <algorithm>
-#include <iomanip>
 #include <iostream>
 #include <set>
 
-using std::cout;
-using std::endl;
-using std::hex;
 using std::ios;
 using std::istream;
 using std::map;
 using std::ostream;
-using std::pair;
 using std::set;
-using std::setfill;
-using std::setw;
-using std::uppercase;
-using std::vector;
 
 void frame_mapping::read(istream& in, int const ver) {
     size_t const cnt = ver == 1 ? Read1(in) : BigEndian::Read2(in);
@@ -75,89 +67,60 @@ void frame_mapping::print() const {
     }
 }
 
-struct SingleMapCmp {
-    bool operator()(
-            single_mapping const& lhs, single_mapping const& rhs) const {
-        return lhs.get_tile() < rhs.get_tile();
-    }
-};
-
-struct SingleDPLCCmp {
-    bool operator()(single_dplc const& lhs, single_dplc const& rhs) const {
-        return lhs.get_tile() + lhs.get_cnt() < rhs.get_tile();
-    }
-};
-
-void frame_mapping::split(frame_mapping const& src, frame_dplc& dplc) {
-    // Coalesce the mappings tiles into tile ranges, reordering adjacent DPLCs
-    // that are neighbours in art to coalesce the ranges as needed.
-    vector<pair<size_t, size_t>> ranges;
+frame_dplc frame_mapping::split(frame_mapping const& src) {
+    // First, build the set uf used tiles from main art.
+    set<size_t> used_tiles;
     for (auto const& sd : src.maps) {
         size_t const ss = sd.get_tile();
-        size_t const sz = sd.get_sx() * sd.get_sy();
-        if (ranges.empty()) {
-            // Happens only once. Hopefully, the compiler will pull this out of
-            // the loop, as it happens right at the start of the loop.
-            ranges.emplace_back(ss, sz);
-        } else {
-            pair<size_t, size_t>& last = ranges.back();
-            if (last.first == ss + sz) {
-                // Last DPLC comes right after us on the art file.
-                // Coalesce ranges and set new start.
-                last.first = ss;
-                last.second += sz;
-            } else if (last.first + last.second == ss) {
-                // Last DPLC comes right before us on the art file.
-                // Coalesce ranges, keeping old start.
-                last.second += sz;
-            } else {
-                // Disjoint DPLCs. Add new one.
-                ranges.emplace_back(ss, sz);
-            }
+        size_t const sz = size_t(sd.get_sx()) * size_t(sd.get_sy());
+        for (size_t ii = ss; ii < ss + sz; ii++) {
+            used_tiles.emplace(ii);
         }
     }
-    // TODO: maybe make multiple passes coalescing two entries of the above
-    // vector in a similar fashion until nothing more changes. This would be
-    // equivalent to sorting all sprite pieces by tile order for the DPLCs, but
-    // with smaller overhead for mappings; in practice, this can only be useful
-    // if the art was not sorted by tile order, a 1-click operation in SonMapEd.
 
-    // Build VRAM map for coalesced ranges.
+    // Now we will generate a VRAM map assuming these tiles are loaded to
+    // VRAM in order, with 0 at the start.
     map<size_t, size_t> vram_map;
-    for (auto const& [ss, sz] : ranges) {
-        for (size_t i = ss; i < ss + sz; i++) {
-            if (vram_map.find(i) == vram_map.end()) {
-                vram_map.emplace(i, vram_map.size());
-            }
-        }
+    for (auto const tile : used_tiles) {
+        vram_map.emplace(tile, vram_map.size());
     }
 
-    // Build DPLCs from VRAM map and coalesced ranges.
-    set<single_dplc, SingleDPLCCmp> uniquedplcs;
-    frame_dplc                      newdplc;
-    for (auto const& elem : ranges) {
-        size_t const ss = elem.first;
-        size_t       sz = 1;
-        while (vram_map.find(ss + sz) != vram_map.end()) {
-            sz++;
+    // Now we split the tiles into the minimal set of DPLCs of arbitrary
+    // length that can reproduce them.
+    frame_dplc newdplc;
+    for (auto start_it = used_tiles.cbegin(); start_it != used_tiles.cend();) {
+        // Find first element which is not followed by an adjacent element.
+        auto end_it = std::adjacent_find(
+                start_it, used_tiles.cend(),
+                [](const auto& lhs, const auto& rhs) {
+                    return rhs != lhs + 1;
+                });
+        // If there is no such element, we get the end iterator; we must account
+        // for this when computing the length of the range to avoid
+        // overcounting. Prepare for next iteration.
+        if (end_it != used_tiles.cend()) {
+            std::advance(end_it, 1);
         }
-        single_dplc nd{};
-        nd.set_tile(ss);
-        nd.set_cnt(sz);
-        if (auto const sit = uniquedplcs.find(nd); sit == uniquedplcs.end()) {
-            newdplc.insert(nd);
-            uniquedplcs.insert(nd);
-        }
+        size_t const length = std::distance(start_it, end_it);
+        single_dplc  nd{};
+        nd.set_tile(*start_it);
+        nd.set_cnt(length);
+        newdplc.insert(nd);
+        start_it = end_it;
     }
-    dplc.consolidate(newdplc);
 
-    set<size_t> loaded_tiles;
+    // Use the VRAM map to rewrite the arts for the input mappings.
     for (auto const& sd : src.maps) {
         single_mapping nn{};
-        single_dplc    dd{};
-        nn.split(sd, dd, vram_map);
+        single_dplc    dd = nn.split(sd, vram_map);
+        ignore_unused_variable_warning(dd);
         maps.push_back(nn);
     }
+
+    // Consolidate the DPLCs so that each DPLC has a proper entry.
+    frame_dplc dplc;
+    dplc.consolidate(newdplc);
+    return dplc;
 }
 
 void frame_mapping::merge(frame_mapping const& src, frame_dplc const& dplc) {

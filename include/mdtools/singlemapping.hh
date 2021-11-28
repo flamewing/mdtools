@@ -44,12 +44,11 @@ public:
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver) const;
     void print() const;
-    void split(
-            single_mapping const& src, single_dplc& dplc,
-            std::map<size_t, size_t>& vram_map);
     void merge(single_mapping const& src, std::map<size_t, size_t>& vram_map);
     void change_pal(uint32_t srcpal, uint32_t dstpal);
 
+    [[nodiscard]] single_dplc split(
+            single_mapping const& src, std::map<size_t, size_t>& vram_map);
     [[nodiscard]] uint16_t get_flags() const noexcept {
         return flags;
     }

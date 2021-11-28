@@ -37,11 +37,11 @@ public:
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver, bool nullfirst) const;
     void print() const;
-    void split(mapping_file const& src, dplc_file& dplc);
     void merge(mapping_file const& src, dplc_file const& dplc);
     void change_pal(int srcpal, int dstpal);
 
-    [[nodiscard]] bool empty() const noexcept {
+    [[nodiscard]] dplc_file split(mapping_file const& src);
+    [[nodiscard]] bool      empty() const noexcept {
         return frames.empty();
     }
     void optimize(

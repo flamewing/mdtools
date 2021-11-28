@@ -38,9 +38,10 @@ public:
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver) const;
     void print() const;
-    void split(frame_mapping const& src, frame_dplc& dplc);
     void merge(frame_mapping const& src, frame_dplc const& dplc);
     void change_pal(int srcpal, int dstpal);
+
+    [[nodiscard]] frame_dplc split(frame_mapping const& src);
 
     [[nodiscard]] bool empty() const noexcept {
         return maps.empty();

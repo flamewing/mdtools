@@ -30,19 +30,12 @@
 #endif
 
 #include <cstdint>
-#include <iomanip>
 #include <iostream>
 
-using std::cout;
-using std::endl;
-using std::hex;
 using std::ios;
 using std::istream;
 using std::map;
 using std::ostream;
-using std::setfill;
-using std::setw;
-using std::uppercase;
 
 void frame_dplc::read(istream& in, int const ver) {
     size_t cnt = [&]() -> size_t {
