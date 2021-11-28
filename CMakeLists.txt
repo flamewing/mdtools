@@ -329,6 +329,7 @@ target_include_directories(mappings
 )
 target_include_directories(mappings SYSTEM
     PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/fmt/include>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/mdcomp/include>
 )
 target_link_libraries(mappings

@@ -18,6 +18,17 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdtools/singledplc.hh>
 
+#ifdef __GNUG__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+#    pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+#define FMT_HEADER_ONLY 1
+#include <fmt/format.h>
+#ifdef __GNUG__
+#    pragma GCC diagnostic pop
+#endif
+
 #include <iomanip>
 #include <iostream>
 
@@ -52,11 +63,7 @@ void single_dplc::write(ostream& out, int const ver) const {
 }
 
 void single_dplc::print() const {
-    cout << nouppercase << "\tFirst tile: $";
-    cout << uppercase << hex << setfill('0') << setw(4) << tile;
-    cout << nouppercase << "\tLast tile: $";
-    cout << uppercase << hex << setfill('0') << setw(4) << (tile + cnt - 1);
-    cout << nouppercase << "\tNum tiles: $";
-    cout << uppercase << hex << setfill('0') << setw(4) << cnt;
-    cout << endl;
+    fmt::print(
+            "\tFirst tile: ${:04X}\tLast tile: ${:04X}\tNum tiles: ${:04X}\n",
+            tile, (tile + cnt - 1), cnt);
 }

@@ -146,7 +146,7 @@ struct SNIO {
 };
 
 static inline string make_label_code(int code) {
-    return fmt::format(FMT_STRING("{:02X}"), code);
+    return fmt::format("{:02X}", code);
 }
 
 static inline string need_call_label() {
@@ -1157,7 +1157,7 @@ int main(int argc, char* argv[]) {
         int const width = (pointerTable.size() < 256) ? 2 : 4;
         for (size_t ii = 0; ii < pointerTable.size(); ii++) {
             string buf
-                    = fmt::format(FMT_STRING("{}{:0{}X}"), projname, ii, width);
+                    = fmt::format("{}{:0{}X}", projname, ii, width);
             dump_single_entry(
                     fin, fout, buf, pointerTable[ii] % 0x8000, 0, sonicver,
                     saxman, sfx, s3kmode);

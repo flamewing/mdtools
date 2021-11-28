@@ -15,9 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/io/ios_state.hpp>
 #include <mdcomp/bigendian_io.hh>
 #include <mdtools/mappingfile.hh>
+
+#ifdef __GNUG__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+#    pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+#define FMT_HEADER_ONLY 1
+#include <fmt/format.h>
+#ifdef __GNUG__
+#    pragma GCC diagnostic pop
+#endif
 
 #include <cstdint>
 #include <iomanip>
@@ -92,22 +102,16 @@ void mapping_file::write(
         if (pos == size_t(out.tellp())) {
             maps.write(out, ver);
         } else if (pos != 0U) {
-            cerr << "Missed write at " << out.tellp() << endl;
+            fmt::print(stderr, "Missed write at {}\n", out.tellp());
             maps.print();
         }
     }
 }
 
 void mapping_file::print() const {
-    cout << "=================================================================="
-            "=============="
-         << endl;
+    fmt::print("{:=>80}\n", "");
     for (size_t i = 0; i < frames.size(); i++) {
-        cout << "Mappings for frame $";
-        boost::io::ios_all_saver flags(cout);
-        cout << uppercase << hex << setfill('0') << setw(4) << i;
-        cout << ":" << endl;
-        flags.restore();
+        fmt::print("Mappings for frame ${:04X}:\n", i);
         frames[i].print();
     }
 }

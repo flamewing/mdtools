@@ -15,9 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/io/ios_state.hpp>
 #include <mdcomp/bigendian_io.hh>
 #include <mdtools/framedplc.hh>
+
+#ifdef __GNUG__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+#    pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+#define FMT_HEADER_ONLY 1
+#include <fmt/format.h>
+#ifdef __GNUG__
+#    pragma GCC diagnostic pop
+#endif
 
 #include <cstdint>
 #include <iomanip>
@@ -73,10 +83,7 @@ void frame_dplc::print() const {
         ntiles += elem.get_cnt();
         elem.print();
     }
-    cout << "\tTile count: $";
-    boost::io::ios_all_saver flags(cout);
-    cout << uppercase << hex << setfill('0') << setw(4) << ntiles;
-    cout << endl;
+    fmt::print("\tTile count: ${:04X}\n", ntiles);
 }
 
 void frame_dplc::consolidate(frame_dplc const& src) {

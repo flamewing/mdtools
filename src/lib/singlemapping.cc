@@ -18,6 +18,17 @@
 #include <mdcomp/bigendian_io.hh>
 #include <mdtools/singlemapping.hh>
 
+#ifdef __GNUG__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+#    pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+#define FMT_HEADER_ONLY 1
+#include <fmt/format.h>
+#ifdef __GNUG__
+#    pragma GCC diagnostic pop
+#endif
+
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
@@ -69,42 +80,28 @@ void single_mapping::write(ostream& out, int const ver) const {
 }
 
 void single_mapping::print() const {
-    cout << nouppercase << "\t\tPosition: (x,y) = (";
-    cout << dec << setfill(' ') << setw(4) << static_cast<int16_t>(xx);
-    cout << ",";
-    cout << dec << setfill(' ') << setw(4) << static_cast<int16_t>(yy);
-    cout << ")\tSize: (x,y) = (";
-    cout << dec << setfill(' ') << setw(4) << static_cast<int16_t>(sx);
-    cout << ",";
-    cout << dec << setfill(' ') << setw(4) << static_cast<int16_t>(sy);
-    cout << ")" << endl;
-    cout << nouppercase << "\t\tFirst tile: $";
-    cout << uppercase << hex << setfill('0') << setw(4) << tile;
-    cout << nouppercase << "\tLast tile: $";
-    cout << uppercase << hex << setfill('0') << setw(4) << (tile + sx * sy - 1);
-    cout << nouppercase << "\tFlags: ";
+    fmt::print(
+            "\t\tPosition: (x,y) = ({:4},{:4})\tSize: (x,y) = ({:4},{:4})\n",
+            static_cast<int16_t>(xx), static_cast<int16_t>(yy),
+            static_cast<int16_t>(sx), static_cast<int16_t>(sy));
+    fmt::print(
+            "\t\tFirst tile: ${:04X}\tLast tile: ${:04X}\tFlags: ", tile,
+            (tile + sx * sy - 1));
     if ((flags & 0x80U) != 0) {
-        cout << "foreground";
-        if ((flags & 0x78U) != 0) {
-            cout << "|";
-        }
+        fmt::print("foreground{}", (flags & 0x78U) != 0 ? "|" : "");
     }
     if ((flags & 0x60U) != 0) {
-        cout << "palette+" << dec << ((flags & 0x60U) >> 5U);
-        if ((flags & 0x18U) != 0) {
-            cout << "|";
-        }
+        fmt::print(
+                "palette+{}{}", (flags & 0x60U) >> 5U,
+                (flags & 0x18U) != 0 ? "|" : "");
     }
     if ((flags & 0x08U) != 0) {
-        cout << "flip_x";
-        if ((flags & 0x10U) != 0) {
-            cout << "|";
-        }
+        fmt::print("flip_x{}", (flags & 0x10U) != 0 ? "|" : "");
     }
     if ((flags & 0x10U) != 0) {
-        cout << "flip_y";
+        fmt::print("flip_y");
     }
-    cout << endl;
+    std::fputc('\n', stdout);
 }
 
 void single_mapping::split(
