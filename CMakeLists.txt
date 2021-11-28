@@ -407,6 +407,23 @@ write_basic_package_version_file(
     COMPATIBILITY AnyNewerVersion
 )
 
+file(GLOB_RECURSE ALL_SOURCE_FILES ${PROJECT_SOURCE_DIR} *.cc *.hh)
+list(FILTER ALL_SOURCE_FILES EXCLUDE REGEX "${PROJECT_SOURCE_DIR}/(fmt|mdcomp)/.*" )
+
+add_custom_target(
+    clang-format
+    COMMAND clang-format
+    -style=file
+    -i
+    ${ALL_SOURCE_FILES}
+)
+
+add_custom_target(
+    clang-tidy
+    COMMAND clang-tidy
+    ${ALL_SOURCE_FILES}
+)
+
 install(
     TARGETS
         mappings

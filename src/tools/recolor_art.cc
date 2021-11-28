@@ -115,15 +115,15 @@ int main(int argc, char* argv[]) {
 
     while (true) {
         int option_index = 0;
-        int c            = getopt_long(
-                argc, argv, "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
-                long_options.data(), &option_index);
-        if (c == -1) {
+        int option_char  = getopt_long(
+                 argc, argv, "o:m::0:1:2:3:4:5:6:7:8:9:A:a:B:b:C:c:D:d:E:e:F:f:",
+                 long_options.data(), &option_index);
+        if (option_char == -1) {
             break;
         }
 
-        if (c >= 'A' && c <= 'F') {
-            c += ('a' - 'A');
+        if (option_char >= 'A' && option_char <= 'F') {
+            option_char += ('a' - 'A');
         }
 
         auto getFormat = [](auto optarg) {
@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
             return eInvalid;
         };
 
-        switch (c) {
+        switch (option_char) {
         case 'o':
             fmt = getFormat(optarg);
             if (fmt == eInvalid) {
@@ -179,10 +179,10 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
             int c1;
-            if (c >= '0' && c <= '9') {
-                c1 = c - '0';
+            if (option_char >= '0' && option_char <= '9') {
+                c1 = option_char - '0';
             } else {
-                c1 = c - 'a' + 10;
+                c1 = option_char - 'a' + 10;
             }
             int d = static_cast<uint8_t>(*optarg);
             if (d >= '0' && d <= '9') {

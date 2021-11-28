@@ -53,13 +53,13 @@ int main(int argc, char* argv[]) {
 
     while (true) {
         int option_index = 0;
-        int c            = getopt_long(
-                argc, argv, "f", long_options.data(), &option_index);
-        if (c == -1) {
+        int option_char  = getopt_long(
+                 argc, argv, "f", long_options.data(), &option_index);
+        if (option_char == -1) {
             break;
         }
 
-        if (c == 'f') {
+        if (option_char == 'f') {
             flipped = true;
         }
     }
@@ -151,8 +151,8 @@ int main(int argc, char* argv[]) {
             ShortTile&   tile2  = ssvram[tp2];
             ShortTile&   tile3  = ssvram[tp3];
             Tile         merged = merge_tiles(
-                    tile0, tp0.get_flip(), tile1, tp1.get_flip(), tile2,
-                    tp2.get_flip(), tile3, tp3.get_flip());
+                            tile0, tp0.get_flip(), tile1, tp1.get_flip(), tile2,
+                            tp2.get_flip(), tile3, tp3.get_flip());
             Pattern_Name bestpat;
             unsigned     dist = vram.find_closest(merged, bestpat);
             if (dist != 0) {
