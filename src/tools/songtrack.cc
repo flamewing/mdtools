@@ -97,7 +97,8 @@ void Duration::print(
     }
 }
 
-FMVoice::FMVoice(istream& in, int sonicver, int n) noexcept : BaseNote(0, 0), id(n) {
+FMVoice::FMVoice(istream& in, int sonicver, int n) noexcept
+        : BaseNote(0, 0), id(n) {
     voc.read(in, sonicver);
 }
 
