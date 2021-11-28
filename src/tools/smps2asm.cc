@@ -16,6 +16,22 @@
  */
 
 #include <getopt.h>
+#include <mdcomp/bigendian_io.hh>
+#include <mdcomp/saxman.hh>
+#include <mdtools/fmvoice.hh>
+#include <mdtools/ignore_unused_variable_warning.hh>
+#include <mdtools/songtrack.hh>
+
+#ifdef __GNUG__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+#    pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+#define FMT_HEADER_ONLY 1
+#include <fmt/format.h>
+#ifdef __GNUG__
+#    pragma GCC diagnostic pop
+#endif
 
 #include <array>
 #include <cassert>
@@ -32,23 +48,6 @@
 #include <sstream>
 #include <utility>
 #include <vector>
-
-#ifdef __GNUG__
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
-#    pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
-#define FMT_HEADER_ONLY 1
-#include <fmt/format.h>
-#ifdef __GNUG__
-#    pragma GCC diagnostic pop
-#endif
-
-#include <mdcomp/bigendian_io.hh>
-#include <mdcomp/saxman.hh>
-#include <mdtools/fmvoice.hh>
-#include <mdtools/ignore_unused_variable_warning.hh>
-#include <mdtools/songtrack.hh>
 
 #define SMPS2ASM_VERSION 1
 
@@ -1066,8 +1065,8 @@ int main(int argc, char* argv[]) {
     while (true) {
         int option_index = 0;
         int c            = getopt_long(
-                argc, argv, "b::x::uo:v:s3", long_options.data(),
-                &option_index);
+                           argc, argv, "b::x::uo:v:s3", long_options.data(),
+                           &option_index);
         if (c == -1) {
             break;
         }
