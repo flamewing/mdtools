@@ -73,7 +73,7 @@ void frame_dplc::write(ostream& out, int const ver) const {
 void frame_dplc::print() const {
     size_t ntiles = 0;
     for (auto const& elem : dplc) {
-        ntiles += elem.get_cnt();
+        ntiles += elem.count;
         elem.print();
     }
     fmt::print("\tTile count: ${:04X}\n", ntiles);
@@ -84,46 +84,34 @@ void frame_dplc::consolidate(frame_dplc const& src) {
         return;
     }
 
-    size_t     start = src.dplc[0].get_tile();
-    size_t     size  = 0;
+    uint16_t   start = src.dplc[0].tile;
+    uint16_t   size  = 0;
     frame_dplc interm;
     for (auto const& sd : src.dplc) {
-        if (sd.get_tile() != start + size) {
-            single_dplc nn{};
-            nn.set_tile(start);
-            nn.set_cnt(size);
-            interm.dplc.push_back(nn);
-            start = sd.get_tile();
-            size  = sd.get_cnt();
+        if (sd.tile != start + size) {
+            interm.dplc.emplace_back(size, start);
+            start = sd.tile;
+            size  = sd.count;
         } else {
-            size += sd.get_cnt();
+            size += sd.count;
         }
     }
     if (size != 0) {
-        single_dplc nn{};
-        nn.set_tile(start);
-        nn.set_cnt(size);
-        interm.dplc.push_back(nn);
+        interm.dplc.emplace_back(size, start);
     }
 
     dplc.clear();
     for (auto const& elem : interm.dplc) {
-        size_t tile = elem.get_tile();
-        size_t sz   = elem.get_cnt();
+        uint16_t tile = elem.tile;
+        uint16_t sz   = elem.count;
 
         while (sz >= 16) {
-            single_dplc nn{};
-            nn.set_tile(tile);
-            nn.set_cnt(16);
-            dplc.push_back(nn);
+            dplc.emplace_back(16, tile);
             sz -= 16;
             tile += 16;
         }
         if (sz != 0U) {
-            single_dplc nn{};
-            nn.set_tile(tile);
-            nn.set_cnt(sz);
-            dplc.push_back(nn);
+            dplc.emplace_back(sz, tile);
         }
     }
 }
@@ -134,8 +122,8 @@ void frame_dplc::insert(single_dplc const& val) {
 
 void frame_dplc::build_vram_map(map<size_t, size_t>& vram_map) const {
     for (auto const& sd : dplc) {
-        size_t ss = sd.get_tile();
-        size_t sz = sd.get_cnt();
+        size_t ss = sd.tile;
+        size_t sz = sd.count;
         for (size_t i = ss; i < ss + sz; i++) {
             vram_map.emplace(vram_map.size(), i);
         }

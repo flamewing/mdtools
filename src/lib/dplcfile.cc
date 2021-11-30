@@ -69,11 +69,11 @@ void dplc_file::read(istream& in, int const ver) {
 }
 
 void dplc_file::write(ostream& out, int const ver, bool const nullfirst) const {
-    map<frame_dplc, size_t>            mappos;
-    map<size_t, frame_dplc>            posmap;
-    size_t                             sz = 2 * frames.size();
-    vector<frame_dplc>::const_iterator it;
-    it = frames.begin();
+    map<frame_dplc, size_t> mappos;
+    map<size_t, frame_dplc> posmap;
+
+    size_t sz = 2 * frames.size();
+    auto   it = frames.begin();
 
     if (nullfirst && ver != 4 && it != frames.end() && it->empty()) {
         mappos.emplace(*it, 0);

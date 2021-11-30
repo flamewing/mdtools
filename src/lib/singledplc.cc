@@ -38,24 +38,24 @@ using std::ostream;
 void single_dplc::read(istream& in, int const ver) {
     tile = BigEndian::Read2(in);
     if (ver < 4) {
-        cnt = ((tile & 0xf000U) >> 12U) + 1U;
+        count = ((tile & 0xf000U) >> 12U) + 1U;
         tile &= 0x0fffU;
     } else {
-        cnt  = (tile & 0x000fU) + 1U;
-        tile = (tile & 0xfff0U) >> 4U;
+        count = (tile & 0x000fU) + 1U;
+        tile  = (tile & 0xfff0U) >> 4U;
     }
 }
 
 void single_dplc::write(ostream& out, int const ver) const {
     if (ver < 4) {
-        BigEndian::Write2(out, (unsigned(cnt - 1) << 12U) | tile);
+        BigEndian::Write2(out, (unsigned(count - 1) << 12U) | tile);
     } else {
-        BigEndian::Write2(out, (unsigned(tile) << 4U) | (unsigned(cnt) - 1));
+        BigEndian::Write2(out, (unsigned(tile) << 4U) | (unsigned(count) - 1));
     }
 }
 
 void single_dplc::print() const {
     fmt::print(
             "\tFirst tile: ${:04X}\tLast tile: ${:04X}\tNum tiles: ${:04X}\n",
-            tile, (tile + cnt - 1), cnt);
+            tile, (tile + count - 1), count);
 }

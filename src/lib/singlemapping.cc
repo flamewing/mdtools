@@ -103,9 +103,7 @@ single_dplc single_mapping::split(
     sy    = src.sy;
     flags = src.flags;
     tile  = vram_map[src.tile];
-    single_dplc dplc{};
-    dplc.set_cnt(sx * sy);
-    dplc.set_tile(src.tile);
+    single_dplc dplc{static_cast<uint16_t>(sx * sy), src.tile};
     return dplc;
 }
 

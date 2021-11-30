@@ -23,11 +23,9 @@
 #include <cstdint>
 #include <iosfwd>
 
-class single_dplc {
-private:
-    uint16_t cnt, tile;
+struct single_dplc {
+    uint16_t count, tile;
 
-public:
     static size_t size(int const ver) noexcept {
         ignore_unused_variable_warning(ver);
         return 2;
@@ -36,25 +34,11 @@ public:
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    [[nodiscard]] uint16_t get_cnt() const noexcept {
-        return cnt;
-    }
-    [[nodiscard]] uint16_t get_tile() const noexcept {
-        return tile;
-    }
-
-    void set_cnt(uint16_t const c) noexcept {
-        cnt = c;
-    }
-    void set_tile(uint16_t const t) noexcept {
-        tile = t;
-    }
-
     bool operator<(single_dplc const& rhs) const noexcept {
-        if (cnt < rhs.cnt) {
+        if (count < rhs.count) {
             return true;
         }
-        if (cnt > rhs.cnt) {
+        if (count > rhs.count) {
             return false;
         }
         return tile < rhs.tile;

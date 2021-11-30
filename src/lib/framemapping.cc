@@ -69,10 +69,10 @@ void frame_mapping::print() const {
 
 frame_dplc frame_mapping::split(frame_mapping const& src) {
     // First, build the set uf used tiles from main art.
-    set<size_t> used_tiles;
+    set<uint16_t> used_tiles;
     for (auto const& sd : src.maps) {
-        size_t const ss = sd.get_tile();
-        size_t const sz = size_t(sd.get_sx()) * size_t(sd.get_sy());
+        size_t const ss = sd.tile;
+        size_t const sz = size_t(sd.sx) * size_t(sd.sy);
         for (size_t ii = ss; ii < ss + sz; ii++) {
             used_tiles.emplace(ii);
         }
@@ -101,10 +101,8 @@ frame_dplc frame_mapping::split(frame_mapping const& src) {
         if (end_it != used_tiles.cend()) {
             std::advance(end_it, 1);
         }
-        size_t const length = std::distance(start_it, end_it);
-        single_dplc  nd{};
-        nd.set_tile(*start_it);
-        nd.set_cnt(length);
+        uint16_t const length = std::distance(start_it, end_it);
+        single_dplc  nd{length, *start_it};
         newdplc.insert(nd);
         start_it = end_it;
     }

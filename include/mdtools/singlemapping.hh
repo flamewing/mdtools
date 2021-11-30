@@ -23,14 +23,12 @@
 #include <iosfwd>
 #include <map>
 
-class single_mapping {
-private:
+struct single_mapping {
     uint16_t flags, tile;
     int16_t  xx, yy;
     uint8_t  sx, sy;
     enum MapSizes : size_t { sizeS1 = 5, sizeS2 = 8, sizeS3 = 6 };
 
-public:
     static size_t size(int const ver) noexcept {
         switch (ver) {
         case 1:
@@ -49,43 +47,7 @@ public:
 
     [[nodiscard]] single_dplc split(
             single_mapping const& src, std::map<size_t, size_t>& vram_map);
-    [[nodiscard]] uint16_t get_flags() const noexcept {
-        return flags;
-    }
-    [[nodiscard]] uint16_t get_tile() const noexcept {
-        return tile;
-    }
-    [[nodiscard]] int16_t get_xx() const noexcept {
-        return xx;
-    }
-    [[nodiscard]] int16_t get_yy() const noexcept {
-        return yy;
-    }
-    [[nodiscard]] uint8_t get_sx() const noexcept {
-        return sx;
-    }
-    [[nodiscard]] uint8_t get_sy() const noexcept {
-        return sy;
-    }
 
-    void set_flags(uint16_t const t) noexcept {
-        flags = t;
-    }
-    void set_tile(uint16_t const t) noexcept {
-        tile = t;
-    }
-    void set_xx(int16_t t) noexcept {
-        xx = t;
-    }
-    void set_yy(int16_t t) noexcept {
-        yy = t;
-    }
-    void set_sx(int8_t const t) noexcept {
-        sx = t;
-    }
-    void set_sy(int8_t const t) noexcept {
-        sy = t;
-    }
     bool operator<(single_mapping const& rhs) const noexcept {
         if (tile < rhs.tile) {
             return true;

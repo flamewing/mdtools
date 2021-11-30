@@ -173,8 +173,8 @@ int main(int argc, char* argv[]) {
         auto const&  frame = srcdplc.get_dplc(ii);
         for (size_t jj = 0; jj < frame.size(); jj++) {
             auto const& dplc = frame.get_dplc(jj);
-            for (size_t kk = 0; kk < dplc.get_cnt(); kk++) {
-                tiles[dplc.get_tile() + kk].write(buffer);
+            for (size_t kk = 0; kk < dplc.count; kk++) {
+                tiles[dplc.tile + kk].write(buffer);
             }
         }
         stringstream fname(ios::in | ios::out);
