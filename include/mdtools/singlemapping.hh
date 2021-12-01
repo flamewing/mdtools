@@ -24,12 +24,13 @@
 #include <map>
 
 struct single_mapping {
+    using split_maps = std::pair<single_mapping, single_dplc>;
     uint16_t flags, tile;
     int16_t  xx, yy;
     uint8_t  sx, sy;
     enum MapSizes : size_t { sizeS1 = 5, sizeS2 = 8, sizeS3 = 6 };
 
-    static size_t size(int const ver) noexcept {
+    [[nodiscard]] static size_t size(int const ver) noexcept {
         switch (ver) {
         case 1:
             return sizeS1;
@@ -42,13 +43,14 @@ struct single_mapping {
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver) const;
     void print() const;
-    void merge(single_mapping const& src, std::map<size_t, size_t>& vram_map);
     void change_pal(uint32_t srcpal, uint32_t dstpal);
 
-    [[nodiscard]] single_dplc split(
-            single_mapping const& src, std::map<size_t, size_t>& vram_map);
+    [[nodiscard]] single_mapping merge(
+            std::map<size_t, size_t>& vram_map) const noexcept;
+    [[nodiscard]] split_maps split(
+            std::map<size_t, size_t>& vram_map) const noexcept;
 
-    bool operator<(single_mapping const& rhs) const noexcept {
+    [[nodiscard]] bool operator<(single_mapping const& rhs) const noexcept {
         if (tile < rhs.tile) {
             return true;
         }
@@ -85,7 +87,7 @@ struct single_mapping {
         /*if (yy > rhs.yy)*/
         return false;
     }
-    bool operator==(single_mapping const& rhs) const noexcept {
+    [[nodiscard]] bool operator==(single_mapping const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
     }
 };

@@ -26,7 +26,7 @@
 struct single_dplc {
     uint16_t count, tile;
 
-    static size_t size(int const ver) noexcept {
+    [[nodiscard]] static size_t size(int const ver) noexcept {
         ignore_unused_variable_warning(ver);
         return 2;
     }
@@ -34,7 +34,7 @@ struct single_dplc {
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    bool operator<(single_dplc const& rhs) const noexcept {
+    [[nodiscard]] bool operator<(single_dplc const& rhs) const noexcept {
         if (count < rhs.count) {
             return true;
         }
@@ -43,7 +43,7 @@ struct single_dplc {
         }
         return tile < rhs.tile;
     }
-    bool operator==(single_dplc const& rhs) const noexcept {
+    [[nodiscard]] bool operator==(single_dplc const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
     }
 };

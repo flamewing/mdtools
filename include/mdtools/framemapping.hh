@@ -25,6 +25,7 @@
 #include <vector>
 
 struct frame_mapping {
+    using split_maps = std::pair<frame_mapping, frame_dplc>;
     std::vector<single_mapping> maps;
 
     [[nodiscard]] size_t size(int ver) const noexcept {
@@ -33,13 +34,13 @@ struct frame_mapping {
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver) const;
     void print() const;
-    void merge(frame_mapping const& src, frame_dplc const& dplc);
     void change_pal(int srcpal, int dstpal);
 
-    [[nodiscard]] frame_dplc split(frame_mapping const& src);
+    [[nodiscard]] frame_mapping merge(frame_dplc const& dplc) const;
+    [[nodiscard]] split_maps    split() const;
 
-    bool operator<(frame_mapping const& rhs) const noexcept;
-    bool operator==(frame_mapping const& rhs) const noexcept {
+    [[nodiscard]] bool operator<(frame_mapping const& rhs) const noexcept;
+    [[nodiscard]] bool operator==(frame_mapping const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
     }
 };

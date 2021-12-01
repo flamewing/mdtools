@@ -95,26 +95,18 @@ void single_mapping::print() const {
     std::fputc('\n', stdout);
 }
 
-single_dplc single_mapping::split(
-        single_mapping const& src, map<size_t, size_t>& vram_map) {
-    xx    = src.xx;
-    yy    = src.yy;
-    sx    = src.sx;
-    sy    = src.sy;
-    flags = src.flags;
-    tile  = vram_map[src.tile];
-    single_dplc dplc{static_cast<uint16_t>(sx * sy), src.tile};
-    return dplc;
+single_mapping::split_maps single_mapping::split(
+        map<size_t, size_t>& vram_map) const noexcept {
+    split_maps output{*this, {static_cast<uint16_t>(sx * sy), tile}};
+    output.first.tile = vram_map[tile];
+    return output;
 }
 
-void single_mapping::merge(
-        single_mapping const& src, map<size_t, size_t>& vram_map) {
-    xx    = src.xx;
-    yy    = src.yy;
-    sx    = src.sx;
-    sy    = src.sy;
-    flags = src.flags;
-    tile  = vram_map[src.tile];
+single_mapping single_mapping::merge(
+        map<size_t, size_t>& vram_map) const noexcept {
+    single_mapping output{*this};
+    output.tile  = vram_map[tile];
+    return output;
 }
 
 void single_mapping::change_pal(uint32_t const srcpal, uint32_t const dstpal) {

@@ -67,10 +67,10 @@ void frame_mapping::print() const {
     }
 }
 
-frame_dplc frame_mapping::split(frame_mapping const& src) {
+frame_mapping::split_maps frame_mapping::split() const {
     // First, build the set uf used tiles from main art.
     set<uint16_t> used_tiles;
-    for (auto const& sd : src.maps) {
+    for (auto const& sd : maps) {
         size_t const ss = sd.tile;
         size_t const sz = size_t(sd.sx) * size_t(sd.sy);
         for (size_t ii = ss; ii < ss + sz; ii++) {
@@ -106,29 +106,26 @@ frame_dplc frame_mapping::split(frame_mapping const& src) {
         start_it = end_it;
     }
 
+    split_maps output{{}, newdplc.consolidate()};
+    auto& [outmaps, outdplc] = output;
     // Use the VRAM map to rewrite the arts for the input mappings.
-    for (auto const& sd : src.maps) {
-        single_mapping nn{};
-        single_dplc    dd = nn.split(sd, vram_map);
-        ignore_unused_variable_warning(dd);
-        maps.push_back(nn);
+    for (auto const& sd : maps) {
+        auto [nn, dd] = sd.split(vram_map);
+        outmaps.maps.push_back(nn);
     }
 
     // Consolidate the DPLCs so that each DPLC has a proper entry.
-    frame_dplc dplc;
-    dplc.consolidate(newdplc);
-    return dplc;
+    return output;
 }
 
-void frame_mapping::merge(frame_mapping const& src, frame_dplc const& dplc) {
-    map<size_t, size_t> vram_map;
-    dplc.build_vram_map(vram_map);
+frame_mapping frame_mapping::merge(frame_dplc const& dplc) const {
+    map<size_t, size_t> vram_map = dplc.build_vram_map();
 
-    for (auto const& sd : src.maps) {
-        single_mapping nn{};
-        nn.merge(sd, vram_map);
-        maps.push_back(nn);
+    frame_mapping output;
+    for (auto const& sd : maps) {
+        output.maps.push_back(sd.merge(vram_map));
     }
+    return output;
 }
 
 void frame_mapping::change_pal(int const srcpal, int const dstpal) {

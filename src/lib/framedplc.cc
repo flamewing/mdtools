@@ -79,15 +79,16 @@ void frame_dplc::print() const {
     fmt::print("\tTile count: ${:04X}\n", ntiles);
 }
 
-void frame_dplc::consolidate(frame_dplc const& src) {
-    if (src.dplc.empty()) {
-        return;
+[[nodiscard]] frame_dplc frame_dplc::consolidate() const {
+    frame_dplc output;
+    if (dplc.empty()) {
+        return output;
     }
 
-    uint16_t   start = src.dplc[0].tile;
+    uint16_t   start = dplc[0].tile;
     uint16_t   size  = 0;
     frame_dplc interm;
-    for (auto const& sd : src.dplc) {
+    for (auto const& sd : dplc) {
         if (sd.tile != start + size) {
             interm.dplc.emplace_back(size, start);
             start = sd.tile;
@@ -100,23 +101,24 @@ void frame_dplc::consolidate(frame_dplc const& src) {
         interm.dplc.emplace_back(size, start);
     }
 
-    dplc.clear();
     for (auto const& elem : interm.dplc) {
         uint16_t tile = elem.tile;
         uint16_t sz   = elem.count;
 
         while (sz >= 16) {
-            dplc.emplace_back(16, tile);
+            output.dplc.emplace_back(16, tile);
             sz -= 16;
             tile += 16;
         }
         if (sz != 0U) {
-            dplc.emplace_back(sz, tile);
+            output.dplc.emplace_back(sz, tile);
         }
     }
+    return output;
 }
 
-void frame_dplc::build_vram_map(map<size_t, size_t>& vram_map) const {
+std::map<size_t, size_t> frame_dplc::build_vram_map() const {
+    std::map<size_t, size_t> vram_map;
     for (auto const& sd : dplc) {
         size_t ss = sd.tile;
         size_t sz = sd.count;
@@ -124,6 +126,7 @@ void frame_dplc::build_vram_map(map<size_t, size_t>& vram_map) const {
             vram_map.emplace(vram_map.size(), i);
         }
     }
+    return vram_map;
 }
 
 bool frame_dplc::operator<(frame_dplc const& rhs) const noexcept {

@@ -108,20 +108,16 @@ void mapping_file::print() const {
 dplc_file mapping_file::split(mapping_file const& src) {
     dplc_file dplc;
     for (auto const& elem : src.frames) {
-        frame_mapping nn;
-        frame_dplc    dd;
-        frame_dplc    interm = nn.split(elem);
-        dd.consolidate(interm);
+        auto [nn, interm] = elem.split();
         frames.push_back(nn);
-        dplc.frames.push_back(dd);
+        dplc.frames.push_back(interm.consolidate());
     }
     return dplc;
 }
 
 void mapping_file::merge(mapping_file const& src, dplc_file const& dplc) {
     for (size_t i = 0; i < src.frames.size(); i++) {
-        frame_mapping nn;
-        nn.merge(src.frames[i], dplc.frames[i]);
+        frame_mapping nn = src.frames[i].merge(dplc.frames[i]);
         frames.push_back(nn);
     }
 }
@@ -129,23 +125,19 @@ void mapping_file::merge(mapping_file const& src, dplc_file const& dplc) {
 void mapping_file::optimize(
         mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc) {
     for (size_t i = 0; i < src.frames.size(); i++) {
-        frame_mapping endmap;
-        frame_dplc    enddplc;
         auto const&   intmap  = src.frames[i];
         auto const&   intdplc = indplc.frames[i];
         if (!intdplc.dplc.empty() && !intmap.maps.empty()) {
-            frame_mapping mm;
-            mm.merge(intmap, intdplc);
-            frame_dplc dd = endmap.split(mm);
-            enddplc.consolidate(dd);
+            auto [endmap, dd] = intmap.merge(intdplc).split();
+            frames.push_back(endmap);
+            outdplc.frames.push_back(dd.consolidate());
         } else if (!intdplc.dplc.empty()) {
-            enddplc.consolidate(intdplc);
+            frames.emplace_back();
+            outdplc.frames.push_back(intdplc.consolidate());
         } else {
-            endmap = intmap;
+            frames.push_back(intmap);
+            outdplc.frames.emplace_back();
         }
-
-        frames.push_back(endmap);
-        outdplc.frames.push_back(enddplc);
     }
 }
 

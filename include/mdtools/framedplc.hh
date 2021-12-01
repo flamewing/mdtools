@@ -33,11 +33,13 @@ struct frame_dplc {
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver) const;
     void print() const;
-    void consolidate(frame_dplc const& src);
-    void build_vram_map(std::map<size_t, size_t>& vram_map) const;
 
-    bool operator<(frame_dplc const& rhs) const noexcept;
-    bool operator==(frame_dplc const& rhs) const noexcept {
+    [[nodiscard]] std::map<size_t, size_t> build_vram_map() const;
+
+    [[nodiscard]] frame_dplc consolidate() const;
+
+    [[nodiscard]] bool operator<(frame_dplc const& rhs) const noexcept;
+    [[nodiscard]] bool operator==(frame_dplc const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
     }
 };

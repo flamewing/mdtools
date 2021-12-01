@@ -109,9 +109,7 @@ void dplc_file::print() const {
 
 void dplc_file::consolidate(dplc_file const& src) {
     for (auto const& elem : src.frames) {
-        frame_dplc nn;
-        nn.consolidate(elem);
-        frames.push_back(nn);
+        frames.push_back(elem.consolidate());
     }
 }
 
