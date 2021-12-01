@@ -24,7 +24,7 @@
 #include <map>
 
 struct single_mapping {
-    using split_maps = std::pair<single_mapping, single_dplc>;
+    using split_mapping = std::pair<single_mapping, single_dplc>;
     uint16_t flags, tile;
     int16_t  xx, yy;
     uint8_t  sx, sy;
@@ -47,7 +47,7 @@ struct single_mapping {
 
     [[nodiscard]] single_mapping merge(
             std::map<size_t, size_t>& vram_map) const noexcept;
-    [[nodiscard]] split_maps split(
+    [[nodiscard]] split_mapping split(
             std::map<size_t, size_t>& vram_map) const noexcept;
 
     [[nodiscard]] bool operator<(single_mapping const& rhs) const noexcept {

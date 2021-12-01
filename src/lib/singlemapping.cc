@@ -95,9 +95,9 @@ void single_mapping::print() const {
     std::fputc('\n', stdout);
 }
 
-single_mapping::split_maps single_mapping::split(
+single_mapping::split_mapping single_mapping::split(
         map<size_t, size_t>& vram_map) const noexcept {
-    split_maps output{*this, {static_cast<uint16_t>(sx * sy), tile}};
+    split_mapping output{*this, {static_cast<uint16_t>(sx * sy), tile}};
     output.first.tile = vram_map[tile];
     return output;
 }

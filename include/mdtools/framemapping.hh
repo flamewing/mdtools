@@ -25,7 +25,7 @@
 #include <vector>
 
 struct frame_mapping {
-    using split_maps = std::pair<frame_mapping, frame_dplc>;
+    using split_mapping = std::pair<frame_mapping, frame_dplc>;
     std::vector<single_mapping> maps;
 
     [[nodiscard]] size_t size(int ver) const noexcept {
@@ -37,7 +37,7 @@ struct frame_mapping {
     void change_pal(int srcpal, int dstpal);
 
     [[nodiscard]] frame_mapping merge(frame_dplc const& dplc) const;
-    [[nodiscard]] split_maps    split() const;
+    [[nodiscard]] split_mapping split() const;
 
     [[nodiscard]] bool operator<(frame_mapping const& rhs) const noexcept;
     [[nodiscard]] bool operator==(frame_mapping const& rhs) const noexcept {

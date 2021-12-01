@@ -31,7 +31,8 @@ struct dplc_file {
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver, bool nullfirst) const;
     void print() const;
-    void consolidate(dplc_file const& src);
+
+    [[nodiscard]] dplc_file consolidate() const;
 };
 
 #endif    // __LIB_DPLCFILE_H

@@ -107,10 +107,12 @@ void dplc_file::print() const {
     }
 }
 
-void dplc_file::consolidate(dplc_file const& src) {
-    for (auto const& elem : src.frames) {
-        frames.push_back(elem.consolidate());
+dplc_file dplc_file::consolidate() const {
+    dplc_file output;
+    for (auto const& elem : frames) {
+        output.frames.push_back(elem.consolidate());
     }
+    return output;
 }
 
 size_t dplc_file::size(int ver) const noexcept {

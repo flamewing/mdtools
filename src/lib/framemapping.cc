@@ -67,7 +67,7 @@ void frame_mapping::print() const {
     }
 }
 
-frame_mapping::split_maps frame_mapping::split() const {
+frame_mapping::split_mapping frame_mapping::split() const {
     // First, build the set uf used tiles from main art.
     set<uint16_t> used_tiles;
     for (auto const& sd : maps) {
@@ -106,7 +106,7 @@ frame_mapping::split_maps frame_mapping::split() const {
         start_it = end_it;
     }
 
-    split_maps output{{}, newdplc.consolidate()};
+    split_mapping output{{}, newdplc.consolidate()};
     auto& [outmaps, outdplc] = output;
     // Use the VRAM map to rewrite the arts for the input mappings.
     for (auto const& sd : maps) {
