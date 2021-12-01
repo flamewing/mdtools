@@ -42,9 +42,9 @@ using std::vector;
 
 void mapping_file::read(istream& in, int const ver) {
     in.seekg(0, ios::beg);
+    vector<int16_t> off;
 
-    vector<size_t> off;
-    auto           term = static_cast<int16_t>(BigEndian::Read2(in));
+    auto term = static_cast<int16_t>(BigEndian::Read2(in));
     while (term == 0) {
         off.push_back(term);
         term = static_cast<int16_t>(BigEndian::Read2(in));
@@ -73,21 +73,18 @@ void mapping_file::write(
     map<size_t, frame_mapping> posmap;
     size_t                     sz = 2 * frames.size();
 
-    auto it = frames.begin();
-
-    if (nullfirst && it != frames.end() && it->empty()) {
-        mappos.emplace(*it, 0);
-        posmap.emplace(0, *it);
+    if (nullfirst && !frames.empty() && frames.front().maps.empty()) {
+        mappos.emplace(frames.front(), 0);
+        posmap.emplace(0, frames.front());
     }
-    for (; it != frames.end(); ++it) {
-        auto const it2 = mappos.find(*it);
-        if (it2 != mappos.end()) {
+    for (auto const& frame : frames) {
+        if (auto const it2 = mappos.find(frame); it2 != mappos.end()) {
             BigEndian::Write2(out, it2->second);
         } else {
-            mappos.emplace(*it, sz);
-            posmap.emplace(sz, *it);
+            mappos.emplace(frame, sz);
+            posmap.emplace(sz, frame);
             BigEndian::Write2(out, sz);
-            sz += it->size(ver);
+            sz += frame.size(ver);
         }
     }
     for (auto const& [pos, maps] : posmap) {
@@ -136,12 +133,12 @@ void mapping_file::optimize(
         frame_dplc    enddplc;
         auto const&   intmap  = src.frames[i];
         auto const&   intdplc = indplc.get_dplc(i);
-        if (!intdplc.empty() && !intmap.empty()) {
+        if (!intdplc.dplc.empty() && !intmap.maps.empty()) {
             frame_mapping mm;
             mm.merge(intmap, intdplc);
             frame_dplc dd = endmap.split(mm);
             enddplc.consolidate(dd);
-        } else if (!intdplc.empty()) {
+        } else if (!intdplc.dplc.empty()) {
             enddplc.consolidate(intdplc);
         } else {
             endmap = intmap;

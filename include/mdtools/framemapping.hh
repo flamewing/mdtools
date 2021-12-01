@@ -24,14 +24,9 @@
 #include <iosfwd>
 #include <vector>
 
-class frame_mapping {
-private:
+struct frame_mapping {
     std::vector<single_mapping> maps;
 
-public:
-    [[nodiscard]] size_t size() const noexcept {
-        return maps.size();
-    }
     [[nodiscard]] size_t size(int ver) const noexcept {
         return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
     }
@@ -43,15 +38,9 @@ public:
 
     [[nodiscard]] frame_dplc split(frame_mapping const& src);
 
-    [[nodiscard]] bool empty() const noexcept {
-        return maps.empty();
-    }
     bool operator<(frame_mapping const& rhs) const noexcept;
     bool operator==(frame_mapping const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
-    }
-    [[nodiscard]] single_mapping const& get_maps(size_t i) const noexcept {
-        return maps[i];
     }
 };
 

@@ -41,9 +41,9 @@ using std::vector;
 
 void dplc_file::read(istream& in, int const ver) {
     in.seekg(0, ios::beg);
+    vector<int16_t> off;
 
-    vector<size_t> off;
-    auto           term = static_cast<int16_t>(BigEndian::Read2(in));
+    auto term = static_cast<int16_t>(BigEndian::Read2(in));
     if (ver != 4) {
         while (term == 0) {
             off.push_back(term);
@@ -73,20 +73,20 @@ void dplc_file::write(ostream& out, int const ver, bool const nullfirst) const {
     map<size_t, frame_dplc> posmap;
 
     size_t sz = 2 * frames.size();
-    auto   it = frames.begin();
 
-    if (nullfirst && ver != 4 && it != frames.end() && it->empty()) {
-        mappos.emplace(*it, 0);
-        posmap.emplace(0, *it);
+    if (nullfirst && ver != 4 && !frames.empty()
+        && frames.front().dplc.empty()) {
+        mappos.emplace(frames.front(), 0);
+        posmap.emplace(0, frames.front());
     }
-    for (; it != frames.end(); ++it) {
-        if (auto const it2 = mappos.find(*it); it2 != mappos.end()) {
+    for (auto const& frame : frames) {
+        if (auto const it2 = mappos.find(frame); it2 != mappos.end()) {
             BigEndian::Write2(out, it2->second);
         } else {
-            mappos.emplace(*it, sz);
-            posmap.emplace(sz, *it);
+            mappos.emplace(frame, sz);
+            posmap.emplace(sz, frame);
             BigEndian::Write2(out, sz);
-            sz += it->size(ver);
+            sz += frame.size(ver);
         }
     }
     for (auto const& [pos, dplc] : posmap) {

@@ -102,8 +102,7 @@ frame_dplc frame_mapping::split(frame_mapping const& src) {
             std::advance(end_it, 1);
         }
         uint16_t const length = std::distance(start_it, end_it);
-        single_dplc  nd{length, *start_it};
-        newdplc.insert(nd);
+        newdplc.dplc.emplace_back(length, *start_it);
         start_it = end_it;
     }
 

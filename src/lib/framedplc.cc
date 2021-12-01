@@ -116,10 +116,6 @@ void frame_dplc::consolidate(frame_dplc const& src) {
     }
 }
 
-void frame_dplc::insert(single_dplc const& val) {
-    dplc.push_back(val);
-}
-
 void frame_dplc::build_vram_map(map<size_t, size_t>& vram_map) const {
     for (auto const& sd : dplc) {
         size_t ss = sd.tile;

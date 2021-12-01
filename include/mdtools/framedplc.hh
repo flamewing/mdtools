@@ -24,14 +24,9 @@
 #include <map>
 #include <vector>
 
-class frame_dplc {
-private:
+struct frame_dplc {
     std::vector<single_dplc> dplc;
 
-public:
-    [[nodiscard]] size_t size() const noexcept {
-        return dplc.size();
-    }
     [[nodiscard]] size_t size(int ver) const noexcept {
         return (ver == 1 ? 1 : 2) + single_dplc::size(ver) * dplc.size();
     }
@@ -39,18 +34,11 @@ public:
     void write(std::ostream& out, int ver) const;
     void print() const;
     void consolidate(frame_dplc const& src);
-    void insert(single_dplc const& val);
     void build_vram_map(std::map<size_t, size_t>& vram_map) const;
 
-    [[nodiscard]] bool empty() const noexcept {
-        return dplc.empty();
-    }
     bool operator<(frame_dplc const& rhs) const noexcept;
     bool operator==(frame_dplc const& rhs) const noexcept {
         return !(*this < rhs || rhs < *this);
-    }
-    [[nodiscard]] single_dplc const& get_dplc(size_t const i) const noexcept {
-        return dplc[i];
     }
 };
 

@@ -171,8 +171,7 @@ int main(int argc, char* argv[]) {
     for (size_t ii = 0; ii < srcdplc.size(); ii++) {
         stringstream buffer(ios::in | ios::out | ios::binary);
         auto const&  frame = srcdplc.get_dplc(ii);
-        for (size_t jj = 0; jj < frame.size(); jj++) {
-            auto const& dplc = frame.get_dplc(jj);
+        for (auto const& dplc : frame.dplc) {
             for (size_t kk = 0; kk < dplc.count; kk++) {
                 tiles[dplc.tile + kk].write(buffer);
             }
