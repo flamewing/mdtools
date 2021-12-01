@@ -128,21 +128,3 @@ std::map<size_t, size_t> frame_dplc::build_vram_map() const {
     }
     return vram_map;
 }
-
-bool frame_dplc::operator<(frame_dplc const& rhs) const noexcept {
-    if (dplc.size() < rhs.dplc.size()) {
-        return true;
-    }
-    if (dplc.size() > rhs.dplc.size()) {
-        return false;
-    }
-    for (size_t ii = 0; ii < dplc.size(); ii++) {
-        if (dplc[ii] < rhs.dplc[ii]) {
-            return true;
-        }
-        if (rhs.dplc[ii] < dplc[ii]) {
-            return false;
-        }
-    }
-    return false;
-}

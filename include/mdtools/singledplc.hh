@@ -20,6 +20,7 @@
 
 #include <mdtools/ignore_unused_variable_warning.hh>
 
+#include <compare>
 #include <cstdint>
 #include <iosfwd>
 
@@ -34,18 +35,7 @@ struct single_dplc {
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    [[nodiscard]] bool operator<(single_dplc const& rhs) const noexcept {
-        if (count < rhs.count) {
-            return true;
-        }
-        if (count > rhs.count) {
-            return false;
-        }
-        return tile < rhs.tile;
-    }
-    [[nodiscard]] bool operator==(single_dplc const& rhs) const noexcept {
-        return !(*this < rhs || rhs < *this);
-    }
+    [[nodiscard]] auto operator<=>(single_dplc const& rhs) const noexcept = default;
 };
 
 #endif    // __LIB_SINGLEDPLC_H

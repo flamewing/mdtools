@@ -133,21 +133,3 @@ void frame_mapping::change_pal(int const srcpal, int const dstpal) {
         elem.change_pal(srcpal, dstpal);
     }
 }
-
-bool frame_mapping::operator<(frame_mapping const& rhs) const noexcept {
-    if (maps.size() < rhs.maps.size()) {
-        return true;
-    }
-    if (maps.size() > rhs.maps.size()) {
-        return false;
-    }
-    for (size_t ii = 0; ii < maps.size(); ii++) {
-        if (maps[ii] < rhs.maps[ii]) {
-            return true;
-        }
-        if (rhs.maps[ii] < maps[ii]) {
-            return false;
-        }
-    }
-    return false;
-}

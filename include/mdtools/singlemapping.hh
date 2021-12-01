@@ -20,14 +20,18 @@
 
 #include <mdtools/singledplc.hh>
 
+#include <compare>
 #include <iosfwd>
 #include <map>
 
 struct single_mapping {
     using split_mapping = std::pair<single_mapping, single_dplc>;
-    uint16_t flags, tile;
-    int16_t  xx, yy;
-    uint8_t  sx, sy;
+    uint16_t tile;
+    uint8_t  sx;
+    uint8_t  sy;
+    uint16_t flags;
+    int16_t  xx;
+    int16_t  yy;
     enum MapSizes : size_t { sizeS1 = 5, sizeS2 = 8, sizeS3 = 6 };
 
     [[nodiscard]] static size_t size(int const ver) noexcept {
@@ -50,46 +54,7 @@ struct single_mapping {
     [[nodiscard]] split_mapping split(
             std::map<size_t, size_t>& vram_map) const noexcept;
 
-    [[nodiscard]] bool operator<(single_mapping const& rhs) const noexcept {
-        if (tile < rhs.tile) {
-            return true;
-        }
-        if (tile > rhs.tile) {
-            return false;
-        }
-        if (sx < rhs.sx) {
-            return true;
-        }
-        if (sx > rhs.sx) {
-            return false;
-        }
-        if (sy < rhs.sy) {
-            return true;
-        }
-        if (sy > rhs.sy) {
-            return false;
-        }
-        if (flags < rhs.flags) {
-            return true;
-        }
-        if (flags > rhs.flags) {
-            return false;
-        }
-        if (xx < rhs.xx) {
-            return true;
-        }
-        if (xx > rhs.xx) {
-            return false;
-        }
-        if (yy < rhs.yy) {
-            return true;
-        }
-        /*if (yy > rhs.yy)*/
-        return false;
-    }
-    [[nodiscard]] bool operator==(single_mapping const& rhs) const noexcept {
-        return !(*this < rhs || rhs < *this);
-    }
+    [[nodiscard]] auto operator<=>(single_mapping const& rhs) const noexcept = default;
 };
 
 #endif    // __LIB_SINGLEMAPPING_H

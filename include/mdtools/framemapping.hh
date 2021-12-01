@@ -21,6 +21,7 @@
 #include <mdtools/framedplc.hh>
 #include <mdtools/singlemapping.hh>
 
+#include <compare>
 #include <iosfwd>
 #include <vector>
 
@@ -39,10 +40,7 @@ struct frame_mapping {
     [[nodiscard]] frame_mapping merge(frame_dplc const& dplc) const;
     [[nodiscard]] split_mapping split() const;
 
-    [[nodiscard]] bool operator<(frame_mapping const& rhs) const noexcept;
-    [[nodiscard]] bool operator==(frame_mapping const& rhs) const noexcept {
-        return !(*this < rhs || rhs < *this);
-    }
+    [[nodiscard]] auto operator<=>(frame_mapping const& rhs) const noexcept = default;
 };
 
 #endif    // __LIB_FRAMEMAPPING_H

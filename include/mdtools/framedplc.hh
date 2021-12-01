@@ -20,6 +20,7 @@
 
 #include <mdtools/singledplc.hh>
 
+#include <compare>
 #include <iosfwd>
 #include <map>
 #include <vector>
@@ -38,10 +39,7 @@ struct frame_dplc {
 
     [[nodiscard]] frame_dplc consolidate() const;
 
-    [[nodiscard]] bool operator<(frame_dplc const& rhs) const noexcept;
-    [[nodiscard]] bool operator==(frame_dplc const& rhs) const noexcept {
-        return !(*this < rhs || rhs < *this);
-    }
+    [[nodiscard]] auto operator<=>(frame_dplc const& rhs) const noexcept = default;
 };
 
 #endif    // __LIB_FRAMEDPLC_H
