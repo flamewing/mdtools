@@ -115,10 +115,6 @@ void dplc_file::consolidate(dplc_file const& src) {
     }
 }
 
-void dplc_file::insert(frame_dplc const& val) {
-    frames.push_back(val);
-}
-
 size_t dplc_file::size(int ver) const noexcept {
     return std::accumulate(
             frames.cbegin(), frames.cend(), 2 * frames.size(),

@@ -24,32 +24,21 @@
 #include <iosfwd>
 #include <vector>
 
-class mapping_file {
-private:
+struct mapping_file {
     std::vector<frame_mapping> frames;
 
-public:
     [[nodiscard]] size_t size(int ver) const noexcept;
-    [[nodiscard]] size_t size() const noexcept {
-        return frames.size();
-    }
 
     void read(std::istream& in, int ver);
     void write(std::ostream& out, int ver, bool nullfirst) const;
     void print() const;
     void merge(mapping_file const& src, dplc_file const& dplc);
     void change_pal(int srcpal, int dstpal);
-
-    [[nodiscard]] dplc_file split(mapping_file const& src);
-    [[nodiscard]] bool      empty() const noexcept {
-        return frames.empty();
-    }
     void optimize(
             mapping_file const& src, dplc_file const& indplc,
             dplc_file& outdplc);
-    [[nodiscard]] frame_mapping const& get_maps(size_t const i) const noexcept {
-        return frames[i];
-    }
+
+    [[nodiscard]] dplc_file split(mapping_file const& src);
 };
 
 #endif    // __LIB_MAPPINGFILE_H

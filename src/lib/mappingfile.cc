@@ -113,7 +113,7 @@ dplc_file mapping_file::split(mapping_file const& src) {
         frame_dplc    interm = nn.split(elem);
         dd.consolidate(interm);
         frames.push_back(nn);
-        dplc.insert(dd);
+        dplc.frames.push_back(dd);
     }
     return dplc;
 }
@@ -121,7 +121,7 @@ dplc_file mapping_file::split(mapping_file const& src) {
 void mapping_file::merge(mapping_file const& src, dplc_file const& dplc) {
     for (size_t i = 0; i < src.frames.size(); i++) {
         frame_mapping nn;
-        nn.merge(src.frames[i], dplc.get_dplc(i));
+        nn.merge(src.frames[i], dplc.frames[i]);
         frames.push_back(nn);
     }
 }
@@ -132,7 +132,7 @@ void mapping_file::optimize(
         frame_mapping endmap;
         frame_dplc    enddplc;
         auto const&   intmap  = src.frames[i];
-        auto const&   intdplc = indplc.get_dplc(i);
+        auto const&   intdplc = indplc.frames[i];
         if (!intdplc.dplc.empty() && !intmap.maps.empty()) {
             frame_mapping mm;
             mm.merge(intmap, intdplc);
@@ -145,7 +145,7 @@ void mapping_file::optimize(
         }
 
         frames.push_back(endmap);
-        outdplc.insert(enddplc);
+        outdplc.frames.push_back(enddplc);
     }
 }
 

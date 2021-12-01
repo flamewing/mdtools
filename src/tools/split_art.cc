@@ -168,9 +168,9 @@ int main(int argc, char* argv[]) {
     srcdplc.read(indplc, sonicver);
     indplc.close();
 
-    for (size_t ii = 0; ii < srcdplc.size(); ii++) {
+    for (size_t ii = 0; ii < srcdplc.frames.size(); ii++) {
         stringstream buffer(ios::in | ios::out | ios::binary);
-        auto const&  frame = srcdplc.get_dplc(ii);
+        auto const&  frame = srcdplc.frames[ii];
         for (auto const& dplc : frame.dplc) {
             for (size_t kk = 0; kk < dplc.count; kk++) {
                 tiles[dplc.tile + kk].write(buffer);
