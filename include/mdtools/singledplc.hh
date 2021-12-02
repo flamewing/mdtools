@@ -40,8 +40,13 @@ struct single_dplc {
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    [[nodiscard]] std::strong_ordering operator<=>(
-            single_dplc const& rhs) const noexcept = default;
+    [[nodiscard]] auto operator<=>(single_dplc const& rhs) const noexcept {
+        if (auto cmp = count <=> rhs.count;
+            cmp != std::strong_ordering::equal) {
+            return cmp;
+        }
+        return tile <=> rhs.tile;
+    }
 };
 
 #endif    // __LIB_SINGLEDPLC_H

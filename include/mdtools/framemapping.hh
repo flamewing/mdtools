@@ -42,8 +42,7 @@ struct frame_mapping {
     [[nodiscard]] frame_mapping merge(frame_dplc const& dplc) const;
     [[nodiscard]] split_mapping split() const;
 
-    [[nodiscard]] std::strong_ordering operator<=>(
-            frame_mapping const& rhs) const noexcept = default;
+    [[nodiscard]] auto operator<=>(frame_mapping const& rhs) const = default;
 };
 
 #endif    // __LIB_FRAMEMAPPING_H
