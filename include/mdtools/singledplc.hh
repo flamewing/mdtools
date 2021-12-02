@@ -40,7 +40,8 @@ struct single_dplc {
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    [[nodiscard]] auto operator<=>(single_dplc const& rhs) const noexcept {
+    [[nodiscard]] std::strong_ordering operator<=>(
+            single_dplc const& rhs) const noexcept {
         if (auto cmp = count <=> rhs.count;
             cmp != std::strong_ordering::equal) {
             return cmp;

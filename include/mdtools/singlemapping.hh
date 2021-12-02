@@ -63,7 +63,8 @@ struct single_mapping {
     [[nodiscard]] split_mapping split(
             std::map<size_t, size_t>& vram_map) const noexcept;
 
-    [[nodiscard]] auto operator<=>(single_mapping const& rhs) const noexcept {
+    [[nodiscard]] std::strong_ordering operator<=>(
+            single_mapping const& rhs) const noexcept {
         if (auto cmp = tile <=> rhs.tile; cmp != std::strong_ordering::equal) {
             return cmp;
         }
