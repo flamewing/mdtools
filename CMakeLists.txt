@@ -408,7 +408,7 @@ file(GLOB_RECURSE ALL_SOURCE_FILES ${PROJECT_SOURCE_DIR} *.cc *.hh)
 list(FILTER ALL_SOURCE_FILES EXCLUDE REGEX "${PROJECT_SOURCE_DIR}/(fmt|mdcomp)/.*" )
 
 add_custom_target(
-    clang-format
+    clang-format-tools
     COMMAND clang-format
     -style=file
     -i
@@ -416,7 +416,7 @@ add_custom_target(
 )
 
 add_custom_target(
-    clang-tidy
+    clang-tidy-tools
     COMMAND clang-tidy
     ${ALL_SOURCE_FILES}
 )
