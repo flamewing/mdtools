@@ -164,8 +164,7 @@ int main(int argc, char* argv[]) {
     }
     inart.close();
 
-    dplc_file srcdplc;
-    srcdplc.read(indplc, sonicver);
+    dplc_file const srcdplc(indplc, sonicver);
     indplc.close();
 
     for (size_t ii = 0; ii < srcdplc.frames.size(); ii++) {

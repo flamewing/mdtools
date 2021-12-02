@@ -1156,8 +1156,7 @@ int main(int argc, char* argv[]) {
 
         int const width = (pointerTable.size() < 256) ? 2 : 4;
         for (size_t ii = 0; ii < pointerTable.size(); ii++) {
-            string buf
-                    = fmt::format("{}{:0{}X}", projname, ii, width);
+            string buf = fmt::format("{}{:0{}X}", projname, ii, width);
             dump_single_entry(
                     fin, fout, buf, pointerTable[ii] % 0x8000, 0, sonicver,
                     saxman, sfx, s3kmode);

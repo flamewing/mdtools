@@ -25,17 +25,23 @@
 #include <iosfwd>
 
 struct single_dplc {
-    uint16_t count, tile;
+    uint16_t count;
+    uint16_t tile;
 
     [[nodiscard]] static size_t size(int const ver) noexcept {
         ignore_unused_variable_warning(ver);
         return 2;
     }
-    void read(std::istream& in, int ver);
+
+    single_dplc() = default;
+    single_dplc(uint16_t count, uint16_t tile) noexcept
+            : count(count), tile(tile) {}
+    single_dplc(std::istream& in, int ver);
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    [[nodiscard]] auto operator<=>(single_dplc const& rhs) const noexcept = default;
+    [[nodiscard]] auto operator<=>(
+            single_dplc const& rhs) const noexcept = default;
 };
 
 #endif    // __LIB_SINGLEDPLC_H

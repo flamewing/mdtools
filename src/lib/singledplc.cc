@@ -35,8 +35,8 @@ using std::ios;
 using std::istream;
 using std::ostream;
 
-void single_dplc::read(istream& in, int const ver) {
-    tile = BigEndian::Read2(in);
+single_dplc::single_dplc(istream& in, int const ver)
+        : tile(BigEndian::Read<uint16_t>(in)) {
     if (ver < 4) {
         count = ((tile & 0xf000U) >> 12U) + 1U;
         tile &= 0x0fffU;

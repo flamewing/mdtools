@@ -37,23 +37,31 @@ using std::istream;
 using std::map;
 using std::ostream;
 
-void single_mapping::read(istream& in, int const ver) {
-    yy    = static_cast<int8_t>(Read1(in));
-    sy    = Read1(in);
-    sx    = ((sy & 0xcU) >> 2U) + 1;
-    sy    = (sy & 0x3U) + 1;
-    tile  = BigEndian::Read2(in);
-    flags = ((tile & 0xf800U) >> 8U);
-    tile &= 0x07ffU;
+static inline single_mapping::init_tuple read_mapping(
+        istream& in, int const ver) {
+    int8_t const   pos_y   = BigEndian::Read<int8_t>(in);
+    uint8_t const  size    = BigEndian::Read<uint8_t>(in);
+    uint16_t const pattern = BigEndian::Read<uint16_t>(in);
     if (ver == 2) {
         in.ignore(2);
     }
-    if (ver == 1) {
-        xx = static_cast<int8_t>(Read1(in));
-    } else {
-        xx = BigEndian::Read2(in);
-    }
+    int16_t const pos_x = [&]() -> int16_t {
+        if (ver == 1) {
+            return BigEndian::Read<int8_t>(in);
+        }
+        return BigEndian::Read<int16_t>(in);
+    }();
+
+    return {pattern & 0x07ffU,
+            ((size & 0xcU) >> 2U) + 1,
+            (size & 0x3U) + 1,
+            ((pattern & 0xf800U) >> 8U),
+            pos_x,
+            pos_y};
 }
+
+single_mapping::single_mapping(istream& in, int const ver)
+        : single_mapping(read_mapping(in, ver)) {}
 
 void single_mapping::write(ostream& out, int const ver) const {
     Write1(out, static_cast<uint8_t>(yy));
@@ -105,7 +113,7 @@ single_mapping::split_mapping single_mapping::split(
 single_mapping single_mapping::merge(
         map<size_t, size_t>& vram_map) const noexcept {
     single_mapping output{*this};
-    output.tile  = vram_map[tile];
+    output.tile = vram_map[tile];
     return output;
 }
 

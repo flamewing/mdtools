@@ -39,20 +39,20 @@ using std::map;
 using std::ostream;
 using std::vector;
 
-void dplc_file::read(istream& in, int const ver) {
+dplc_file::dplc_file(istream& in, int const ver) {
     in.seekg(0, ios::beg);
     vector<int16_t> off;
 
-    auto term = static_cast<int16_t>(BigEndian::Read2(in));
+    int16_t term = BigEndian::Read<int16_t>(in);
     if (ver != 4) {
         while (term == 0) {
             off.push_back(term);
-            term = static_cast<int16_t>(BigEndian::Read2(in));
+            term = BigEndian::Read<int16_t>(in);
         }
     }
     off.push_back(term);
     while (in.tellg() < term) {
-        auto newterm = static_cast<int16_t>(BigEndian::Read2(in));
+        auto newterm = BigEndian::Read<int16_t>(in);
         if (newterm > 0 && newterm < term) {
             term = newterm;
         }
@@ -62,9 +62,7 @@ void dplc_file::read(istream& in, int const ver) {
     for (auto const pos : off) {
         in.clear();
         in.seekg(pos);
-        frame_dplc sd;
-        sd.read(in, ver);
-        frames.push_back(sd);
+        frames.emplace_back(in, ver);
     }
 }
 

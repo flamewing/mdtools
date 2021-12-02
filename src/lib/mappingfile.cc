@@ -40,18 +40,18 @@ using std::map;
 using std::ostream;
 using std::vector;
 
-void mapping_file::read(istream& in, int const ver) {
+mapping_file::mapping_file(istream& in, int const ver) {
     in.seekg(0, ios::beg);
     vector<int16_t> off;
 
-    auto term = static_cast<int16_t>(BigEndian::Read2(in));
+    int16_t term = BigEndian::Read<int16_t>(in);
     while (term == 0) {
         off.push_back(term);
-        term = static_cast<int16_t>(BigEndian::Read2(in));
+        term = BigEndian::Read<int16_t>(in);
     }
     off.push_back(term);
     while (in.tellg() < term) {
-        auto const newterm = static_cast<int16_t>(BigEndian::Read2(in));
+        int16_t const newterm = BigEndian::Read<int16_t>(in);
         if (newterm > 0 && newterm < term) {
             term = newterm;
         }
@@ -61,9 +61,7 @@ void mapping_file::read(istream& in, int const ver) {
     for (auto const pos : off) {
         in.clear();
         in.seekg(pos);
-        frame_mapping sd;
-        sd.read(in, ver);
-        frames.push_back(sd);
+        frames.emplace_back(in, ver);
     }
 }
 
@@ -125,8 +123,8 @@ void mapping_file::merge(mapping_file const& src, dplc_file const& dplc) {
 void mapping_file::optimize(
         mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc) {
     for (size_t i = 0; i < src.frames.size(); i++) {
-        auto const&   intmap  = src.frames[i];
-        auto const&   intdplc = indplc.frames[i];
+        auto const& intmap  = src.frames[i];
+        auto const& intdplc = indplc.frames[i];
         if (!intdplc.dplc.empty() && !intmap.maps.empty()) {
             auto [endmap, dd] = intmap.merge(intdplc).split();
             frames.push_back(endmap);

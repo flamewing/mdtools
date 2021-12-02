@@ -273,12 +273,10 @@ int main(int argc, char* argv[]) {
         TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
         TEST_FILE(indplc, optind + 1, eInputDplcMissing);
 
-        mapping_file srcmaps;
-        srcmaps.read(inmaps, fromsonicver);
+        mapping_file const srcmaps(inmaps, fromsonicver);
         inmaps.close();
 
-        dplc_file srcdplc;
-        srcdplc.read(indplc, fromsonicver);
+        dplc_file const srcdplc(indplc, fromsonicver);
         indplc.close();
 
         // mapping_file intmaps;
@@ -305,8 +303,7 @@ int main(int argc, char* argv[]) {
         ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
         TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
-        mapping_file srcmaps;
-        srcmaps.read(inmaps, fromsonicver);
+        mapping_file const srcmaps(inmaps, fromsonicver);
         inmaps.close();
 
         mapping_file dstmaps;
@@ -330,12 +327,10 @@ int main(int argc, char* argv[]) {
         TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
         TEST_FILE(indplc, optind + 1, eInputDplcMissing);
 
-        mapping_file srcmaps;
-        srcmaps.read(inmaps, fromsonicver);
+        mapping_file const srcmaps(inmaps, fromsonicver);
         inmaps.close();
 
-        dplc_file srcdplc;
-        srcdplc.read(indplc, fromsonicver);
+        dplc_file const srcdplc(indplc, fromsonicver);
         indplc.close();
 
         mapping_file dstmaps;
@@ -352,8 +347,7 @@ int main(int argc, char* argv[]) {
         ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
         TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
-        mapping_file srcmaps;
-        srcmaps.read(inmaps, fromsonicver);
+        mapping_file const srcmaps(inmaps, fromsonicver);
         inmaps.close();
 
         ofstream outmaps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
@@ -367,8 +361,7 @@ int main(int argc, char* argv[]) {
         ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
         TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
-        mapping_file srcmaps;
-        srcmaps.read(inmaps, fromsonicver);
+        mapping_file const srcmaps(inmaps, fromsonicver);
         inmaps.close();
 
         ofstream outmaps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
@@ -382,8 +375,7 @@ int main(int argc, char* argv[]) {
         ifstream indplc(argv[optind + 0], ios::in | ios::binary);
         TEST_FILE(indplc, optind + 0, eInputDplcMissing);
 
-        dplc_file srcdplc;
-        srcdplc.read(indplc, fromsonicver);
+        dplc_file const srcdplc(indplc, fromsonicver);
         indplc.close();
 
         ofstream outdplc(argv[optind + 1], ios::out | ios::binary | ios::trunc);
@@ -397,8 +389,7 @@ int main(int argc, char* argv[]) {
         ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
         TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
-        mapping_file srcmaps;
-        srcmaps.read(inmaps, fromsonicver);
+        mapping_file const srcmaps(inmaps, fromsonicver);
         inmaps.close();
         srcmaps.print();
         break;
@@ -407,8 +398,7 @@ int main(int argc, char* argv[]) {
         ifstream indplc(argv[optind + 0], ios::in | ios::binary);
         TEST_FILE(indplc, optind + 0, eInputDplcMissing);
 
-        dplc_file srcdplc;
-        srcdplc.read(indplc, fromsonicver);
+        dplc_file const srcdplc(indplc, fromsonicver);
         indplc.close();
         srcdplc.print();
         break;
@@ -421,8 +411,7 @@ int main(int argc, char* argv[]) {
         ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
         TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
 
-        mapping_file srcmaps;
-        srcmaps.read(inmaps, fromsonicver);
+        mapping_file srcmaps(inmaps, fromsonicver);
         inmaps.close();
         srcmaps.change_pal(srcpal, dstpal);
 

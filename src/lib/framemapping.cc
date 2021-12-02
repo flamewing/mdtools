@@ -40,12 +40,11 @@ using std::map;
 using std::ostream;
 using std::set;
 
-void frame_mapping::read(istream& in, int const ver) {
-    size_t const cnt = ver == 1 ? Read1(in) : BigEndian::Read2(in);
+frame_mapping::frame_mapping(istream& in, int const ver) {
+    size_t const cnt = ver == 1 ? BigEndian::Read<uint8_t>(in)
+                                : BigEndian::Read<uint16_t>(in);
     for (size_t i = 0; i < cnt; i++) {
-        single_mapping sd{};
-        sd.read(in, ver);
-        maps.push_back(sd);
+        maps.emplace_back(in, ver);
     }
 }
 

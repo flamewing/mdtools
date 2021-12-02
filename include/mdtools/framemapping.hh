@@ -32,7 +32,9 @@ struct frame_mapping {
     [[nodiscard]] size_t size(int ver) const noexcept {
         return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
     }
-    void read(std::istream& in, int ver);
+
+    frame_mapping() = default;
+    frame_mapping(std::istream& in, int ver);
     void write(std::ostream& out, int ver) const;
     void print() const;
     void change_pal(int srcpal, int dstpal);
@@ -40,7 +42,8 @@ struct frame_mapping {
     [[nodiscard]] frame_mapping merge(frame_dplc const& dplc) const;
     [[nodiscard]] split_mapping split() const;
 
-    [[nodiscard]] auto operator<=>(frame_mapping const& rhs) const noexcept = default;
+    [[nodiscard]] auto operator<=>(
+            frame_mapping const& rhs) const noexcept = default;
 };
 
 #endif    // __LIB_FRAMEMAPPING_H

@@ -31,7 +31,9 @@ struct frame_dplc {
     [[nodiscard]] size_t size(int ver) const noexcept {
         return (ver == 1 ? 1 : 2) + single_dplc::size(ver) * dplc.size();
     }
-    void read(std::istream& in, int ver);
+
+    frame_dplc() = default;
+    frame_dplc(std::istream& in, int ver);
     void write(std::ostream& out, int ver) const;
     void print() const;
 
@@ -39,7 +41,8 @@ struct frame_dplc {
 
     [[nodiscard]] frame_dplc consolidate() const;
 
-    [[nodiscard]] auto operator<=>(frame_dplc const& rhs) const noexcept = default;
+    [[nodiscard]] auto operator<=>(
+            frame_dplc const& rhs) const noexcept = default;
 };
 
 #endif    // __LIB_FRAMEDPLC_H

@@ -37,21 +37,19 @@ using std::istream;
 using std::map;
 using std::ostream;
 
-void frame_dplc::read(istream& in, int const ver) {
+frame_dplc::frame_dplc(istream& in, int const ver) {
     size_t cnt = [&]() -> size_t {
         if (ver == 1) {
-            return Read1(in);
+            return BigEndian::Read<uint8_t>(in);
         }
         if (ver == 4) {
-            return static_cast<int16_t>(BigEndian::Read2(in)) + 1;
+            return BigEndian::Read<int16_t>(in) + 1;
         }
-        return BigEndian::Read2(in);
+        return BigEndian::Read<uint16_t>(in);
     }();
 
     for (size_t i = 0; i < cnt; i++) {
-        single_dplc sd{};
-        sd.read(in, ver);
-        dplc.push_back(sd);
+        dplc.emplace_back(in, ver);
     }
 }
 

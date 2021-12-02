@@ -29,7 +29,8 @@ struct mapping_file {
 
     [[nodiscard]] size_t size(int ver) const noexcept;
 
-    void read(std::istream& in, int ver);
+    mapping_file() = default;
+    mapping_file(std::istream& in, int ver);
     void write(std::ostream& out, int ver, bool nullfirst) const;
     void print() const;
     void merge(mapping_file const& src, dplc_file const& dplc);
