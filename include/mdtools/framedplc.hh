@@ -42,7 +42,7 @@ struct frame_dplc {
     [[nodiscard]] frame_dplc consolidate() const;
 
     [[nodiscard]] std::strong_ordering operator<=>(
-            frame_dplc const& rhs) const = default;
+            frame_dplc const& rhs) const noexcept;
 };
 
 #endif    // __LIB_FRAMEDPLC_H

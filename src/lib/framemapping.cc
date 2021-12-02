@@ -19,6 +19,8 @@
 #include <mdtools/framemapping.hh>
 #include <mdtools/ignore_unused_variable_warning.hh>
 
+#include <compare>
+
 #ifdef __GNUG__
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
@@ -131,4 +133,19 @@ void frame_mapping::change_pal(int const srcpal, int const dstpal) {
     for (auto& elem : maps) {
         elem.change_pal(srcpal, dstpal);
     }
+}
+
+[[nodiscard]] std::strong_ordering frame_mapping::operator<=>(
+        frame_mapping const& rhs) const noexcept {
+    if (auto cmp = maps.size() <=> rhs.maps.size();
+        cmp != std::strong_ordering::equal) {
+        return cmp;
+    }
+    for (size_t ii = 0; ii < maps.size(); ii++) {
+        if (auto cmp = maps[ii] <=> rhs.maps[ii];
+            cmp != std::strong_ordering::equal) {
+            return cmp;
+        }
+    }
+    return std::strong_ordering::equal;
 }

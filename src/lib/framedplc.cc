@@ -126,3 +126,18 @@ std::map<size_t, size_t> frame_dplc::build_vram_map() const {
     }
     return vram_map;
 }
+
+[[nodiscard]] std::strong_ordering frame_dplc::operator<=>(
+        frame_dplc const& rhs) const noexcept {
+    if (auto cmp = dplc.size() <=> rhs.dplc.size();
+        cmp != std::strong_ordering::equal) {
+        return cmp;
+    }
+    for (size_t ii = 0; ii < dplc.size(); ii++) {
+        if (auto cmp = dplc[ii] <=> rhs.dplc[ii];
+            cmp != std::strong_ordering::equal) {
+            return cmp;
+        }
+    }
+    return std::strong_ordering::equal;
+}

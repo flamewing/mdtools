@@ -43,7 +43,7 @@ struct frame_mapping {
     [[nodiscard]] split_mapping split() const;
 
     [[nodiscard]] std::strong_ordering operator<=>(
-            frame_mapping const& rhs) const = default;
+            frame_mapping const& rhs) const noexcept;
 };
 
 #endif    // __LIB_FRAMEMAPPING_H
