@@ -40,7 +40,7 @@ struct single_dplc {
     void write(std::ostream& out, int ver) const;
     void print() const;
 
-    [[nodiscard]] auto operator<=>(
+    [[nodiscard]] std::strong_ordering operator<=>(
             single_dplc const& rhs) const noexcept = default;
 };
 
