@@ -41,8 +41,12 @@ struct frame_dplc {
 
     [[nodiscard]] frame_dplc consolidate() const;
 
-    [[nodiscard]] std::strong_ordering operator<=>(
-            frame_dplc const& rhs) const noexcept;
+    [[nodiscard]] bool operator==(
+            frame_dplc const& rhs) const noexcept = default;
+    [[nodiscard]] auto operator<=>(
+            frame_dplc const& rhs) const noexcept = default;
 };
+
+static_assert(std::three_way_comparable<frame_dplc>);
 
 #endif    // __LIB_FRAMEDPLC_H

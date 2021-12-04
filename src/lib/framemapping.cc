@@ -134,18 +134,3 @@ void frame_mapping::change_pal(int const srcpal, int const dstpal) {
         elem.change_pal(srcpal, dstpal);
     }
 }
-
-[[nodiscard]] std::strong_ordering frame_mapping::operator<=>(
-        frame_mapping const& rhs) const noexcept {
-    if (auto cmp = maps.size() <=> rhs.maps.size();
-        cmp != std::strong_ordering::equal) {
-        return cmp;
-    }
-    for (size_t ii = 0; ii < maps.size(); ii++) {
-        if (auto cmp = maps[ii] <=> rhs.maps[ii];
-            cmp != std::strong_ordering::equal) {
-            return cmp;
-        }
-    }
-    return std::strong_ordering::equal;
-}
