@@ -15,16 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "mdtools/ignore_unused_variable_warning.hh"
+
 #include <getopt.h>
+#include <mdcomp/comper.hh>
+#include <mdcomp/comperx.hh>
 #include <mdcomp/kosinski.hh>
+#include <mdcomp/kosplus.hh>
+#include <mdcomp/lzkn1.hh>
 #include <mdcomp/nemesis.hh>
+#include <mdcomp/rocket.hh>
+#include <mdcomp/saxman.hh>
+#include <mdcomp/snkrle.hh>
 
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <iostream>
+#include <memory>
 #include <sstream>
+#include <string>
+#include <unordered_map>
 
 using std::cerr;
 using std::endl;
@@ -35,10 +48,15 @@ using std::ofstream;
 using std::ostream;
 using std::streamsize;
 using std::string;
+using std::string_view;
 using std::stringstream;
 
+using namespace std::literals::string_view_literals;
+
 static void usage() {
-    cerr << "Usage: recolor-art [-o|--format {unc|nem|kos}] [-m|--moduled] "
+    cerr << "Usage: recolor-art [-o|--format "
+            "{unc|comp|compx|kos|kos+|lzkn1|nem|rocket|snk}] "
+            "[-m|--moduled] "
             "{-clr1 clr2}+ {input_art} {output_art}"
          << endl;
     cerr << "\tRecolors the art file, changing palette index clr1 to clr2. "
@@ -49,8 +67,6 @@ static void usage() {
          << endl
          << endl;
 }
-
-enum Formats { eInvalid = -1, eUncompressed = 0, eNemesis = 1, eKosinski = 2 };
 
 using ColorMap = std::array<int, 16>;
 
@@ -88,6 +104,30 @@ struct Tile {
     }
 };
 
+class uncompressed;
+using basic_uncompressed   = BasicDecoder<uncompressed, PadMode::PadEven>;
+using moduled_uncompressed = ModuledAdaptor<uncompressed, 4096U, 1U>;
+
+class uncompressed : public basic_uncompressed, public moduled_uncompressed {
+    friend basic_uncompressed;
+    friend moduled_uncompressed;
+    static bool encode(std::ostream& Dst, uint8_t const* data, size_t Size);
+
+public:
+    using basic_uncompressed::encode;
+    static bool decode(std::istream& Src, std::iostream& Dst);
+};
+
+bool uncompressed::encode(std::ostream& Dst, uint8_t const* data, size_t Size) {
+    Dst.write(reinterpret_cast<const char*>(data), Size);
+    return true;
+}
+
+bool uncompressed::decode(std::istream& Src, std::iostream& Dst) {
+    Dst << Src.rdbuf();
+    return true;
+}
+
 void recolor(istream& in, ostream& out, ColorMap& colormap) {
     Tile tile{};
     while (true) {
@@ -98,6 +138,21 @@ void recolor(istream& in, ostream& out, ColorMap& colormap) {
         tile.write(out);
     }
 }
+
+template <>
+size_t moduled_uncompressed::PadMaskBits = 1U;
+
+using encoder         = decltype(&basic_uncompressed::encode);
+using decoder         = decltype(&uncompressed::decode);
+using moduled_encoder = decltype(&uncompressed::moduled_encode);
+using moduled_decoder = decltype(&uncompressed::moduled_decode);
+
+struct art_format {
+    encoder         encode;
+    decoder         decode;
+    moduled_encoder moduled_encode;
+    moduled_decoder moduled_decode;
+};
 
 int main(int argc, char* argv[]) {
     constexpr static const std::array long_options{
@@ -111,7 +166,44 @@ int main(int argc, char* argv[]) {
     ColorMap colormap{0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
                       0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
     unsigned numcolors = 0;
-    Formats  fmt       = eUncompressed;
+
+    static const std::unordered_map<string_view, art_format>
+            format_lut{
+                    {{"unc"sv,
+                      {uncompressed::encode, uncompressed::decode,
+                       uncompressed::moduled_encode,
+                       uncompressed::moduled_decode}},
+                     {"comp"sv,
+                      {comper::encode, comper::decode, comper::moduled_encode,
+                       comper::moduled_decode}},
+                     {"compx"sv,
+                      {comperx::encode, comperx::decode,
+                       comperx::moduled_encode, comperx::moduled_decode}},
+                     {"kos"sv,
+                      {kosinski::encode, kosinski::decode,
+                       kosinski::moduled_encode, kosinski::moduled_decode}},
+                     {"kos+"sv,
+                      {kosplus::encode, kosplus::decode,
+                       kosplus::moduled_encode, kosplus::moduled_decode}},
+                     {"lzkn1"sv,
+                      {lzkn1::encode, lzkn1::decode, lzkn1::moduled_encode,
+                       lzkn1::moduled_decode}},
+                     {"nem"sv,
+                      {nemesis::encode,
+                       +[](std::istream& Src, std::iostream& Dst) {
+                           return nemesis::decode(Src, Dst);
+                       },
+                       nemesis::moduled_encode, nemesis::moduled_decode}},
+                     {"rocket"sv,
+                      {rocket::encode, rocket::decode, rocket::moduled_encode,
+                       rocket::moduled_decode}},
+                     {"snk"sv,
+                      {snkrle::encode,
+                       +[](std::istream& Src, std::iostream& Dst) {
+                           return snkrle::decode(Src, Dst);
+                       },
+                       snkrle::moduled_encode, snkrle::moduled_decode}}}};
+    auto fmt = format_lut.cend();
 
     while (true) {
         int option_index = 0;
@@ -126,26 +218,14 @@ int main(int argc, char* argv[]) {
             option_char += ('a' - 'A');
         }
 
-        auto getFormat = [](auto optarg) {
-            if (optarg == nullptr) {
-                return eInvalid;
-            }
-            if (strcmp(optarg, "unc") == 0) {
-                return eUncompressed;
-            }
-            if (strcmp(optarg, "nem") == 0) {
-                return eNemesis;
-            }
-            if (strcmp(optarg, "kos") == 0) {
-                return eKosinski;
-            }
-            return eInvalid;
-        };
-
         switch (option_char) {
         case 'o':
-            fmt = getFormat(optarg);
-            if (fmt == eInvalid) {
+            if (optarg == nullptr) {
+                usage();
+                return 1;
+            }
+            fmt = format_lut.find(optarg);
+            if (fmt == format_lut.cend()) {
                 usage();
                 return 1;
             }
@@ -220,17 +300,13 @@ int main(int argc, char* argv[]) {
     stringstream sin(ios::in | ios::out | ios::binary);
     stringstream sout(ios::in | ios::out | ios::binary);
 
+    auto const& [key, fmt_handler] = *fmt;
+
     fin.seekg(0);
-    if (fmt == eUncompressed) {
-        sin << fin.rdbuf();
-    } else if (fmt == eNemesis) {
-        nemesis::decode(fin, sin);
-    } else {    // if (fmt == eKosinski)
-        if (moduled) {
-            kosinski::moduled_decode(fin, sin);
-        } else {
-            kosinski::decode(fin, sin);
-        }
+    if (moduled) {
+        fmt_handler.moduled_decode(fin, sin, modulesize);
+    } else {
+        fmt_handler.decode(fin, sin);
     }
 
     fin.close();
@@ -246,17 +322,10 @@ int main(int argc, char* argv[]) {
     }
 
     sout.seekg(0);
-
-    if (fmt == eUncompressed) {
-        fout << sout.rdbuf();
-    } else if (fmt == eNemesis) {
-        nemesis::encode(sout, fout);
-    } else {    // if (fmt == eKosinski)
-        if (moduled) {
-            kosinski::moduled_encode(sout, fout, modulesize);
-        } else {
-            kosinski::encode(sout, fout);
-        }
+    if (moduled) {
+        fmt_handler.moduled_encode(sout, fout, modulesize);
+    } else {
+        fmt_handler.encode(sout, fout);
     }
 
     fout.close();

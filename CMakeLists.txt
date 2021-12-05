@@ -412,6 +412,8 @@ set(VOICEDUMPER_SOURCES
     "src/tools/fmvoice.cc"
     "src/tools/voice_dumper.cc"
 )
+
+set(ALL_FORMATS "mdcomp::comper;mdcomp::comperx;mdcomp::kosinski;mdcomp::kosplus;mdcomp::lzkn1;mdcomp::nemesis;mdcomp::rocket;mdcomp::saxman;mdcomp::snkrle")
 define_exe(voice_dumper   "${VOICEDUMPER_SOURCES}"      ""                                          voice_dumper)
 define_exe(chunk_census   "src/tools/chunk_census.cc"   "mdcomp::kosinski"                          chunk_census)
 define_exe(split_art      "src/tools/split_art.cc"      "mappings;mdcomp::comper;mdcomp::kosinski"  split_art)
@@ -423,7 +425,7 @@ set(SMPS2ASM_SOURCES
     "src/tools/songtrack.cc"
 )
 define_exe(smps2asm       "${SMPS2ASM_SOURCES}"         "mdcomp::saxman"                            smps2asm)
-define_exe(recolor_art    "src/tools/recolor_art.cc"    "mdcomp::nemesis;mdcomp::kosinski"          recolor_art)
+define_exe(recolor_art    "src/tools/recolor_art.cc"    "${ALL_FORMATS}"                            recolor_art)
 define_exe(mapping_tool   "src/tools/mapping_tool.cc"   "mappings"                                  mapping_tool)
 define_exe(plane_map      "src/tools/plane_map.cc"      "mdcomp::enigma"                            plane_map)
 define_exe(enitool        "src/tools/enitool.cc"        "mdcomp::enigma"                            enitool)
