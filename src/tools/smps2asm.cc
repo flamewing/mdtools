@@ -553,7 +553,7 @@ public:
                 case 0x01:
                 case 0x02:
                     chanid++;
-                // Fall through
+                     [[fallthrough]];
                 case 0x04:
                 case 0x05:
                 case 0x06: {
