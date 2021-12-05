@@ -53,11 +53,11 @@ static inline single_mapping::init_tuple read_mapping(
     }();
 
     return {pattern & 0x07ffU,
-            ((size & 0xcU) >> 2U) + 1,
-            (size & 0x3U) + 1,
             ((pattern & 0xf800U) >> 8U),
             pos_x,
-            pos_y};
+            pos_y,
+            ((size & 0xcU) >> 2U) + 1,
+            (size & 0x3U) + 1};
 }
 
 single_mapping::single_mapping(istream& in, int const ver)

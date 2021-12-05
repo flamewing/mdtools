@@ -28,13 +28,13 @@
 struct single_mapping {
     using split_mapping = std::pair<single_mapping, single_dplc>;
     using init_tuple    = std::tuple<
-            uint16_t, uint8_t, uint8_t, uint16_t, int16_t, int16_t>;
+            uint16_t, uint16_t, int16_t, int16_t, uint8_t, uint8_t>;
     uint16_t tile;
-    uint8_t  sx;
-    uint8_t  sy;
     uint16_t flags;
     int16_t  xx;
     int16_t  yy;
+    uint8_t  sx;
+    uint8_t  sy;
     enum MapSizes : size_t { sizeS1 = 5, sizeS2 = 8, sizeS3 = 6 };
 
     [[nodiscard]] static size_t size(int const ver) noexcept {
@@ -50,9 +50,9 @@ struct single_mapping {
 
     single_mapping() = default;
     explicit single_mapping(init_tuple const& values)
-            : tile(std::get<0>(values)), sx(std::get<1>(values)),
-              sy(std::get<2>(values)), flags(std::get<3>(values)),
-              xx(std::get<4>(values)), yy(std::get<5>(values)) {}
+            : tile{std::get<0>(values)}, flags{std::get<1>(values)},
+              xx{std::get<2>(values)}, yy{std::get<3>(values)},
+              sx{std::get<4>(values)}, sy{std::get<5>(values)} {}
     single_mapping(std::istream& in, int ver);
     void write(std::ostream& out, int ver) const;
     void print() const;
