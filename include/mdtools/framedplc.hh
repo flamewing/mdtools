@@ -43,10 +43,8 @@ struct frame_dplc {
 
     [[nodiscard]] bool operator==(
             frame_dplc const& rhs) const noexcept = default;
-    [[nodiscard]] auto operator<=>(
+    [[nodiscard]] std::weak_ordering operator<=>(
             frame_dplc const& rhs) const noexcept = default;
 };
-
-static_assert(std::three_way_comparable<frame_dplc>);
 
 #endif    // __LIB_FRAMEDPLC_H

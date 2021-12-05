@@ -48,6 +48,4 @@ struct frame_mapping {
             frame_mapping const& rhs) const noexcept = default;
 };
 
-static_assert(std::three_way_comparable<frame_mapping>);
-
 #endif    // __LIB_FRAMEMAPPING_H

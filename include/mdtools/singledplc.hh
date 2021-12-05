@@ -42,10 +42,8 @@ struct single_dplc {
 
     [[nodiscard]] bool operator==(
             single_dplc const& rhs) const noexcept = default;
-    [[nodiscard]] auto operator<=>(
+    [[nodiscard]] std::strong_ordering operator<=>(
             single_dplc const& rhs) const noexcept = default;
 };
-
-static_assert(std::three_way_comparable<single_dplc>);
 
 #endif    // __LIB_SINGLEDPLC_H

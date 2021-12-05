@@ -65,10 +65,8 @@ struct single_mapping {
 
     [[nodiscard]] bool operator==(
             single_mapping const& rhs) const noexcept = default;
-    [[nodiscard]] auto operator<=>(
+    [[nodiscard]] std::strong_ordering operator<=>(
             single_mapping const& rhs) const noexcept = default;
 };
-
-static_assert(std::three_way_comparable<single_mapping>);
 
 #endif    // __LIB_SINGLEMAPPING_H
