@@ -28,8 +28,6 @@
 struct frame_mapping {
     using split_mapping = std::pair<frame_mapping, frame_dplc>;
     std::vector<single_mapping> maps;
-    static_assert(
-            std::three_way_comparable_with<single_mapping, single_mapping>);
 
     [[nodiscard]] size_t size(int ver) const noexcept {
         return (ver == 1 ? 1 : 2) + single_mapping::size(ver) * maps.size();
@@ -46,7 +44,7 @@ struct frame_mapping {
 
     [[nodiscard]] bool operator==(
             frame_mapping const& rhs) const noexcept = default;
-    [[nodiscard]] auto operator<=>(
+    [[nodiscard]] std::weak_ordering operator<=>(
             frame_mapping const& rhs) const noexcept = default;
 };
 
