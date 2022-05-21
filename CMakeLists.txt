@@ -282,15 +282,12 @@ set(VRASSTRACK_HEADERS
 # Dummy library for generating compile_commands.json that
 # sets flags for headers without corresponding cc files.
 add_library(dummy-mdtools
-    "src/lib/fmvoice.cc"
     "src/lib/ignore_unused_variable_warning.cc"
     "src/lib/pattern_name.cc"
     "src/lib/pattern_name_table.cc"
-    "src/lib/songtrack.cc"
     "src/lib/tile.cc"
     "src/lib/vram.cc"
     "${VRAM_HEADERS}"
-    "${SMPS_HEADERS}"
     "${COMMON_HEADERS}"
 )
 target_include_directories(dummy-mdtools
