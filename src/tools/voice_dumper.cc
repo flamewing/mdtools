@@ -64,8 +64,8 @@ int main(int argc, char* argv[]) {
                option{"sonicver", required_argument, nullptr, 'v'},
                option{nullptr, 0, nullptr, 0}};
 
-    int64_t pointer  = 0;
-    int64_t sonicver = -1;
+    int64_t pointer       = 0;
+    int64_t sonic_version = -1;
 
     while (true) {
         int option_index = 0;
@@ -81,20 +81,20 @@ int main(int argc, char* argv[]) {
             break;
 
         case 'v':
-            sonicver = strtol(optarg, nullptr, 0);
+            sonic_version = strtol(optarg, nullptr, 0);
             break;
         default:
             break;
         }
     }
 
-    if (argc - optind < 2 || sonicver < 1 || sonicver > 4) {
+    if (argc - optind < 2 || sonic_version < 1 || sonic_version > 4) {
         usage();
         return 1;
     }
 
-    ifstream fin(argv[optind + 0], ios::in | ios::binary);
-    if (!fin.good()) {
+    ifstream input(argv[optind + 0], ios::in | ios::binary);
+    if (!input.good()) {
         cerr << "Input file '" << argv[optind + 0] << "' could not be opened."
              << endl
              << endl;
@@ -108,13 +108,13 @@ int main(int argc, char* argv[]) {
              << endl;
         return 3;
     }
-    fin.seekg(0, ios::end);
-    uint64_t len = fin.tellg();
-    fin.seekg(pointer);
+    input.seekg(0, ios::end);
+    uint64_t length = input.tellg();
+    input.seekg(pointer);
 
-    for (uint64_t i = 0UL; i < numvoices; i++) {
-        uint64_t pos(fin.tellg());
-        if (pos + 25UL > len) {
+    for (uint64_t voice_id = 0UL; voice_id < numvoices; voice_id++) {
+        uint64_t position(input.tellg());
+        if (position + 25UL > length) {
             // End of file reached in the middle of a voice.
             cerr << "Broken voice! The end-of-file was reached in the middle "
                     "of an FM voice."
@@ -125,8 +125,8 @@ int main(int argc, char* argv[]) {
         }
 
         // Print the voice.
-        fm_voice voc{};
-        voc.read(fin, sonicver);
-        voc.print(cout, sonicver, i);
+        fm_voice voice{};
+        voice.read(input, sonic_version);
+        voice.print(cout, sonic_version, voice_id);
     }
 }

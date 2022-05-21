@@ -162,12 +162,12 @@ enum FileErrors {
 
 #define ARG_CASE(x, y, z, w)     \
     case (x):                    \
-        if (act != eNone) {      \
+        if (action != eNone) {   \
             usage();             \
             return eInvalidArgs; \
         }                        \
-        act   = (y);             \
-        nargs = (z);             \
+        action   = (y);          \
+        num_args = (z);          \
         w;                       \
         break;
 
@@ -198,13 +198,13 @@ int main(int argc, char* argv[]) {
             option{"sonic", required_argument, nullptr, 'z'},
             option{nullptr, 0, nullptr, 0}};
 
-    Actions act          = eNone;
-    bool    nullfirst    = true;
-    int64_t nargs        = 0;
-    int64_t srcpal       = -1;
-    int64_t dstpal       = -1;
-    int64_t tosonicver   = 2;
-    int64_t fromsonicver = 2;
+    Actions action             = eNone;
+    bool    null_first         = true;
+    int64_t num_args           = 0;
+    int64_t source_palette     = -1;
+    int64_t dest_palette       = -1;
+    int64_t to_sonic_version   = 2;
+    int64_t from_sonic_version = 2;
 
     while (true) {
         int option_index = 0;
@@ -217,24 +217,24 @@ int main(int argc, char* argv[]) {
 
         switch (option_char) {
         case '0':
-            nullfirst = false;
+            null_first = false;
             break;
         case 'x':
-            fromsonicver = strtol(optarg, nullptr, 0);
-            if (fromsonicver < 1 || fromsonicver > 4) {
-                fromsonicver = 2;
+            from_sonic_version = strtol(optarg, nullptr, 0);
+            if (from_sonic_version < 1 || from_sonic_version > 4) {
+                from_sonic_version = 2;
             }
             break;
         case 'y':
-            tosonicver = strtol(optarg, nullptr, 0);
-            if (tosonicver < 1 || tosonicver > 4) {
-                tosonicver = 2;
+            to_sonic_version = strtol(optarg, nullptr, 0);
+            if (to_sonic_version < 1 || to_sonic_version > 4) {
+                to_sonic_version = 2;
             }
             break;
         case 'z':
-            fromsonicver = tosonicver = strtol(optarg, nullptr, 0);
-            if (fromsonicver < 1 || fromsonicver > 4) {
-                fromsonicver = tosonicver = 2;
+            from_sonic_version = to_sonic_version = strtol(optarg, nullptr, 0);
+            if (from_sonic_version < 1 || from_sonic_version > 4) {
+                from_sonic_version = to_sonic_version = 2;
             }
             break;
             ARG_CASE('o', eOptimize, 4, )
@@ -247,179 +247,183 @@ int main(int argc, char* argv[]) {
             ARG_CASE('d', eDplc, 1, )
             ARG_CASE(
                     'p', ePalChange, 2,
-                    srcpal = (strtoul(optarg, nullptr, 0) & 3U) << 5U)
+                    source_palette = (strtoul(optarg, nullptr, 0) & 3U) << 5U)
         case 'a':
-            if (act != ePalChange) {
+            if (action != ePalChange) {
                 usage();
                 return eInvalidArgs;
             }
-            nargs  = 2;
-            dstpal = (strtoul(optarg, nullptr, 0) & 3U) << 5U;
+            num_args     = 2;
+            dest_palette = (strtoul(optarg, nullptr, 0) & 3U) << 5U;
             break;
         default:
             break;
         }
     }
 
-    if (argc - optind < nargs || act == eNone) {
+    if (argc - optind < num_args || action == eNone) {
         usage();
         return eInvalidArgs;
     }
 
-    switch (act) {
+    switch (action) {
     case eOptimize: {
-        ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
-        ifstream indplc(argv[optind + 1], ios::in | ios::binary);
-        TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
-        TEST_FILE(indplc, optind + 1, eInputDplcMissing);
+        ifstream input_maps(argv[optind + 0], ios::in | ios::binary);
+        ifstream input_dplc(argv[optind + 1], ios::in | ios::binary);
+        TEST_FILE(input_maps, optind + 0, eInputMapsMissing);
+        TEST_FILE(input_dplc, optind + 1, eInputDplcMissing);
 
-        mapping_file const srcmaps(inmaps, fromsonicver);
-        inmaps.close();
+        mapping_file const source_maps(input_maps, from_sonic_version);
+        input_maps.close();
 
-        dplc_file const srcdplc(indplc, fromsonicver);
-        indplc.close();
+        dplc_file const source_dplc(input_dplc, from_sonic_version);
+        input_dplc.close();
 
-        // mapping_file intmaps;
-        // intmaps.merge(srcmaps, srcdplc);
+        // mapping_file inter_maps;
+        // inter_maps.merge(source_maps, srcdplc);
 
-        mapping_file dstmaps;
-        dplc_file    dstdplc;
-        // dstmaps.split(intmaps, dstdplc);
-        dstmaps.optimize(srcmaps, srcdplc, dstdplc);
+        mapping_file dest_maps;
+        dplc_file    dest_dplc;
+        // dest_maps.split(inter_maps, dstdplc);
+        dest_maps.optimize(source_maps, source_dplc, dest_dplc);
 
-        ofstream outmaps(argv[optind + 2], ios::out | ios::binary | ios::trunc);
-        ofstream outdplc(argv[optind + 3], ios::out | ios::binary | ios::trunc);
-        TEST_FILE(outmaps, optind + 2, eOutputMapsMissing);
-        TEST_FILE(outdplc, optind + 3, eOutputDplcMissing);
+        ofstream output_maps(
+                argv[optind + 2], ios::out | ios::binary | ios::trunc);
+        ofstream output_dplc(
+                argv[optind + 3], ios::out | ios::binary | ios::trunc);
+        TEST_FILE(output_maps, optind + 2, eOutputMapsMissing);
+        TEST_FILE(output_dplc, optind + 3, eOutputDplcMissing);
 
-        dstmaps.write(outmaps, tosonicver, nullfirst);
-        outmaps.close();
+        dest_maps.write(output_maps, to_sonic_version, null_first);
+        output_maps.close();
 
-        dstdplc.write(outdplc, tosonicver, nullfirst);
-        outdplc.close();
+        dest_dplc.write(output_dplc, to_sonic_version, null_first);
+        output_dplc.close();
         break;
     }
     case eSplit: {
-        ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
-        TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
+        ifstream input_maps(argv[optind + 0], ios::in | ios::binary);
+        TEST_FILE(input_maps, optind + 0, eInputMapsMissing);
 
-        mapping_file const srcmaps(inmaps, fromsonicver);
-        inmaps.close();
+        mapping_file const source_maps(input_maps, from_sonic_version);
+        input_maps.close();
 
-        mapping_file dstmaps;
-        dplc_file    dstdplc = dstmaps.split(srcmaps);
+        mapping_file dest_maps;
+        dplc_file    dest_dplc = dest_maps.split(source_maps);
 
-        ofstream outmaps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
-        ofstream outdplc(argv[optind + 2], ios::out | ios::binary | ios::trunc);
-        TEST_FILE(outmaps, optind + 1, eOutputMapsMissing);
-        TEST_FILE(outdplc, optind + 2, eOutputDplcMissing);
+        ofstream output_maps(
+                argv[optind + 1], ios::out | ios::binary | ios::trunc);
+        ofstream output_dplc(
+                argv[optind + 2], ios::out | ios::binary | ios::trunc);
+        TEST_FILE(output_maps, optind + 1, eOutputMapsMissing);
+        TEST_FILE(output_dplc, optind + 2, eOutputDplcMissing);
 
-        dstmaps.write(outmaps, tosonicver, nullfirst);
-        outmaps.close();
+        dest_maps.write(output_maps, to_sonic_version, null_first);
+        output_maps.close();
 
-        dstdplc.write(outdplc, tosonicver, nullfirst);
-        outdplc.close();
+        dest_dplc.write(output_dplc, to_sonic_version, null_first);
+        output_dplc.close();
         break;
     }
     case eMerge: {
-        ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
+        ifstream input_maps(argv[optind + 0], ios::in | ios::binary);
         ifstream indplc(argv[optind + 1], ios::in | ios::binary);
-        TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
+        TEST_FILE(input_maps, optind + 0, eInputMapsMissing);
         TEST_FILE(indplc, optind + 1, eInputDplcMissing);
 
-        mapping_file const srcmaps(inmaps, fromsonicver);
-        inmaps.close();
+        mapping_file const source_maps(input_maps, from_sonic_version);
+        input_maps.close();
 
-        dplc_file const srcdplc(indplc, fromsonicver);
+        dplc_file const srcdplc(indplc, from_sonic_version);
         indplc.close();
 
-        mapping_file dstmaps;
-        dstmaps.merge(srcmaps, srcdplc);
+        mapping_file dest_maps;
+        dest_maps.merge(source_maps, srcdplc);
 
-        ofstream outmaps(argv[optind + 2], ios::out | ios::binary | ios::trunc);
-        TEST_FILE(outmaps, optind + 2, eOutputMapsMissing);
+        ofstream output_maps(argv[optind + 2], ios::out | ios::binary | ios::trunc);
+        TEST_FILE(output_maps, optind + 2, eOutputMapsMissing);
 
-        dstmaps.write(outmaps, tosonicver, nullfirst);
-        outmaps.close();
+        dest_maps.write(output_maps, to_sonic_version, null_first);
+        output_maps.close();
         break;
     }
     case eFix: {
-        ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
-        TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
+        ifstream input_maps(argv[optind + 0], ios::in | ios::binary);
+        TEST_FILE(input_maps, optind + 0, eInputMapsMissing);
 
-        mapping_file const srcmaps(inmaps, fromsonicver);
-        inmaps.close();
+        mapping_file const source_maps(input_maps, from_sonic_version);
+        input_maps.close();
 
-        ofstream outmaps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
-        TEST_FILE(outmaps, optind + 1, eOutputMapsMissing);
+        ofstream output_maps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
+        TEST_FILE(output_maps, optind + 1, eOutputMapsMissing);
 
-        srcmaps.write(outmaps, tosonicver, nullfirst);
-        outmaps.close();
+        source_maps.write(output_maps, to_sonic_version, null_first);
+        output_maps.close();
         break;
     }
     case eConvert: {
-        ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
-        TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
+        ifstream input_maps(argv[optind + 0], ios::in | ios::binary);
+        TEST_FILE(input_maps, optind + 0, eInputMapsMissing);
 
-        mapping_file const srcmaps(inmaps, fromsonicver);
-        inmaps.close();
+        mapping_file const source_maps(input_maps, from_sonic_version);
+        input_maps.close();
 
-        ofstream outmaps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
-        TEST_FILE(outmaps, optind + 1, eOutputMapsMissing);
+        ofstream output_maps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
+        TEST_FILE(output_maps, optind + 1, eOutputMapsMissing);
 
-        srcmaps.write(outmaps, tosonicver, nullfirst);
-        outmaps.close();
+        source_maps.write(output_maps, to_sonic_version, null_first);
+        output_maps.close();
         break;
     }
     case eConvertDPLC: {
         ifstream indplc(argv[optind + 0], ios::in | ios::binary);
         TEST_FILE(indplc, optind + 0, eInputDplcMissing);
 
-        dplc_file const srcdplc(indplc, fromsonicver);
+        dplc_file const srcdplc(indplc, from_sonic_version);
         indplc.close();
 
-        ofstream outdplc(argv[optind + 1], ios::out | ios::binary | ios::trunc);
-        TEST_FILE(outdplc, optind + 1, eOutputDplcMissing);
+        ofstream output_dplc(argv[optind + 1], ios::out | ios::binary | ios::trunc);
+        TEST_FILE(output_dplc, optind + 1, eOutputDplcMissing);
 
-        srcdplc.write(outdplc, tosonicver, nullfirst);
-        outdplc.close();
+        srcdplc.write(output_dplc, to_sonic_version, null_first);
+        output_dplc.close();
         break;
     }
     case eInfo: {
-        ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
-        TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
+        ifstream input_maps(argv[optind + 0], ios::in | ios::binary);
+        TEST_FILE(input_maps, optind + 0, eInputMapsMissing);
 
-        mapping_file const srcmaps(inmaps, fromsonicver);
-        inmaps.close();
-        srcmaps.print();
+        mapping_file const source_maps(input_maps, from_sonic_version);
+        input_maps.close();
+        source_maps.print();
         break;
     }
     case eDplc: {
         ifstream indplc(argv[optind + 0], ios::in | ios::binary);
         TEST_FILE(indplc, optind + 0, eInputDplcMissing);
 
-        dplc_file const srcdplc(indplc, fromsonicver);
+        dplc_file const srcdplc(indplc, from_sonic_version);
         indplc.close();
         srcdplc.print();
         break;
     }
     case ePalChange: {
-        if (srcpal < 0 || dstpal < 0) {
+        if (source_palette < 0 || dest_palette < 0) {
             usage();
             return eInvalidArgs;
         }
-        ifstream inmaps(argv[optind + 0], ios::in | ios::binary);
-        TEST_FILE(inmaps, optind + 0, eInputMapsMissing);
+        ifstream input_maps(argv[optind + 0], ios::in | ios::binary);
+        TEST_FILE(input_maps, optind + 0, eInputMapsMissing);
 
-        mapping_file srcmaps(inmaps, fromsonicver);
-        inmaps.close();
-        srcmaps.change_pal(srcpal, dstpal);
+        mapping_file source_maps(input_maps, from_sonic_version);
+        input_maps.close();
+        source_maps.change_pal(source_palette, dest_palette);
 
-        ofstream outmaps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
-        TEST_FILE(outmaps, optind + 1, eOutputMapsMissing);
+        ofstream output_maps(argv[optind + 1], ios::out | ios::binary | ios::trunc);
+        TEST_FILE(output_maps, optind + 1, eOutputMapsMissing);
 
-        srcmaps.write(outmaps, tosonicver, nullfirst);
-        outmaps.close();
+        source_maps.write(output_maps, to_sonic_version, null_first);
+        output_maps.close();
         break;
     }
     case eNone:

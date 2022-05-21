@@ -42,19 +42,20 @@ using std::stringstream;
 using std::vector;
 
 struct Tile {
-    std::array<uint8_t, 32> tiledata;
-    bool                    read(istream& in) {
-        for (auto& elem : tiledata) {
-            char cc;
-            in.get(cc);
-            elem = static_cast<uint8_t>(cc);
+    std::array<uint8_t, 32> tile_data;
+
+    bool read(istream& input) {
+        for (auto& elem : tile_data) {
+            char value;
+            input.get(value);
+            elem = static_cast<uint8_t>(value);
         }
         return true;
     }
 
-    void write(ostream& out) {
-        for (auto& elem : tiledata) {
-            out.put(elem);
+    void write(ostream& output) {
+        for (auto& elem : tile_data) {
+            output.put(elem);
         }
     }
 };
@@ -91,8 +92,8 @@ int main(int argc, char* argv[]) {
             option{"sonic", required_argument, nullptr, 'z'},
             option{nullptr, 0, nullptr, 0}};
 
-    int64_t compress = 0;
-    int64_t sonicver = 2;
+    int64_t compress      = 0;
+    int64_t sonic_version = 2;
 
     while (true) {
         int option_index = 0;
@@ -120,9 +121,9 @@ int main(int argc, char* argv[]) {
             compress = 2;
             break;
         case 'z':
-            sonicver = strtol(optarg, nullptr, 0);
-            if (sonicver < 1 || sonicver > 4) {
-                sonicver = 2;
+            sonic_version = strtol(optarg, nullptr, 0);
+            if (sonic_version < 1 || sonic_version > 4) {
+                sonic_version = 2;
             }
             break;
         default:
@@ -164,7 +165,7 @@ int main(int argc, char* argv[]) {
     }
     inart.close();
 
-    dplc_file const srcdplc(indplc, sonicver);
+    dplc_file const srcdplc(indplc, sonic_version);
     indplc.close();
 
     for (size_t ii = 0; ii < srcdplc.frames.size(); ii++) {
@@ -178,21 +179,21 @@ int main(int argc, char* argv[]) {
         stringstream fname(ios::in | ios::out);
         fname << argv[optind + 2] << hex << setw(2) << setfill('0') << ii
               << ".bin";
-        ofstream fout(
+        ofstream output(
                 fname.str().c_str(),
                 ios::in | ios::out | ios::binary | ios::trunc);
-        if (!fout.good()) {
+        if (!output.good()) {
             cerr << "Output file '" << fname.str() << "' could not be opened."
                  << endl
                  << endl;
             return 4;
         }
         if (compress == 1) {
-            comper::encode(buffer, fout);
+            comper::encode(buffer, output);
         } else if (compress == 2) {
-            kosinski::moduled_encode(buffer, fout);
+            kosinski::moduled_encode(buffer, output);
         } else {
-            fout << buffer.rdbuf();
+            output << buffer.rdbuf();
         }
     }
 

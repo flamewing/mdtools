@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIB_DPLCFILE_HH
-#define LIB_DPLCFILE_HH
+#ifndef LIB_DPLC_FILE_HH
+#define LIB_DPLC_FILE_HH
 
 #include <mdtools/framedplc.hh>
 
@@ -26,14 +26,14 @@
 struct dplc_file {
     std::vector<frame_dplc> frames;
 
-    [[nodiscard]] size_t size(int ver) const noexcept;
+    [[nodiscard]] size_t size(int version) const noexcept;
 
     dplc_file() = default;
-    dplc_file(std::istream& in, int ver);
-    void write(std::ostream& out, int ver, bool nullfirst) const;
+    dplc_file(std::istream& input, int version);
+    void write(std::ostream& output, int version, bool null_first) const;
     void print() const;
 
     [[nodiscard]] dplc_file consolidate() const;
 };
 
-#endif    // LIB_DPLCFILE_HH
+#endif    // LIB_DPLC_FILE_HH

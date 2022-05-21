@@ -54,22 +54,22 @@ int main(int argc, char* argv[]) {
 
     uint64_t chunkid = strtoull(argv[1], nullptr, 0);
     for (int ii = 2; ii < argc; ii++) {
-        ifstream fin(argv[ii], ios::in | ios::binary);
-        unsigned cnt = 0;
-        if (!fin.good()) {
+        ifstream input(argv[ii], ios::in | ios::binary);
+        unsigned count = 0;
+        if (!input.good()) {
             cerr << "Input file '" << argv[ii] << "' could not be opened."
                  << endl;
         } else {
-            stringstream sin(ios::in | ios::out | ios::binary);
-            kosinski::decode(fin, sin);
-            sin.seekg(0UL);
+            stringstream decoded(ios::in | ios::out | ios::binary);
+            kosinski::decode(input, decoded);
+            decoded.seekg(0UL);
             size_t xpos   = 0;
             size_t ypos   = 0;
             bool   planeA = true;
-            while (sin.good()) {
-                int c = sin.get();
-                if (size_t(c) == chunkid) {
-                    cnt++;
+            while (decoded.good()) {
+                int value = decoded.get();
+                if (size_t(value) == chunkid) {
+                    count++;
                     cout << argv[ii] << ": chunk appears on plane "
                          << (planeA ? 'A' : 'B') << " @ (0x" << hex << setw(4)
                          << setfill('0') << xpos << ", 0x" << hex << setw(3)
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
                     }
                 }
             }
-            cout << argv[ii] << ": " << dec << cnt << endl;
+            cout << argv[ii] << ": " << dec << count << endl;
         }
     }
 

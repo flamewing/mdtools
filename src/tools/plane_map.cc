@@ -72,34 +72,37 @@ static void usage() {
 }
 
 static void plane_map(
-        istream& src, ostream& dst, size_t w, size_t h, streamsize pointer,
-        bool sonic2) {
-    src.seekg(0, ios::end);
-    streamsize sz = streamsize(src.tellg()) - pointer;
-    src.seekg(pointer);
+        istream& source, ostream& dest, size_t width, size_t height,
+        streamsize pointer, bool sonic2) {
+    source.seekg(0, ios::end);
+    streamsize size = streamsize(source.tellg()) - pointer;
+    source.seekg(pointer);
 
-    size_t nframes = sz / (2 * w * h);
-    size_t off     = 2 * nframes;
+    size_t nframes = size / (2 * width * height);
+    size_t offset  = 2 * nframes;
 
-    for (size_t n = 0; n < nframes; n++, off += 2 + 8 * w * h) {
-        BigEndian::Write2(dst, static_cast<uint16_t>(off));
+    for (size_t frame = 0; frame < nframes;
+         frame++, offset += 2 + 8 * width * height) {
+        BigEndian::Write2(dest, static_cast<uint16_t>(offset));
     }
 
-    for (size_t n = 0; n < nframes; n++, off += 2) {
-        BigEndian::Write2(dst, w * h);
-        for (size_t j = 0; j < h; j++) {
-            auto y_pos = static_cast<int8_t>((j - h / 2) << 3U);
-            for (size_t i = 0; i < w; i++) {
-                dst.put(static_cast<char>(y_pos));
-                dst.put(static_cast<char>(0x00));
-                uint16_t v = BigEndian::Read2(src);
-                BigEndian::Write2(dst, v);
+    for (size_t frame = 0; frame < nframes; frame++, offset += 2) {
+        BigEndian::Write2(dest, width * height);
+        for (size_t line = 0; line < height; line++) {
+            auto y_pos = static_cast<int8_t>((line - height / 2) << 3U);
+            for (size_t column = 0; column < width; column++) {
+                dest.put(static_cast<char>(y_pos));
+                dest.put(static_cast<char>(0x00));
+                uint16_t value = BigEndian::Read2(source);
+                BigEndian::Write2(dest, value);
                 if (sonic2) {
                     BigEndian::Write2(
-                            dst, (v & 0xf800U) | ((v & 0x07ffU) >> 1U));
+                            dest,
+                            (value & 0xf800U) | ((value & 0x07ffU) >> 1U));
                 }
                 BigEndian::Write2(
-                        dst, static_cast<uint16_t>((i - w / 2) << 3U));
+                        dest,
+                        static_cast<uint16_t>((column - width / 2) << 3U));
             }
         }
     }
@@ -109,48 +112,48 @@ struct Position {
     int16_t x;
     int8_t  y;
     bool    operator<(Position const& other) const {
-        return (y < other.y) || (y == other.y && x < other.x);
+           return (y < other.y) || (y == other.y && x < other.x);
     }
 };
 
 using Enigma_map = map<Position, uint16_t>;
 
 static void plane_unmap(
-        istream& src, ostream& dst, streamsize pointer, bool sonic2) {
+        istream& source, ostream& dest, streamsize pointer, bool sonic2) {
     ignore_unused_variable_warning(pointer);
-    streamsize next_loc = src.tellg();
-    streamsize last_loc = BigEndian::Read2(src);
-    src.seekg(0, ios::end);
-    src.seekg(next_loc);
+    streamsize next_loc = source.tellg();
+    streamsize last_loc = BigEndian::Read2(source);
+    source.seekg(0, ios::end);
+    source.seekg(next_loc);
 
     while (next_loc < last_loc) {
-        src.seekg(next_loc);
+        source.seekg(next_loc);
 
-        size_t offset = BigEndian::Read2(src);
-        next_loc      = src.tellg();
+        size_t offset = BigEndian::Read2(source);
+        next_loc      = source.tellg();
         if (next_loc != last_loc) {
-            src.ignore(2);
+            source.ignore(2);
         }
 
-        src.seekg(offset);
+        source.seekg(offset);
 
-        size_t     count = BigEndian::Read2(src);
-        Enigma_map engfile;
+        size_t     count = BigEndian::Read2(source);
+        Enigma_map enigma_file;
         for (size_t i = 0; i < count; i++) {
-            Position pos{};
-            pos.y = static_cast<int8_t>(src.get());
-            src.ignore(1);
-            uint16_t v = BigEndian::Read2(src);
+            Position position{};
+            position.y = static_cast<int8_t>(source.get());
+            source.ignore(1);
+            uint16_t value = BigEndian::Read2(source);
             if (sonic2) {
-                src.ignore(2);
+                source.ignore(2);
             }
-            pos.x = static_cast<int16_t>(BigEndian::Read2(src));
-            engfile.emplace(pos, v);
+            position.x = static_cast<int16_t>(BigEndian::Read2(source));
+            enigma_file.emplace(position, value);
         }
 
-        for (auto& elem : engfile) {
-            uint16_t v = elem.second;
-            BigEndian::Write2(dst, v);
+        for (auto& elem : enigma_file) {
+            uint16_t value = elem.second;
+            BigEndian::Write2(dest, value);
         }
     }
 }
@@ -203,16 +206,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    ifstream fin(argv[optind], ios::in | ios::binary);
-    if (!fin.good()) {
+    ifstream input(argv[optind], ios::in | ios::binary);
+    if (!input.good()) {
         cerr << "Input file '" << argv[optind] << "' could not be opened."
              << endl
              << endl;
         return 2;
     }
 
-    ofstream fout(argv[optind + 1], ios::out | ios::binary);
-    if (!fout.good()) {
+    ofstream output(argv[optind + 1], ios::out | ios::binary);
+    if (!output.good()) {
         cerr << "Output file '" << argv[optind + 1] << "' could not be opened."
              << endl
              << endl;
@@ -222,27 +225,27 @@ int main(int argc, char* argv[]) {
     if (unmap) {
         stringstream fbuf(ios::in | ios::out | ios::binary | ios::trunc);
         if (compress) {
-            plane_unmap(fin, fbuf, 0, sonic2 != 0);
-            enigma::encode(fbuf, fout);
+            plane_unmap(input, fbuf, 0, sonic2 != 0);
+            enigma::encode(fbuf, output);
         } else {
-            plane_unmap(fin, fout, pointer, sonic2 != 0);
+            plane_unmap(input, output, pointer, sonic2 != 0);
         }
     } else {
         stringstream fbuf(ios::in | ios::out | ios::binary | ios::trunc);
 
-        size_t ww = strtoul(argv[optind + 2], nullptr, 0);
-        size_t hh = strtoul(argv[optind + 3], nullptr, 0);
-        if ((ww == 0U || ww > 128U) || (hh == 0U || hh > 128U)) {
+        size_t width  = strtoul(argv[optind + 2], nullptr, 0);
+        size_t height = strtoul(argv[optind + 3], nullptr, 0);
+        if ((width == 0U || width > 128U) || (height == 0U || height > 128U)) {
             cerr << "Invalid height or width for plane mapping." << endl
                  << endl;
             return 4;
         }
         if (extract) {
-            fin.seekg(pointer);
-            enigma::decode(fin, fbuf);
-            plane_map(fbuf, fout, ww, hh, 0, sonic2 != 0);
+            input.seekg(pointer);
+            enigma::decode(input, fbuf);
+            plane_map(fbuf, output, width, height, 0, sonic2 != 0);
         } else {
-            plane_map(fin, fout, ww, hh, pointer, sonic2 != 0);
+            plane_map(input, output, width, height, pointer, sonic2 != 0);
         }
     }
     return 0;

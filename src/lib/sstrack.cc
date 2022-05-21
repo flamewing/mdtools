@@ -29,74 +29,74 @@ using std::ostream_iterator;
 using std::stringstream;
 using std::vector;
 
-SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept {
-    stringstream bitflags(ios::in | ios::out | ios::binary);
+SSTrackFrame::SSTrackFrame(istream& input, bool const xflip) noexcept {
+    stringstream bit_flags(ios::in | ios::out | ios::binary);
     stringstream sym_maps(ios::in | ios::out | ios::binary);
     stringstream dic_maps(ios::in | ios::out | ios::binary);
-    // Fill in the bitflags stream.
-    size_t pos = in.tellg();
-    in.ignore(2);
-    uint16_t const            len1 = BigEndian::Read2(in);
-    ostream_iterator<uint8_t> bfdst(bitflags);
+    // Fill in the bit_flags stream.
+    size_t position = input.tellg();
+    input.ignore(2);
+    uint16_t const            len1 = BigEndian::Read2(input);
+    ostream_iterator<uint8_t> bfdst(bit_flags);
     for (uint16_t ii = 0; ii < len1; ii++) {
-        *bfdst++ = Read1(in);
+        *bfdst++ = Read1(input);
     }
-    bitflags.seekg(0);
+    bit_flags.seekg(0);
 
     // Fill in the symbolwise index stream.
-    in.seekg(pos + len1 + 4);
-    pos = in.tellg();
-    in.ignore(2);
-    uint16_t const            len2 = BigEndian::Read2(in);
+    input.seekg(position + len1 + 4);
+    position = input.tellg();
+    input.ignore(2);
+    uint16_t const            len2 = BigEndian::Read2(input);
     ostream_iterator<uint8_t> smdst(sym_maps);
     for (uint16_t ii = 0; ii < len2; ii++) {
-        *smdst++ = Read1(in);
+        *smdst++ = Read1(input);
     }
     sym_maps.seekg(0);
 
     // Fill in the dictionary index stream.
-    in.seekg(pos + len2 + 4);
-    in.ignore(2);
-    uint16_t const len3 = BigEndian::Read2(in);
+    input.seekg(position + len2 + 4);
+    input.ignore(2);
+    uint16_t const len3 = BigEndian::Read2(input);
 
     ostream_iterator<uint8_t> dmdst(dic_maps);
     for (uint16_t ii = 0; ii < len3; ii++) {
-        *dmdst++ = Read1(in);
+        *dmdst++ = Read1(input);
     }
     dic_maps.seekg(0);
 
-    ibitstream<uint8_t, false>  ibitflags(bitflags);
+    ibitstream<uint8_t, false>  ibitflags(bit_flags);
     ibitstream<uint16_t, false> isym_maps(sym_maps);
     ibitstream<uint8_t, false>  idic_maps(dic_maps);
 
-    auto* lineit  = getTable().begin();
-    Line* curline = &(*lineit);
+    auto* lineit   = getTable().begin();
+    Line* cur_line = &(*lineit);
     // Only one of these get used depending on xflip.
-    auto* fwdit = curline->begin();
-    auto  revit = curline->rbegin();
+    auto* fwdit = cur_line->begin();
+    auto  revit = cur_line->rbegin();
 
     while (lineit != getTable().end()) {
         // Is the next entry symbolwise- or dictionary-encoded?
         if (ibitflags.pop() != 0) {
             // Symbolwise.
-            Pattern_Name pat;
+            Pattern_Name pattern;
             // 10-bit index or 6-bit index?
             if (isym_maps.pop() != 0) {
                 // 10-bit.
-                pat = SymLUT_10bit[isym_maps.read(10)];
+                pattern = SymLUT_10bit[isym_maps.read(10)];
             } else {
                 // 6-bit.
-                pat = SymLUT_6bit[isym_maps.read(6)];
+                pattern = SymLUT_6bit[isym_maps.read(6)];
             }
             // Set correct palette.
-            pat.set_palette(Line3);
+            pattern.set_palette(Line3);
             if (xflip) {
                 // Flip the pattern name and put it from the end of line.
-                pat.set_flip(pat.get_flip() ^ XFlip);
-                *revit++ = pat;
+                pattern.set_flip(pattern.get_flip() ^ XFlip);
+                *revit++ = pattern;
             } else {
                 // Just write the pattern name.
-                *fwdit++ = pat;
+                *fwdit++ = pattern;
             }
         } else {
             // Dictionary.
@@ -107,42 +107,42 @@ SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept {
                     // It is. Discard byte, advance to next line and continue.
                     dic_maps.ignore(1);
                     ++lineit;
-                    curline = &(*lineit);
-                    fwdit   = curline->begin();
-                    revit   = curline->rbegin();
+                    cur_line = &(*lineit);
+                    fwdit    = cur_line->begin();
+                    revit    = cur_line->rbegin();
                     continue;
                 }
             }
-            RLEPattern pat;
+            RLEPattern pattern;
             // 7-bit index or 6-bit index?
             if (idic_maps.pop() != 0) {
                 // 7-bit.
-                uint8_t const val = idic_maps.read(7);
+                uint8_t const value = idic_maps.read(7);
                 // Did we read a 0x7f?
-                if (val == 0x7f) {
+                if (value == 0x7f) {
                     // Yes; this means a non-byte-aligned 0xff, or end-of-line.
                     // Advance to next line and continue.
                     ++lineit;
-                    curline = &(*lineit);
-                    fwdit   = curline->begin();
-                    revit   = curline->rbegin();
+                    cur_line = &(*lineit);
+                    fwdit    = cur_line->begin();
+                    revit    = cur_line->rbegin();
                     continue;
                 }
-                pat = DicLUT_7bit[val];
+                pattern = DicLUT_7bit[value];
             } else {
-                pat = DicLUT_6bit[idic_maps.read(6)];
+                pattern = DicLUT_6bit[idic_maps.read(6)];
             }
             // Set correct palette and priority.
-            pat.first.set_palette(Line3);
-            pat.first.set_priority(true);
+            pattern.first.set_palette(Line3);
+            pattern.first.set_priority(true);
             // Write the pattern name as many times as needed.
             if (xflip) {
-                for (unsigned ii = 0; ii <= pat.second; ii++) {
-                    *revit++ = pat.first;
+                for (unsigned ii = 0; ii <= pattern.second; ii++) {
+                    *revit++ = pattern.first;
                 }
             } else {
-                for (unsigned ii = 0; ii <= pat.second; ii++) {
-                    *fwdit++ = pat.first;
+                for (unsigned ii = 0; ii <= pattern.second; ii++) {
+                    *fwdit++ = pattern.first;
                 }
             }
         }
@@ -153,13 +153,14 @@ SSTrackFrame::SSTrackFrame(istream& in, bool const xflip) noexcept {
 // At some point, we will want to use the raw game data instead of hard-coding
 // all of this.
 constexpr static inline Pattern_Name make_block_tile(
-        uint16_t addr, uint16_t flx, uint16_t fly, uint16_t pal, uint16_t pri) {
+        uint16_t address, uint16_t flip_x, uint16_t flip_y, uint16_t palette,
+        uint16_t priority) {
     return Pattern_Name(
-            (((static_cast<unsigned>(pri)) & 1U) << 15U)
-            | (((static_cast<unsigned>(pal)) & 3U) << 13U)
-            | (((static_cast<unsigned>(fly)) & 1U) << 12U)
-            | (((static_cast<unsigned>(flx)) & 1U) << 11U)
-            | ((static_cast<unsigned>(addr)) & 0x7FFU));
+            (((static_cast<unsigned>(priority)) & 1U) << 15U)
+            | (((static_cast<unsigned>(palette)) & 3U) << 13U)
+            | (((static_cast<unsigned>(flip_y)) & 1U) << 12U)
+            | (((static_cast<unsigned>(flip_x)) & 1U) << 11U)
+            | ((static_cast<unsigned>(address)) & 0x7FFU));
 }
 
 vector<Pattern_Name> SSTrackFrame::SymLUT_6bit{

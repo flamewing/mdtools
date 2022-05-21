@@ -28,22 +28,22 @@ struct single_dplc {
     uint16_t count;
     uint16_t tile;
 
-    [[nodiscard]] static size_t size(int const ver) noexcept {
-        ignore_unused_variable_warning(ver);
+    [[nodiscard]] static size_t size(int const version) noexcept {
+        ignore_unused_variable_warning(version);
         return 2;
     }
 
     single_dplc() = default;
-    single_dplc(uint16_t count, uint16_t tile) noexcept
-            : count(count), tile(tile) {}
-    single_dplc(std::istream& in, int ver);
-    void write(std::ostream& out, int ver) const;
+    single_dplc(uint16_t count_, uint16_t tile_) noexcept
+            : count(count_), tile(tile_) {}
+    single_dplc(std::istream& input, int version);
+    void write(std::ostream& output, int version) const;
     void print() const;
 
     [[nodiscard]] bool operator==(
-            single_dplc const& rhs) const noexcept = default;
+            single_dplc const& right) const noexcept = default;
     [[nodiscard]] std::strong_ordering operator<=>(
-            single_dplc const& rhs) const noexcept = default;
+            single_dplc const& right) const noexcept = default;
 };
 
 #endif    // LIB_SINGLEDPLC_HH

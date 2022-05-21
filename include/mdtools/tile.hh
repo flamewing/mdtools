@@ -40,7 +40,7 @@ public:
     static constexpr size_t const Byte_size = nlines * lsize / 2;
 
 private:
-    std::array<uint8_t, Tile_size> tiledata{};
+    std::array<uint8_t, Tile_size> tile_data{};
 
     // Complete random-access iterator for pixels in the tile.
     // Being a template class allows code reuse for const/nonconst iterators.
@@ -62,15 +62,15 @@ private:
         friend class BaseTile<lsize, nlines>;
 
     private:
-        value_type* tiledata;
+        value_type* tile_data;
         // Controls how we are iterating.
-        FlipMode f;
+        FlipMode flip;
         // Information about the iteration.
         uint32_t start, finish, loc;
         // Common logic for add 1/sub 1. No bounds checking!
-        void incr_decr(FlipMode const _f) noexcept {
+        void incr_decr(FlipMode const flip_) noexcept {
             // We have to decide how we are going to iterate.
-            switch (_f) {
+            switch (flip_) {
             case NoFlip:
                 // Simple increment. Inverse of XYFlip.
                 loc++;
@@ -118,7 +118,7 @@ private:
                 loc = Tile_size;
                 return;
             }
-            incr_decr(f);
+            incr_decr(flip);
         }
         // To simplify operator logic.
         void decr() noexcept {
@@ -132,10 +132,10 @@ private:
                 // Do not decrement.
                 return;
             }
-            incr_decr(flip_xy(f));
+            incr_decr(flip_xy(flip));
         }
         void offset(difference_type delta) noexcept {
-            FlipMode _f;
+            FlipMode flip_;
             bool     subtract;
             if (delta == 0) {
                 return;
@@ -153,10 +153,10 @@ private:
                 }
                 // Simple increment?
                 if (delta == 1) {
-                    incr_decr(f);
+                    incr_decr(flip);
                     return;
                 }
-                _f       = f;
+                flip_    = flip;
                 subtract = false;
             } else {
                 if (loc == Tile_size) {
@@ -175,19 +175,19 @@ private:
                     return;
                 }
                 if (delta == -1) {
-                    incr_decr(flip_xy(f));
+                    incr_decr(flip_xy(flip));
                     return;
                 }
                 delta    = -delta;
-                _f       = flip_xy(f);
+                flip_    = flip_xy(flip);
                 subtract = true;
             }
-            uint32_t lineoff  = delta % lsize;
-            uint32_t numlines = delta / lsize;
-            uint32_t atoff    = loc % lsize;
-            uint32_t atline   = loc / lsize;
+            uint32_t line_off  = delta % lsize;
+            uint32_t num_lines = delta / lsize;
+            uint32_t atoff     = loc % lsize;
+            uint32_t atline    = loc / lsize;
             // Otherwise, we have to decide how we are going to iterate.
-            switch (_f) {
+            switch (flip_) {
             case NoFlip:
                 // Simple increment. Inverse of XYFlip.
                 loc += delta;
@@ -226,35 +226,35 @@ private:
                 // Lines in normal order, each line reversed.
                 // Inverse of YFlip.
                 // Are we at the end of a line?
-                if (lineoff > atoff) {
-                    numlines++;
-                    atoff += lsize - lineoff;
+                if (line_off > atoff) {
+                    num_lines++;
+                    atoff += lsize - line_off;
                 } else {
-                    atoff -= lineoff;
+                    atoff -= line_off;
                 }
                 // Can't overshoot start if subtracting with Y flip, and we
                 // must check for going past the end if adding with X flip.
-                if (numlines + atline >= nlines) {
+                if (num_lines + atline >= nlines) {
                     loc = subtract ? start : static_cast<uint32_t>(Tile_size);
                 } else {
-                    loc = (atline + numlines) * lsize + atoff;
+                    loc = (atline + num_lines) * lsize + atoff;
                 }
                 return;
             case YFlip:
                 // Lines in reverse order, each line normal.
                 // Inverse of XFlip.
-                if (lineoff + atoff >= lsize) {
-                    numlines++;
-                    atoff -= lsize - lineoff;
+                if (line_off + atoff >= lsize) {
+                    num_lines++;
+                    atoff -= lsize - line_off;
                 } else {
-                    atoff += lineoff;
+                    atoff += line_off;
                 }
                 // Can't overshoot start if subtracting with X flip, and we
                 // must check for going past the end if adding with Y flip.
-                if (numlines > atline) {
+                if (num_lines > atline) {
                     loc = subtract ? start : static_cast<uint32_t>(Tile_size);
                 } else {
-                    loc = (atline - numlines) * lsize + atoff;
+                    loc = (atline - num_lines) * lsize + atoff;
                 }
                 return;
             }
@@ -264,29 +264,31 @@ private:
         // turn rhs into lhs.
         template <typename U, typename V>
         static difference_type difference(
-                tile_iterator<U> const& lhs,
-                tile_iterator<V> const& rhs) noexcept {
-            assert(lhs.tiledata == rhs.tiledata);
-            assert(lhs.f == rhs.f);
-            difference_type latoff = lhs.loc % lsize;
-            difference_type llines = lhs.loc / lsize;
-            difference_type ratoff = rhs.loc % lsize;
-            difference_type rlines = rhs.loc / lsize;
-            switch (lhs.f) {
+                tile_iterator<U> const& left,
+                tile_iterator<V> const& right) noexcept {
+            assert(left.tile_data == right.tile_data);
+            assert(left.flip == right.flip);
+            difference_type left_offset  = left.loc % lsize;
+            difference_type left_lines   = left.loc / lsize;
+            difference_type right_offset = right.loc % lsize;
+            difference_type right_lines  = right.loc / lsize;
+            switch (left.flip) {
             case NoFlip:
                 // Simple increment. Inverse of XYFlip.
-                return difference_type(lhs.loc) - rhs.loc;
+                return difference_type(left.loc) - right.loc;
             case XYFlip:
                 // Simple decrement. Inverse of NoFlip.
-                return difference_type(rhs.loc) - lhs.loc;
+                return difference_type(right.loc) - left.loc;
             case XFlip:
                 // Lines in normal order, each line reversed.
                 // Inverse of YFlip.
-                return (llines - rlines) * lsize + (ratoff - latoff);
+                return (left_lines - right_lines) * lsize
+                       + (right_offset - left_offset);
             case YFlip:
                 // Lines in reverse order, each line normal.
                 // Inverse of XFlip.
-                return (rlines - llines) * lsize + (latoff - ratoff);
+                return (right_lines - left_lines) * lsize
+                       + (left_offset - right_offset);
             default:
                 assert(false);
             }
@@ -294,32 +296,32 @@ private:
         // Checks if two iterators are at the same point in the iteration.
         template <typename U, typename V>
         static bool equal(
-                tile_iterator<U> const& lhs,
-                tile_iterator<V> const& rhs) noexcept {
-            if (lhs.loc == tile_iterator<U>::Tile_size
-                || rhs.loc == tile_iterator<V>::Tile_size) {
-                return lhs.loc == rhs.loc;
+                tile_iterator<U> const& left,
+                tile_iterator<V> const& right) noexcept {
+            if (left.loc == tile_iterator<U>::Tile_size
+                || right.loc == tile_iterator<V>::Tile_size) {
+                return left.loc == right.loc;
             }
-            assert(lhs.tiledata == rhs.tiledata);
-            assert(lhs.f == rhs.f);
-            return lhs.loc == rhs.loc;
+            assert(left.tile_data == right.tile_data);
+            assert(left.flip == right.flip);
+            return left.loc == right.loc;
         }
         // Checks if lhs is an iteration to a position before rhs.
         template <typename U, typename V>
         static bool less(
-                tile_iterator<U> const& lhs,
-                tile_iterator<V> const& rhs) noexcept {
-            return difference(lhs, rhs) < 0;
+                tile_iterator<U> const& left,
+                tile_iterator<V> const& right) noexcept {
+            return difference(left, right) < 0;
         }
 
     protected:
         // Constructors.
         tile_iterator(
-                FlipMode const _f, value_type* const _t,
+                FlipMode const flip_, value_type* const tile_,
                 bool const ending) noexcept
-                : tiledata(_t), f(_f) {
+                : tile_data(tile_), flip(flip_) {
             // The values of start, finish and loc depend on flip mode:
-            switch (f) {
+            switch (flip) {
             case NoFlip:
                 // Inverse of XYFlip.
                 start  = 0;
@@ -352,20 +354,20 @@ private:
         // * copies iterator to iterator.
         template <typename U>
         explicit tile_iterator(tile_iterator<U> const& other) noexcept
-                : tiledata(other.tiledata), f(other.f), start(other.start),
-                  finish(other.finish), loc(other.loc) {}
+                : tile_data(other.tile_data), flip(other.flip),
+                  start(other.start), finish(other.finish), loc(other.loc) {}
         // Conversion assignment that does any one of:
         // * convert iterator to const_iterator;
         // * copies const_iterator to const_iterator;
         // * copies iterator to iterator.
         template <typename U>
-        tile_iterator& operator=(tile_iterator<U> const& rhs) noexcept {
-            if (this != &rhs) {
-                tiledata = rhs.tiledata;
-                f        = rhs.f;
-                start    = rhs.start;
-                finish   = rhs.finish;
-                loc      = rhs.loc;
+        tile_iterator& operator=(tile_iterator<U> const& right) noexcept {
+            if (this != &right) {
+                tile_data = right.tile_data;
+                flip      = right.flip;
+                start     = right.start;
+                finish    = right.finish;
+                loc       = right.loc;
             }
             return *this;
         }
@@ -384,9 +386,9 @@ private:
         }
         // Postfix increment.
         tile_iterator<T> operator++(int const) noexcept {
-            tile_iterator<T> ret(*this);
+            tile_iterator<T> value(*this);
             incr();
-            return ret;
+            return value;
         }
         // Prefix decrement.
         tile_iterator<T>& operator--() noexcept {
@@ -395,35 +397,35 @@ private:
         }
         // Postfix decrement.
         tile_iterator<T> operator--(int const) noexcept {
-            tile_iterator<T> ret(*this);
+            tile_iterator<T> value(*this);
             decr();
-            return ret;
+            return value;
         }
         // Add amount to iterator. Can add positive or negative values.
-        tile_iterator<T> operator+=(difference_type rhs) noexcept {
-            offset(rhs);
+        tile_iterator<T> operator+=(difference_type right) noexcept {
+            offset(right);
             return *this;
         }
         // Returns iterator obtained by adding amount to lhs.
-        tile_iterator<T> operator+(difference_type rhs) const noexcept {
-            tile_iterator<T> ret(*this);
-            ret += rhs;
-            return ret;
+        tile_iterator<T> operator+(difference_type right) const noexcept {
+            tile_iterator<T> value(*this);
+            value += right;
+            return value;
         }
         // Makes addition of difference_type to iterator commutative.
         friend tile_iterator<T> operator+(
-                difference_type lhs, tile_iterator<T> const& rhs) noexcept {
-            return rhs + lhs;
+                difference_type left, tile_iterator<T> const& right) noexcept {
+            return right + left;
         }
         // Subtract amount from iterator. Can add positive or negative values.
-        tile_iterator<T> operator-=(difference_type rhs) noexcept {
-            return operator+=(-rhs);
+        tile_iterator<T> operator-=(difference_type right) noexcept {
+            return operator+=(-right);
         }
         // Returns iterator obtained by subtracting amount from lhs.
-        tile_iterator<T> operator-(difference_type rhs) const noexcept {
-            tile_iterator<T> ret(*this);
-            ret += -rhs;
-            return ret;
+        tile_iterator<T> operator-(difference_type right) const noexcept {
+            tile_iterator<T> value(*this);
+            value += -right;
+            return value;
         }
         // Returns how many increments (if positive) or decrements (if negative)
         // would turn rhs into lhs.
@@ -432,8 +434,9 @@ private:
         // * const_iterator from const_iterator;
         // * iterator from iterator.
         template <typename U>
-        difference_type operator-(tile_iterator<U> const& rhs) const noexcept {
-            return difference(*this, rhs);
+        difference_type operator-(
+                tile_iterator<U> const& right) const noexcept {
+            return difference(*this, right);
         }
         // Comparison operators.
         // They are templates so as to be able to compare:
@@ -441,41 +444,41 @@ private:
         // * const_iterator to const_iterator;
         // * iterator to iterator.
         template <typename U>
-        bool operator==(tile_iterator<U> const& rhs) const noexcept {
-            return equal(*this, rhs);
+        bool operator==(tile_iterator<U> const& right) const noexcept {
+            return equal(*this, right);
         }
         template <typename U>
-        bool operator!=(tile_iterator<U> const& rhs) const noexcept {
-            return !equal(*this, rhs);
+        bool operator!=(tile_iterator<U> const& right) const noexcept {
+            return !equal(*this, right);
         }
         template <typename U>
-        bool operator<(tile_iterator<U> const& rhs) const noexcept {
-            return less(*this, rhs);
+        bool operator<(tile_iterator<U> const& right) const noexcept {
+            return less(*this, right);
         }
         template <typename U>
-        bool operator>=(tile_iterator<U> const& rhs) const noexcept {
-            return !less(*this, rhs);
+        bool operator>=(tile_iterator<U> const& right) const noexcept {
+            return !less(*this, right);
         }
         template <typename U>
-        bool operator>(tile_iterator<U> const& rhs) const noexcept {
-            return less(rhs, *this);
+        bool operator>(tile_iterator<U> const& right) const noexcept {
+            return less(right, *this);
         }
         template <typename U>
-        bool operator<=(tile_iterator<U> const& rhs) const noexcept {
-            return !less(rhs, *this);
+        bool operator<=(tile_iterator<U> const& right) const noexcept {
+            return !less(right, *this);
         }
         // Dereferencing operators.
         value_type operator*() const noexcept {
-            return tiledata[loc];
+            return tile_data[loc];
         }
         reference operator*() noexcept {
-            return tiledata[loc];
+            return tile_data[loc];
         }
         pointer operator->() noexcept {
-            return &(tiledata[loc]);
+            return &(tile_data[loc]);
         }
         pointer operator->() const noexcept {
-            return &(tiledata[loc]);
+            return &(tile_data[loc]);
         }
         value_type operator[](difference_type n) const noexcept {
             return *operator+(n);
@@ -495,11 +498,11 @@ public:
     // Constructors.
     BaseTile() noexcept = default;    // Uninitialized
     // From stream.
-    explicit BaseTile(std::istream& in) noexcept;
+    explicit BaseTile(std::istream& input) noexcept;
     // From (start, finish) range in iterators.
     template <typename Iter>
     BaseTile(
-            Iter& start, Iter const& finish, FlipMode f,
+            Iter& start, Iter const& finish, FlipMode flip_,
             uint32_t nreps = 1) noexcept;
 
     // Computes (square of) distance between two tiles. This distance is defined
@@ -511,63 +514,63 @@ public:
 
     // Functions for starting iteration. Note how the reverse iterators are the
     // same as forward iterators with X and Y both flipped.
-    iterator begin(FlipMode const f) noexcept {
-        return iterator(f, tiledata.data(), false);
+    iterator begin(FlipMode const flip_) noexcept {
+        return iterator(flip_, tile_data.data(), false);
     }
-    iterator end(FlipMode const f) noexcept {
-        return iterator(f, tiledata.data(), true);
+    iterator end(FlipMode const flip_) noexcept {
+        return iterator(flip_, tile_data.data(), true);
     }
-    const_iterator begin(FlipMode const f) const noexcept {
-        return const_iterator(f, tiledata.data(), false);
+    const_iterator begin(FlipMode const flip_) const noexcept {
+        return const_iterator(flip_, tile_data.data(), false);
     }
-    const_iterator end(FlipMode const f) const noexcept {
-        return const_iterator(f, tiledata.data(), true);
+    const_iterator end(FlipMode const flip_) const noexcept {
+        return const_iterator(flip_, tile_data.data(), true);
     }
-    const_iterator cbegin(FlipMode const f) const noexcept {
-        return const_iterator(f, tiledata.data(), false);
+    const_iterator cbegin(FlipMode const flip_) const noexcept {
+        return const_iterator(flip_, tile_data.data(), false);
     }
-    const_iterator cend(FlipMode const f) const noexcept {
-        return const_iterator(f, tiledata.data(), true);
+    const_iterator cend(FlipMode const flip_) const noexcept {
+        return const_iterator(flip_, tile_data.data(), true);
     }
-    reverse_iterator rbegin(FlipMode const f) noexcept {
-        return begin(flip_xy(f));
+    reverse_iterator rbegin(FlipMode const flip_) noexcept {
+        return begin(flip_xy(flip_));
     }
-    reverse_iterator rend(FlipMode const f) noexcept {
-        return end(f, tiledata.data());
+    reverse_iterator rend(FlipMode const flip_) noexcept {
+        return end(flip_, tile_data.data());
     }
-    const_reverse_iterator rbegin(FlipMode const f) const noexcept {
-        return begin(flip_xy(f));
+    const_reverse_iterator rbegin(FlipMode const flip_) const noexcept {
+        return begin(flip_xy(flip_));
     }
-    const_reverse_iterator rend(FlipMode const f) const noexcept {
-        return end(f, tiledata.data());
+    const_reverse_iterator rend(FlipMode const flip_) const noexcept {
+        return end(flip_, tile_data.data());
     }
-    const_reverse_iterator crbegin(FlipMode const f) const noexcept {
-        return begin(flip_xy(f));
+    const_reverse_iterator crbegin(FlipMode const flip_) const noexcept {
+        return begin(flip_xy(flip_));
     }
-    const_reverse_iterator crend(FlipMode const f) const noexcept {
-        return end(f, tiledata.data());
+    const_reverse_iterator crend(FlipMode const flip_) const noexcept {
+        return end(flip_, tile_data.data());
     }
 
-    // Draws linecnt lines of the tile, starting at the position specified by
+    // Draws line_count lines of the tile, starting at the position specified by
     // start iterator, to output stream out.
     void draw_tile(
-            std::ostream& out, const_iterator& start,
-            uint32_t linecnt = nlines) const noexcept;
+            std::ostream& output, const_iterator& start,
+            uint32_t line_count = nlines) const noexcept;
 };
 
 // Constructs a tile by reading it from a stream.
 template <int lsize, int nlines>
-BaseTile<lsize, nlines>::BaseTile(std::istream& in) noexcept {
+BaseTile<lsize, nlines>::BaseTile(std::istream& input) noexcept {
     // Unpack nibbles to bytes as we go along.
     for (uint32_t ii = 0; ii < Tile_size; ii += 2) {
-        unsigned chr = in.get();
+        unsigned value = input.get();
         // If we reach the end-of-stream, fill the rest with zeroes.
-        if (!in.good()) {
-            tiledata[ii + 0] = 0;
-            tiledata[ii + 1] = 0;
+        if (!input.good()) {
+            tile_data[ii + 0] = 0;
+            tile_data[ii + 1] = 0;
         } else {
-            tiledata[ii + 0] = (chr >> 4U) & 0x0fU;
-            tiledata[ii + 1] = chr & 0x0fU;
+            tile_data[ii + 0] = (value >> 4U) & 0x0fU;
+            tile_data[ii + 1] = value & 0x0fU;
         }
     }
 }
@@ -576,22 +579,23 @@ BaseTile<lsize, nlines>::BaseTile(std::istream& in) noexcept {
 template <int lsize, int nlines>
 template <typename Iter>
 BaseTile<lsize, nlines>::BaseTile(
-        Iter& start, Iter const& finish, FlipMode const f,
+        Iter& start, Iter const& finish, FlipMode const flip_,
         uint32_t nreps) noexcept {
-    iterator it = begin(f);
+    iterator dest = begin(flip_);
     // First nreps-1 repeats.
     for (uint32_t ii = 1; ii < nreps; ii++) {
-        for (Iter from(start); it != end(f) && from != finish; ++it, ++from) {
-            *it = *from;
+        for (Iter from(start); dest != end(flip_) && from != finish;
+             ++dest, ++from) {
+            *dest = *from;
         }
     }
     // Last repeat updates start iterator.
-    for (; it != end(f) && start != finish; ++it, ++start) {
-        *it = *start;
+    for (; dest != end(flip_) && start != finish; ++dest, ++start) {
+        *dest = *start;
     }
     // Fill the rest with zeroes, if needed.
-    for (; it != end(f); ++it) {
-        *it = 0;
+    for (; dest != end(flip_); ++dest) {
+        *dest = 0;
     }
 }
 
@@ -603,26 +607,26 @@ uint32_t BaseTile<lsize, nlines>::distance(
     uint32_t dist = 0;
     for (const_iterator it = begin(flip); it != end(flip) && start != finish;
          ++it, ++start) {
-        uint32_t const cl = *it;
-        uint32_t const cr = *start;
-        dist += DistTable[cl][cr];
+        uint32_t const color_left  = *it;
+        uint32_t const color_right = *start;
+        dist += DistTable[color_left][color_right];
     }
     return dist;
 }
 
-// Copies linecnt lines starting from from the given iterator to the output
+// Copies line_count lines starting from from the given iterator to the output
 // stream.
 template <int lsize, int nlines>
 void BaseTile<lsize, nlines>::draw_tile(
-        std::ostream& out, const_iterator& start,
-        uint32_t linecnt) const noexcept {
-    const_iterator finish = start + linecnt * Line_size;
+        std::ostream& output, const_iterator& start,
+        uint32_t line_count) const noexcept {
+    const_iterator finish = start + line_count * Line_size;
     while (start != finish) {
-        uint8_t c = (*start++) << 4;
+        uint8_t value = (*start++) << 4;
         if (start != finish) {
-            c |= (*start++);
+            value |= (*start++);
         }
-        out.put(c);
+        output.put(value);
     }
 }
 

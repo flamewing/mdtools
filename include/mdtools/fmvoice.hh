@@ -23,11 +23,11 @@
 #include <iosfwd>
 #include <string_view>
 
-void PrintMacro(std::ostream& out, std::string_view macro);
-void PrintHex2(std::ostream& out, uint8_t c, bool last);
-void PrintHex2Pre(std::ostream& out, uint8_t c, bool first);
-void PrintHex4(std::ostream& out, uint16_t c, bool last);
-void PrintName(std::ostream& out, std::string_view s, bool first);
+void PrintMacro(std::ostream& output, std::string_view macro);
+void PrintHex2(std::ostream& output, uint8_t value, bool last);
+void PrintHex2Pre(std::ostream& output, uint8_t value, bool first);
+void PrintHex4(std::ostream& output, uint16_t value, bool last);
+void PrintName(std::ostream& output, std::string_view name, bool first);
 
 class fm_voice {
 private:
@@ -48,9 +48,9 @@ private:
     std::array<uint32_t, 4> vcD1RUnk;
 
 public:
-    void read(std::istream& in, int sonicver);
-    void write(std::ostream& out, int sonicver) const;
-    void print(std::ostream& out, int sonicver, int id) const;
+    void read(std::istream& input, int sonic_version);
+    void write(std::ostream& output, int sonic_version) const;
+    void print(std::ostream& output, int sonic_version, int voice_id) const;
 };
 
 #endif    // TOOLS_FMVOICE_HH

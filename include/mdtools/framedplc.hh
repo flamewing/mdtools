@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIB_FRAMEDPLC_HH
-#define LIB_FRAMEDPLC_HH
+#ifndef LIB_FRAME_DPLC_HH
+#define LIB_FRAME_DPLC_HH
 
 #include <mdtools/singledplc.hh>
 
@@ -28,13 +28,13 @@
 struct frame_dplc {
     std::vector<single_dplc> dplc;
 
-    [[nodiscard]] size_t size(int ver) const noexcept {
-        return (ver == 1 ? 1 : 2) + single_dplc::size(ver) * dplc.size();
+    [[nodiscard]] size_t size(int version) const noexcept {
+        return (version == 1 ? 1 : 2) + single_dplc::size(version) * dplc.size();
     }
 
     frame_dplc() = default;
-    frame_dplc(std::istream& in, int ver);
-    void write(std::ostream& out, int ver) const;
+    frame_dplc(std::istream& input, int version);
+    void write(std::ostream& output, int version) const;
     void print() const;
 
     [[nodiscard]] std::map<size_t, size_t> build_vram_map() const;
@@ -42,9 +42,9 @@ struct frame_dplc {
     [[nodiscard]] frame_dplc consolidate() const;
 
     [[nodiscard]] bool operator==(
-            frame_dplc const& rhs) const noexcept = default;
+            frame_dplc const& right) const noexcept = default;
     [[nodiscard]] std::weak_ordering operator<=>(
-            frame_dplc const& rhs) const noexcept = default;
+            frame_dplc const& right) const noexcept = default;
 };
 
-#endif    // LIB_FRAMEDPLC_HH
+#endif    // LIB_FRAME_DPLC_HH

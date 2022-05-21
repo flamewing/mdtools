@@ -40,56 +40,57 @@ using std::map;
 using std::ostream;
 using std::vector;
 
-mapping_file::mapping_file(istream& in, int const ver) {
-    in.seekg(0, ios::beg);
-    vector<int16_t> off;
+mapping_file::mapping_file(istream& input, int const version) {
+    input.seekg(0, ios::beg);
+    vector<int16_t> offsets;
 
-    int16_t term = BigEndian::Read<int16_t>(in);
+    int16_t term = BigEndian::Read<int16_t>(input);
     while (term == 0) {
-        off.push_back(term);
-        term = BigEndian::Read<int16_t>(in);
+        offsets.push_back(term);
+        term = BigEndian::Read<int16_t>(input);
     }
-    off.push_back(term);
-    while (in.tellg() < term) {
-        int16_t const newterm = BigEndian::Read<int16_t>(in);
+    offsets.push_back(term);
+    while (input.tellg() < term) {
+        int16_t const newterm = BigEndian::Read<int16_t>(input);
         if (newterm > 0 && newterm < term) {
             term = newterm;
         }
-        off.push_back(newterm);
+        offsets.push_back(newterm);
     }
 
-    for (auto const pos : off) {
-        in.clear();
-        in.seekg(pos);
-        frames.emplace_back(in, ver);
+    for (auto const position : offsets) {
+        input.clear();
+        input.seekg(position);
+        frames.emplace_back(input, version);
     }
 }
 
 void mapping_file::write(
-        ostream& out, int const ver, bool const nullfirst) const {
-    map<frame_mapping, size_t> mappos;
-    map<size_t, frame_mapping> posmap;
-    size_t                     sz = 2 * frames.size();
+        ostream& output, int const version, bool const null_first) const {
+    map<frame_mapping, size_t> map_to_pos;
+    map<size_t, frame_mapping> pos_to_map;
+    size_t                     size = 2 * frames.size();
 
-    if (nullfirst && !frames.empty() && frames.front().maps.empty()) {
-        mappos.emplace(frames.front(), 0);
-        posmap.emplace(0, frames.front());
+    if (null_first && !frames.empty() && frames.front().maps.empty()) {
+        map_to_pos.emplace(frames.front(), 0);
+        pos_to_map.emplace(0, frames.front());
     }
     for (auto const& frame : frames) {
-        if (auto const it2 = mappos.find(frame); it2 != mappos.end()) {
-            BigEndian::Write2(out, it2->second);
+        if (auto const found = map_to_pos.find(frame);
+            found != map_to_pos.end()) {
+            BigEndian::Write2(output, found->second);
         } else {
-            mappos.emplace(frame, sz);
-            posmap.emplace(sz, frame);
-            BigEndian::Write2(out, sz);
-            sz += frame.size(ver);
+            map_to_pos.emplace(frame, size);
+            pos_to_map.emplace(size, frame);
+            BigEndian::Write2(output, size);
+            size += frame.size(version);
         }
     }
-    for (auto const& [pos, maps] : posmap) {
-        if (pos == size_t(out.tellp())) {
-            maps.write(out, ver);
+    for (auto const& [pos, maps] : pos_to_map) {
+        if (pos == size_t(output.tellp())) {
+            maps.write(output, version);
         } else if (pos != 0U) {
-            fmt::print(stderr, "Missed write at {}\n", out.tellp());
+            fmt::print(stderr, "Missed write at {}\n", output.tellp());
             maps.print();
         }
     }
@@ -103,9 +104,9 @@ void mapping_file::print() const {
     }
 }
 
-dplc_file mapping_file::split(mapping_file const& src) {
+dplc_file mapping_file::split(mapping_file const& source) {
     dplc_file dplc;
-    for (auto const& elem : src.frames) {
+    for (auto const& elem : source.frames) {
         auto [nn, interm] = elem.split();
         frames.push_back(nn);
         dplc.frames.push_back(interm.consolidate());
@@ -113,42 +114,44 @@ dplc_file mapping_file::split(mapping_file const& src) {
     return dplc;
 }
 
-void mapping_file::merge(mapping_file const& src, dplc_file const& dplc) {
-    for (size_t i = 0; i < src.frames.size(); i++) {
-        frame_mapping nn = src.frames[i].merge(dplc.frames[i]);
-        frames.push_back(nn);
+void mapping_file::merge(mapping_file const& source, dplc_file const& dplc) {
+    for (size_t i = 0; i < source.frames.size(); i++) {
+        frame_mapping new_map = source.frames[i].merge(dplc.frames[i]);
+        frames.push_back(new_map);
     }
 }
 
 void mapping_file::optimize(
-        mapping_file const& src, dplc_file const& indplc, dplc_file& outdplc) {
-    for (size_t i = 0; i < src.frames.size(); i++) {
-        auto const& intmap  = src.frames[i];
-        auto const& intdplc = indplc.frames[i];
-        if (!intdplc.dplc.empty() && !intmap.maps.empty()) {
-            auto [endmap, dd] = intmap.merge(intdplc).split();
-            frames.push_back(endmap);
+        mapping_file const& source, dplc_file const& indplc,
+        dplc_file& outdplc) {
+    for (size_t i = 0; i < source.frames.size(); i++) {
+        auto const& inter_map  = source.frames[i];
+        auto const& inter_dplc = indplc.frames[i];
+        if (!inter_dplc.dplc.empty() && !inter_map.maps.empty()) {
+            auto [end_map, dd] = inter_map.merge(inter_dplc).split();
+            frames.push_back(end_map);
             outdplc.frames.push_back(dd.consolidate());
-        } else if (!intdplc.dplc.empty()) {
+        } else if (!inter_dplc.dplc.empty()) {
             frames.emplace_back();
-            outdplc.frames.push_back(intdplc.consolidate());
+            outdplc.frames.push_back(inter_dplc.consolidate());
         } else {
-            frames.push_back(intmap);
+            frames.push_back(inter_map);
             outdplc.frames.emplace_back();
         }
     }
 }
 
-void mapping_file::change_pal(int const srcpal, int const dstpal) {
+void mapping_file::change_pal(
+        int const source_palette, int const dest_palette) {
     for (auto& elem : frames) {
-        elem.change_pal(srcpal, dstpal);
+        elem.change_pal(source_palette, dest_palette);
     }
 }
 
-size_t mapping_file::size(int const ver) const noexcept {
+size_t mapping_file::size(int const version) const noexcept {
     return std::accumulate(
             frames.cbegin(), frames.cend(), 2 * frames.size(),
-            [ver](size_t sz, auto const& elem) {
-                return sz + elem.size(ver);
+            [version](size_t size, auto const& elem) {
+                return size + elem.size(version);
             });
 }

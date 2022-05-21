@@ -45,4 +45,12 @@ CheckOptions:
     value: 1
   - key: bugprone-signed-char-misuse.CharTypdefsToIgnore
     value: "int8_t"
+  - key: readability-identifier-length.MinimumVariableNameLength
+    value: 4
+  - key: readability-identifier-length.MinimumParameterNameLength
+    value: 4
+  - key: readability-identifier-length.MinimumLoopCounterNameLength
+    value: 4
+  - key: readability-identifier-length.IgnoredLoopCounterNames
+    value: "^([ijk][ijk]?|it[0-9]?|_)$"
 FormatStyle: "file"

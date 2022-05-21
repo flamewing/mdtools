@@ -35,9 +35,9 @@ using std::ios;
 using std::istream;
 using std::ostream;
 
-single_dplc::single_dplc(istream& in, int const ver)
-        : tile(BigEndian::Read<uint16_t>(in)) {
-    if (ver < 4) {
+single_dplc::single_dplc(istream& input, int const version)
+        : tile(BigEndian::Read<uint16_t>(input)) {
+    if (version < 4) {
         count = ((tile & 0xf000U) >> 12U) + 1U;
         tile &= 0x0fffU;
     } else {
@@ -46,11 +46,12 @@ single_dplc::single_dplc(istream& in, int const ver)
     }
 }
 
-void single_dplc::write(ostream& out, int const ver) const {
-    if (ver < 4) {
-        BigEndian::Write2(out, (unsigned(count - 1) << 12U) | tile);
+void single_dplc::write(ostream& output, int const version) const {
+    if (version < 4) {
+        BigEndian::Write2(output, (unsigned(count - 1) << 12U) | tile);
     } else {
-        BigEndian::Write2(out, (unsigned(tile) << 4U) | (unsigned(count) - 1));
+        BigEndian::Write2(
+                output, (unsigned(tile) << 4U) | (unsigned(count) - 1));
     }
 }
 

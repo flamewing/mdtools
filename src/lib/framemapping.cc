@@ -42,22 +42,22 @@ using std::map;
 using std::ostream;
 using std::set;
 
-frame_mapping::frame_mapping(istream& in, int const ver) {
-    size_t const cnt = ver == 1 ? BigEndian::Read<uint8_t>(in)
-                                : BigEndian::Read<uint16_t>(in);
-    for (size_t i = 0; i < cnt; i++) {
-        maps.emplace_back(in, ver);
+frame_mapping::frame_mapping(istream& input, int const version) {
+    size_t const count = version == 1 ? BigEndian::Read<uint8_t>(input)
+                                      : BigEndian::Read<uint16_t>(input);
+    for (size_t i = 0; i < count; i++) {
+        maps.emplace_back(input, version);
     }
 }
 
-void frame_mapping::write(ostream& out, int const ver) const {
-    if (ver == 1) {
-        Write1(out, maps.size());
+void frame_mapping::write(ostream& output, int const version) const {
+    if (version == 1) {
+        Write1(output, maps.size());
     } else {
-        BigEndian::Write2(out, maps.size());
+        BigEndian::Write2(output, maps.size());
     }
     for (auto const& elem : maps) {
-        elem.write(out, ver);
+        elem.write(output, version);
     }
 }
 
@@ -71,10 +71,10 @@ void frame_mapping::print() const {
 frame_mapping::split_mapping frame_mapping::split() const {
     // First, build the set uf used tiles from main art.
     set<uint16_t> used_tiles;
-    for (auto const& sd : maps) {
-        size_t const ss = sd.tile;
-        size_t const sz = size_t(sd.sx) * size_t(sd.sy);
-        for (size_t ii = ss; ii < ss + sz; ii++) {
+    for (auto const& elem : maps) {
+        size_t const tile  = elem.tile;
+        size_t const count = size_t(elem.sx) * size_t(elem.sy);
+        for (size_t ii = tile; ii < tile + count; ii++) {
             used_tiles.emplace(ii);
         }
     }
@@ -93,12 +93,12 @@ frame_mapping::split_mapping frame_mapping::split() const {
         // Find first element which is not followed by an adjacent element.
         auto end_it = std::adjacent_find(
                 start_it, used_tiles.cend(),
-                [](const auto& lhs, const auto& rhs) {
-                    return rhs != lhs + 1;
+                [](const auto& left, const auto& right) {
+                    return right != left + 1;
                 });
         // If there is no such element, we get the end iterator; we must account
         // for this when computing the length of the range to avoid
-        // overcounting. Prepare for next iteration.
+        // over-counting. Prepare for next iteration.
         if (end_it != used_tiles.cend()) {
             std::advance(end_it, 1);
         }
@@ -108,11 +108,11 @@ frame_mapping::split_mapping frame_mapping::split() const {
     }
 
     split_mapping output{{}, newdplc.consolidate()};
-    auto& [outmaps, outdplc] = output;
+    auto& [output_maps, outdplc] = output;
     // Use the VRAM map to rewrite the arts for the input mappings.
-    for (auto const& sd : maps) {
-        auto [nn, dd] = sd.split(vram_map);
-        outmaps.maps.push_back(nn);
+    for (auto const& elem : maps) {
+        auto [nn, dd] = elem.split(vram_map);
+        output_maps.maps.push_back(nn);
     }
 
     // Consolidate the DPLCs so that each DPLC has a proper entry.
@@ -123,14 +123,15 @@ frame_mapping frame_mapping::merge(frame_dplc const& dplc) const {
     map<size_t, size_t> vram_map = dplc.build_vram_map();
 
     frame_mapping output;
-    for (auto const& sd : maps) {
-        output.maps.push_back(sd.merge(vram_map));
+    for (auto const& elem : maps) {
+        output.maps.push_back(elem.merge(vram_map));
     }
     return output;
 }
 
-void frame_mapping::change_pal(int const srcpal, int const dstpal) {
+void frame_mapping::change_pal(
+        int const source_palette, int const dest_palette) {
     for (auto& elem : maps) {
-        elem.change_pal(srcpal, dstpal);
+        elem.change_pal(source_palette, dest_palette);
     }
 }

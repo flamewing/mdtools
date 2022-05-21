@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIB_SINGLEMAPPING_HH
-#define LIB_SINGLEMAPPING_HH
+#ifndef LIB_SINGLE_MAPPING_HH
+#define LIB_SINGLE_MAPPING_HH
 
 #include <mdtools/singledplc.hh>
 
@@ -37,8 +37,8 @@ struct single_mapping {
     uint8_t  sy;
     enum MapSizes : size_t { sizeS1 = 5, sizeS2 = 8, sizeS3 = 6 };
 
-    [[nodiscard]] static size_t size(int const ver) noexcept {
-        switch (ver) {
+    [[nodiscard]] static size_t size(int const version) noexcept {
+        switch (version) {
         case 1:
             return sizeS1;
         case 2:
@@ -53,10 +53,10 @@ struct single_mapping {
             : tile{std::get<0>(values)}, flags{std::get<1>(values)},
               xx{std::get<2>(values)}, yy{std::get<3>(values)},
               sx{std::get<4>(values)}, sy{std::get<5>(values)} {}
-    single_mapping(std::istream& in, int ver);
-    void write(std::ostream& out, int ver) const;
+    single_mapping(std::istream& input, int version);
+    void write(std::ostream& output, int version) const;
     void print() const;
-    void change_pal(uint32_t srcpal, uint32_t dstpal);
+    void change_pal(uint32_t source_palette, uint32_t dest_palette);
 
     [[nodiscard]] single_mapping merge(
             std::map<size_t, size_t>& vram_map) const noexcept;
@@ -64,9 +64,9 @@ struct single_mapping {
             std::map<size_t, size_t>& vram_map) const noexcept;
 
     [[nodiscard]] bool operator==(
-            single_mapping const& rhs) const noexcept = default;
+            single_mapping const& right) const noexcept = default;
     [[nodiscard]] std::strong_ordering operator<=>(
-            single_mapping const& rhs) const noexcept = default;
+            single_mapping const& right) const noexcept = default;
 };
 
-#endif    // LIB_SINGLEMAPPING_HH
+#endif    // LIB_SINGLE_MAPPING_HH

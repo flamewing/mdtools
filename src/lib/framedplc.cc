@@ -37,34 +37,34 @@ using std::istream;
 using std::map;
 using std::ostream;
 
-frame_dplc::frame_dplc(istream& in, int const ver) {
-    size_t cnt = [&]() -> size_t {
-        if (ver == 1) {
-            return BigEndian::Read<uint8_t>(in);
+frame_dplc::frame_dplc(istream& input, int const version) {
+    size_t count = [&]() -> size_t {
+        if (version == 1) {
+            return BigEndian::Read<uint8_t>(input);
         }
-        if (ver == 4) {
-            return BigEndian::Read<int16_t>(in) + 1;
+        if (version == 4) {
+            return BigEndian::Read<int16_t>(input) + 1;
         }
-        return BigEndian::Read<uint16_t>(in);
+        return BigEndian::Read<uint16_t>(input);
     }();
 
-    for (size_t i = 0; i < cnt; i++) {
-        dplc.emplace_back(in, ver);
+    for (size_t i = 0; i < count; i++) {
+        dplc.emplace_back(input, version);
     }
 }
 
-void frame_dplc::write(ostream& out, int const ver) const {
-    if (ver == 1) {
-        Write1(out, dplc.size());
-    } else if (ver == 4) {
+void frame_dplc::write(ostream& output, int const version) const {
+    if (version == 1) {
+        Write1(output, dplc.size());
+    } else if (version == 4) {
         BigEndian::Write2(
-                out,
+                output,
                 static_cast<uint16_t>(static_cast<int16_t>(dplc.size()) - 1));
     } else {
-        BigEndian::Write2(out, dplc.size());
+        BigEndian::Write2(output, dplc.size());
     }
     for (auto const& elem : dplc) {
-        elem.write(out, ver);
+        elem.write(output, version);
     }
 }
 
@@ -86,13 +86,13 @@ void frame_dplc::print() const {
     uint16_t   start = dplc[0].tile;
     uint16_t   size  = 0;
     frame_dplc interm;
-    for (auto const& sd : dplc) {
-        if (sd.tile != start + size) {
+    for (auto const& elem : dplc) {
+        if (elem.tile != start + size) {
             interm.dplc.emplace_back(size, start);
-            start = sd.tile;
-            size  = sd.count;
+            start = elem.tile;
+            size  = elem.count;
         } else {
-            size += sd.count;
+            size += elem.count;
         }
     }
     if (size != 0) {
@@ -100,16 +100,16 @@ void frame_dplc::print() const {
     }
 
     for (auto const& elem : interm.dplc) {
-        uint16_t tile = elem.tile;
-        uint16_t sz   = elem.count;
+        uint16_t tile  = elem.tile;
+        uint16_t count = elem.count;
 
-        while (sz >= 16) {
+        while (count >= 16) {
             output.dplc.emplace_back(16, tile);
-            sz -= 16;
+            count -= 16;
             tile += 16;
         }
-        if (sz != 0U) {
-            output.dplc.emplace_back(sz, tile);
+        if (count != 0U) {
+            output.dplc.emplace_back(count, tile);
         }
     }
     return output;
@@ -117,11 +117,11 @@ void frame_dplc::print() const {
 
 std::map<size_t, size_t> frame_dplc::build_vram_map() const {
     std::map<size_t, size_t> vram_map;
-    for (auto const& sd : dplc) {
-        size_t ss = sd.tile;
-        size_t sz = sd.count;
-        for (size_t i = ss; i < ss + sz; i++) {
-            vram_map.emplace(vram_map.size(), i);
+    for (auto const& elem : dplc) {
+        size_t tile  = elem.tile;
+        size_t count = elem.count;
+        for (size_t ii = tile; ii < tile + count; ii++) {
+            vram_map.emplace(vram_map.size(), ii);
         }
     }
     return vram_map;

@@ -33,7 +33,7 @@ using ShortTile = BaseTile<8, 2>;
 // imported image.
 class SSVRAM : public VRAM<ShortTile> {
 public:
-    SSVRAM(std::istream& pal, std::istream& art) noexcept;
+    SSVRAM(std::istream& palette, std::istream& art_file) noexcept;
 };
 
 std::vector<ShortTile> split_tile(Tile const& tile) noexcept;

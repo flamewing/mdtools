@@ -41,21 +41,21 @@ public:
         tiles.reserve(400);
     }
 
-    explicit VRAM(std::istream& in) noexcept {
+    explicit VRAM(std::istream& input) noexcept {
         tiles.reserve(400);
 
         // Just read in tiles.
-        while (in.good()) {
-            Tile_t tile(in);
-            if (!in.good()) {
+        while (input.good()) {
+            Tile_t tile(input);
+            if (!input.good()) {
                 break;
             }
             tiles.push_back(tile);
         }
     }
 
-    void reserve_tiles(size_t cnt) {
-        tiles.reserve(cnt);
+    void reserve_tiles(size_t count) {
+        tiles.reserve(count);
     }
     Tile_t& new_tile() {
         tiles.emplace_back();
@@ -79,30 +79,30 @@ public:
         distTable = other.get_dist_table();
     }
     // Gets the referred tile. No bounds checking!
-    Tile_t& get_tile(Pattern_Name const& pnt) noexcept {
-        return tiles[pnt.get_tile()];
+    Tile_t& get_tile(Pattern_Name const& pattern) noexcept {
+        return tiles[pattern.get_tile()];
     }
 
     // Gets the referred tile. No bounds checking!
-    Tile_t& operator[](Pattern_Name const& pnt) noexcept {
-        return tiles[pnt.get_tile()];
+    Tile_t& operator[](Pattern_Name const& pattern) noexcept {
+        return tiles[pattern.get_tile()];
     }
 
     // Gets the referred tile. No bounds checking!
-    Tile_t const& operator[](Pattern_Name const& pnt) const noexcept {
-        return tiles[pnt.get_tile()];
+    Tile_t const& operator[](Pattern_Name const& pattern) const noexcept {
+        return tiles[pattern.get_tile()];
     }
 
     // Appends the tile to VRAM.
     Pattern_Name push_back(Tile_t const& tile) noexcept {
-        Pattern_Name pat(tiles.size());
+        Pattern_Name pattern(tiles.size());
         tiles.push_back(tile);
-        return pat;
+        return pattern;
     }
 
     // Adds the tile to VRAM, changing its size if needed.
-    void add_tile(Tile_t const& tile, Pattern_Name const& pnt) noexcept {
-        uint32_t index = pnt.get_tile();
+    void add_tile(Tile_t const& tile, Pattern_Name const& pattern) noexcept {
+        uint32_t index = pattern.get_tile();
         if (index >= tiles.size()) {
             tiles.resize(index + 1);
         }
@@ -135,10 +135,10 @@ public:
         }
         return best_dist;
     }
-    void write(std::ostream& out) const noexcept {
+    void write(std::ostream& output) const noexcept {
         for (auto it = tiles.begin(); it != tiles.end(); ++it) {
-            auto it2 = it->begin(NoFlip);
-            it->draw_tile(out, it2, Tile_t::Num_lines);
+            auto dest = it->begin(NoFlip);
+            it->draw_tile(output, dest, Tile_t::Num_lines);
         }
     }
 };

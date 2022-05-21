@@ -39,59 +39,59 @@ using std::map;
 using std::ostream;
 using std::vector;
 
-dplc_file::dplc_file(istream& in, int const ver) {
-    in.seekg(0, ios::beg);
-    vector<int16_t> off;
+dplc_file::dplc_file(istream& input, int const version) {
+    input.seekg(0, ios::beg);
+    vector<int16_t> offsets;
 
-    int16_t term = BigEndian::Read<int16_t>(in);
-    if (ver != 4) {
+    int16_t term = BigEndian::Read<int16_t>(input);
+    if (version != 4) {
         while (term == 0) {
-            off.push_back(term);
-            term = BigEndian::Read<int16_t>(in);
+            offsets.push_back(term);
+            term = BigEndian::Read<int16_t>(input);
         }
     }
-    off.push_back(term);
-    while (in.tellg() < term) {
-        auto newterm = BigEndian::Read<int16_t>(in);
+    offsets.push_back(term);
+    while (input.tellg() < term) {
+        auto newterm = BigEndian::Read<int16_t>(input);
         if (newterm > 0 && newterm < term) {
             term = newterm;
         }
-        off.push_back(newterm);
+        offsets.push_back(newterm);
     }
 
-    for (auto const pos : off) {
-        in.clear();
-        in.seekg(pos);
-        frames.emplace_back(in, ver);
+    for (auto const position : offsets) {
+        input.clear();
+        input.seekg(position);
+        frames.emplace_back(input, version);
     }
 }
 
-void dplc_file::write(ostream& out, int const ver, bool const nullfirst) const {
-    map<frame_dplc, size_t> mappos;
-    map<size_t, frame_dplc> posmap;
+void dplc_file::write(ostream& output, int const version, bool const null_first) const {
+    map<frame_dplc, size_t> map_to_pos;
+    map<size_t, frame_dplc> pos_to_map;
 
-    size_t sz = 2 * frames.size();
+    size_t size = 2 * frames.size();
 
-    if (nullfirst && ver != 4 && !frames.empty()
+    if (null_first && version != 4 && !frames.empty()
         && frames.front().dplc.empty()) {
-        mappos.emplace(frames.front(), 0);
-        posmap.emplace(0, frames.front());
+        map_to_pos.emplace(frames.front(), 0);
+        pos_to_map.emplace(0, frames.front());
     }
     for (auto const& frame : frames) {
-        if (auto const it2 = mappos.find(frame); it2 != mappos.end()) {
-            BigEndian::Write2(out, it2->second);
+        if (auto const found = map_to_pos.find(frame); found != map_to_pos.end()) {
+            BigEndian::Write2(output, found->second);
         } else {
-            mappos.emplace(frame, sz);
-            posmap.emplace(sz, frame);
-            BigEndian::Write2(out, sz);
-            sz += frame.size(ver);
+            map_to_pos.emplace(frame, size);
+            pos_to_map.emplace(size, frame);
+            BigEndian::Write2(output, size);
+            size += frame.size(version);
         }
     }
-    for (auto const& [pos, dplc] : posmap) {
-        if (pos == size_t(out.tellp())) {
-            dplc.write(out, ver);
-        } else if (pos != 0U) {
-            fmt::print(stderr, "Missed write at {}\n", out.tellp());
+    for (auto const& [position, dplc] : pos_to_map) {
+        if (position == size_t(output.tellp())) {
+            dplc.write(output, version);
+        } else if (position != 0U) {
+            fmt::print(stderr, "Missed write at {}\n", output.tellp());
             dplc.print();
         }
     }
@@ -113,10 +113,10 @@ dplc_file dplc_file::consolidate() const {
     return output;
 }
 
-size_t dplc_file::size(int ver) const noexcept {
+size_t dplc_file::size(int version) const noexcept {
     return std::accumulate(
             frames.cbegin(), frames.cend(), 2 * frames.size(),
-            [ver](size_t sz, auto const& elem) {
-                return sz + elem.size(ver);
+            [version](size_t size, auto const& elem) {
+                return size + elem.size(version);
             });
 }

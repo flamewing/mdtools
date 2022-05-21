@@ -38,18 +38,18 @@ using std::map;
 using std::ostream;
 
 static inline single_mapping::init_tuple read_mapping(
-        istream& in, int const ver) {
-    int8_t const   pos_y   = BigEndian::Read<int8_t>(in);
-    uint8_t const  size    = BigEndian::Read<uint8_t>(in);
-    uint16_t const pattern = BigEndian::Read<uint16_t>(in);
-    if (ver == 2) {
-        in.ignore(2);
+        istream& input, int const version) {
+    int8_t const   pos_y   = BigEndian::Read<int8_t>(input);
+    uint8_t const  size    = BigEndian::Read<uint8_t>(input);
+    uint16_t const pattern = BigEndian::Read<uint16_t>(input);
+    if (version == 2) {
+        input.ignore(2);
     }
     int16_t const pos_x = [&]() -> int16_t {
-        if (ver == 1) {
-            return BigEndian::Read<int8_t>(in);
+        if (version == 1) {
+            return BigEndian::Read<int8_t>(input);
         }
-        return BigEndian::Read<int16_t>(in);
+        return BigEndian::Read<int16_t>(input);
     }();
 
     return {pattern & 0x07ffU,
@@ -60,21 +60,21 @@ static inline single_mapping::init_tuple read_mapping(
             (size & 0x3U) + 1};
 }
 
-single_mapping::single_mapping(istream& in, int const ver)
-        : single_mapping(read_mapping(in, ver)) {}
+single_mapping::single_mapping(istream& input, int const version)
+        : single_mapping(read_mapping(input, version)) {}
 
-void single_mapping::write(ostream& out, int const ver) const {
-    Write1(out, static_cast<uint8_t>(yy));
-    Write1(out, ((unsigned(sx) - 1) << 2U) | (unsigned(sy) - 1));
-    BigEndian::Write2(out, (unsigned(flags) << 8U) | tile);
-    if (ver == 2) {
+void single_mapping::write(ostream& output, int const version) const {
+    Write1(output, static_cast<uint8_t>(yy));
+    Write1(output, ((unsigned(sx) - 1) << 2U) | (unsigned(sy) - 1));
+    BigEndian::Write2(output, (unsigned(flags) << 8U) | tile);
+    if (version == 2) {
         BigEndian::Write2(
-                out, (unsigned(flags) << 8U) | (unsigned(tile) >> 1U));
+                output, (unsigned(flags) << 8U) | (unsigned(tile) >> 1U));
     }
-    if (ver == 1) {
-        Write1(out, static_cast<uint8_t>(xx));
+    if (version == 1) {
+        Write1(output, static_cast<uint8_t>(xx));
     } else {
-        BigEndian::Write2(out, xx);
+        BigEndian::Write2(output, xx);
     }
 }
 
@@ -117,8 +117,9 @@ single_mapping single_mapping::merge(
     return output;
 }
 
-void single_mapping::change_pal(uint32_t const srcpal, uint32_t const dstpal) {
-    if ((flags & 0x60U) == srcpal) {
-        flags = (flags & 0x9fU) | dstpal;
+void single_mapping::change_pal(
+        uint32_t const source_palette, uint32_t const dest_palette) {
+    if ((flags & 0x60U) == source_palette) {
+        flags = (flags & 0x9fU) | dest_palette;
     }
 }

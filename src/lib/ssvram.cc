@@ -35,56 +35,58 @@ using std::vector;
 // Initializes the S2 Special Stage VRAM track tiles from the given stream. The
 // tiles are assumed to be Kosinski-encoded after being reduced from 8 identical
 // lines dow to a single line.
-SSVRAM::SSVRAM(istream& pal, istream& art) noexcept {
+SSVRAM::SSVRAM(istream& palette_file, istream& art_file) noexcept {
     // Start by decompressing Kosinski-encoded source data.
-    stringstream sout(ios::in | ios::out | ios::binary);
-    kosinski::decode(art, sout);
-    sout.seekg(0);
-    sout.clear();
+    stringstream decoded_art(ios::in | ios::out | ios::binary);
+    kosinski::decode(art_file, decoded_art);
+    decoded_art.seekg(0);
+    decoded_art.clear();
 
-    unsigned const cnt = BigEndian::Read2(sout);
+    unsigned const count = BigEndian::Read2(decoded_art);
     // Now convert it all to tiles.
-    reserve_tiles(cnt);
+    reserve_tiles(count);
 
-    for (unsigned ii = 0; ii < cnt; ii++) {
+    for (unsigned ii = 0; ii < count; ii++) {
         auto& tile   = new_tile();
         auto  dst1   = tile.begin(NoFlip);
         auto  dst2   = dst1 + ShortTile::Line_size;
         auto  finish = tile.end(NoFlip);
-        for (; sout.good() && dst2 != finish; ++dst1, ++dst2) {
-            uint32_t cc = static_cast<uint8_t>(sout.get());
-            *dst1++ = *dst2++ = (cc >> 4U) & 0xfU;
-            *dst1 = *dst2 = cc & 0xfU;
+        for (; decoded_art.good() && dst2 != finish; ++dst1, ++dst2) {
+            uint32_t value = static_cast<uint8_t>(decoded_art.get());
+            *dst1++ = *dst2++ = (value >> 4U) & 0xfU;
+            *dst1 = *dst2 = value & 0xfU;
         }
     }
 
-    auto const start = pal.tellg();
-    pal.ignore(numeric_limits<streamsize>::max());
-    auto const charCount = pal.gcount();
-    pal.seekg(start);
-    size_t palLen = charCount / sizeof(uint16_t);
+    auto const start = palette_file.tellg();
+    palette_file.ignore(numeric_limits<streamsize>::max());
+    auto const char_count = palette_file.gcount();
+    palette_file.seekg(start);
+    size_t palLen = char_count / sizeof(uint16_t);
     assert(palLen >= 16);
     vector<uint16_t> palette(palLen, 0);
     for (size_t ii = 0; ii < palLen; ii++) {
-        palette[ii] = BigEndian::Read2(pal);
+        palette[ii] = BigEndian::Read2(palette_file);
     }
-    auto const getR = [](uint32_t const clr) -> uint32_t {
-        return clr & 0xfU;
+    auto const getRed = [](uint32_t const color) -> uint32_t {
+        return color & 0xfU;
     };
-    auto const getG = [](uint32_t const clr) -> uint32_t {
-        return (clr >> 4U) & 0xfU;
+    auto const getGreen = [](uint32_t const color) -> uint32_t {
+        return (color >> 4U) & 0xfU;
     };
-    auto const getB = [](uint32_t const clr) -> uint32_t {
-        return (clr >> 8U) & 0xfU;
+    auto const getBlue = [](uint32_t const color) -> uint32_t {
+        return (color >> 8U) & 0xfU;
     };
-    auto const deltaSquare = [](int const c1, int const c2) -> unsigned {
-        return (c1 - c2) * (c1 - c2);
+    auto const deltaSquare
+            = [](int const color1, int const color2) -> unsigned {
+        return (color1 - color2) * (color1 - color2);
     };
-    auto const distance
-            = [&deltaSquare, &getR, &getG,
-               &getB](uint16_t const c1, uint16_t const c2) -> unsigned {
-        return deltaSquare(getR(c1), getR(c2)) + deltaSquare(getG(c1), getG(c2))
-               + deltaSquare(getB(c1), getB(c2));
+    auto const distance = [&deltaSquare, &getRed, &getGreen, &getBlue](
+                                  uint16_t const color1,
+                                  uint16_t const color2) -> unsigned {
+        return deltaSquare(getRed(color1), getRed(color2))
+               + deltaSquare(getGreen(color1), getGreen(color2))
+               + deltaSquare(getBlue(color1), getBlue(color2));
     };
     auto& DistTable = get_dist_table();
     for (size_t ii = 0; ii < 16; ii++) {
@@ -104,16 +106,16 @@ vector<ShortTile> split_tile(Tile const& tile) noexcept {
             Tile::Line_size == ShortTile::Line_size,
             "Mismatched tile line sizes!");
     // Reserve space for return value.
-    vector<ShortTile> ret;
-    ret.reserve(4);
+    vector<ShortTile> new_tiles;
+    new_tiles.reserve(4);
 
     auto start = tile.begin(NoFlip);
     for (unsigned ii = 0; ii < Tile::Num_lines / ShortTile::Num_lines; ii++) {
         // Want to copy 2 lines.
         auto const finish = start + 2 * ShortTile::Line_size;
-        ret.emplace_back(start, finish, NoFlip, 1);
+        new_tiles.emplace_back(start, finish, NoFlip, 1);
     }
-    return ret;
+    return new_tiles;
 }
 
 // Merges the given 4 short (2-line) tiles into a full-sized tile.
@@ -122,22 +124,26 @@ Tile merge_tiles(
         FlipMode const flip1, ShortTile const& tile2, FlipMode const flip2,
         ShortTile const& tile3, FlipMode const flip3) noexcept {
     Tile dest;
-    auto it = dest.begin(NoFlip);
-    for (auto src = tile0.begin(flip0);
-         it != dest.end(NoFlip) && src != tile0.end(flip0); ++it, ++src) {
-        *it = *src;
+    auto iter = dest.begin(NoFlip);
+    for (auto source = tile0.begin(flip0);
+         iter != dest.end(NoFlip) && source != tile0.end(flip0);
+         ++iter, ++source) {
+        *iter = *source;
     }
-    for (auto src = tile1.begin(flip1);
-         it != dest.end(NoFlip) && src != tile1.end(flip1); ++it, ++src) {
-        *it = *src;
+    for (auto source = tile1.begin(flip1);
+         iter != dest.end(NoFlip) && source != tile1.end(flip1);
+         ++iter, ++source) {
+        *iter = *source;
     }
-    for (auto src = tile2.begin(flip2);
-         it != dest.end(NoFlip) && src != tile2.end(flip2); ++it, ++src) {
-        *it = *src;
+    for (auto source = tile2.begin(flip2);
+         iter != dest.end(NoFlip) && source != tile2.end(flip2);
+         ++iter, ++source) {
+        *iter = *source;
     }
-    for (auto src = tile3.begin(flip3);
-         it != dest.end(NoFlip) && src != tile3.end(flip3); ++it, ++src) {
-        *it = *src;
+    for (auto source = tile3.begin(flip3);
+         iter != dest.end(NoFlip) && source != tile3.end(flip3);
+         ++iter, ++source) {
+        *iter = *source;
     }
     return dest;
 }

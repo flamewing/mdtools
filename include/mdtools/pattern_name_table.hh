@@ -44,26 +44,27 @@ protected:
 
 public:
     Pattern_Name_Table() noexcept = default;
-    Pattern_Name_Table(std::istream& in, bool const compressed) noexcept {
-        std::stringstream sin(std::ios::in | std::ios::out | std::ios::binary);
+    Pattern_Name_Table(std::istream& input, bool const compressed) noexcept {
+        std::stringstream inner_input(
+                std::ios::in | std::ios::out | std::ios::binary);
         if (compressed) {
-            enigma::decode(in, sin);
+            enigma::decode(input, inner_input);
         } else {
-            sin << in.rdbuf();
+            inner_input << input.rdbuf();
         }
 
         for (Line& line : table) {
             for (auto& pattern : line) {
-                uint16_t pnt = BigEndian::Read2(sin);
-                pattern      = Pattern_Name(sin.good() ? pnt : 0U);
+                uint16_t new_pattern = BigEndian::Read2(inner_input);
+                pattern = Pattern_Name(inner_input.good() ? new_pattern : 0U);
             }
         }
     }
-    Pattern_Name_Table(Pattern_Name_Table const&) noexcept = default;
-    Pattern_Name_Table(Pattern_Name_Table&&) noexcept      = default;
-    virtual ~Pattern_Name_Table() noexcept                 = default;
+    Pattern_Name_Table(Pattern_Name_Table const&) noexcept            = default;
+    Pattern_Name_Table(Pattern_Name_Table&&) noexcept                 = default;
+    virtual ~Pattern_Name_Table() noexcept                            = default;
     Pattern_Name_Table& operator=(Pattern_Name_Table const&) noexcept = default;
-    Pattern_Name_Table& operator=(Pattern_Name_Table&&) noexcept = default;
+    Pattern_Name_Table& operator=(Pattern_Name_Table&&) noexcept      = default;
 
     Line const& operator[](size_t const n) const noexcept {
         return table[n];
@@ -72,10 +73,10 @@ public:
         return table[n];
     }
 
-    virtual void write(std::ostream& out) const noexcept {
+    virtual void write(std::ostream& output) const noexcept {
         for (Line const& line : table) {
             for (auto const& pattern : line) {
-                pattern.write(out);
+                pattern.write(output);
             }
         }
     }

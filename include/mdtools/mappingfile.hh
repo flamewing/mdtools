@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIB_MAPPINGFILE_HH
-#define LIB_MAPPINGFILE_HH
+#ifndef LIB_MAPPING_FILE_HH
+#define LIB_MAPPING_FILE_HH
 
 #include <mdtools/dplcfile.hh>
 #include <mdtools/framemapping.hh>
@@ -27,19 +27,19 @@
 struct mapping_file {
     std::vector<frame_mapping> frames;
 
-    [[nodiscard]] size_t size(int ver) const noexcept;
+    [[nodiscard]] size_t size(int version) const noexcept;
 
     mapping_file() = default;
-    mapping_file(std::istream& in, int ver);
-    void write(std::ostream& out, int ver, bool nullfirst) const;
+    mapping_file(std::istream& input, int version);
+    void write(std::ostream& output, int version, bool null_first) const;
     void print() const;
-    void merge(mapping_file const& src, dplc_file const& dplc);
-    void change_pal(int srcpal, int dstpal);
+    void merge(mapping_file const& source, dplc_file const& dplc);
+    void change_pal(int source_palette, int dest_palette);
     void optimize(
-            mapping_file const& src, dplc_file const& indplc,
+            mapping_file const& source, dplc_file const& indplc,
             dplc_file& outdplc);
 
-    [[nodiscard]] dplc_file split(mapping_file const& src);
+    [[nodiscard]] dplc_file split(mapping_file const& source);
 };
 
-#endif    // LIB_MAPPINGFILE_HH
+#endif    // LIB_MAPPING_FILE_HH

@@ -49,11 +49,11 @@ private:
     uint16_t block{0};
 
 public:
-    void read(istream& in) noexcept {
-        block = BigEndian::Read2(in);
+    void read(istream& input) noexcept {
+        block = BigEndian::Read2(input);
     }
-    void write(ostream& out) const noexcept {
-        BigEndian::Write2(out, block);
+    void write(ostream& output) const noexcept {
+        BigEndian::Write2(output, block);
     }
     [[nodiscard]] constexpr uint32_t get_block() const noexcept {
         return block;
@@ -61,12 +61,12 @@ public:
     [[nodiscard]] constexpr uint32_t get_index() const noexcept {
         return block & 0x3FFU;
     }
-    constexpr void set_block(uint16_t blk) {
-        block = blk;
+    constexpr void set_block(uint16_t block_) {
+        block = block_;
     }
-    constexpr void set_index(uint16_t idx) {
+    constexpr void set_index(uint16_t index) {
         block &= (~0x3FFU);
-        block |= (idx & 0x3FFU);
+        block |= (index & 0x3FFU);
     }
 };
 
@@ -105,9 +105,9 @@ public:
     constexpr void clear_yflip() noexcept {
         set_block(get_block() & (~0x1000U));
     }
-    constexpr void set_collision(uint16_t col) noexcept {
-        uint32_t blk = get_block() & (~0x6000U);
-        set_block(blk | ((col & 3U) << 13U));
+    constexpr void set_collision(uint16_t collision) noexcept {
+        uint32_t block_ = get_block() & (~0x6000U);
+        set_block(block_ | ((collision & 3U) << 13U));
     }
 };
 
@@ -149,31 +149,32 @@ public:
     constexpr void clear_yflip() noexcept {
         set_block(get_block() & (~0x0800U));
     }
-    constexpr void set_collision1(uint16_t col) noexcept {
-        uint16_t blk = get_block() & (~0x3000U);
-        set_block(blk | ((col & 3U) << 12U));
+    constexpr void set_collision1(uint16_t collision) noexcept {
+        uint16_t block_ = get_block() & (~0x3000U);
+        set_block(block_ | ((collision & 3U) << 12U));
     }
-    constexpr void set_collision2(uint16_t col) noexcept {
-        uint16_t blk = get_block() & (~0xC000U);
-        set_block(blk | ((col & 3U) << 14U));
+    constexpr void set_collision2(uint16_t collision) noexcept {
+        uint16_t block_ = get_block() & (~0xC000U);
+        set_block(block_ | ((collision & 3U) << 14U));
     }
-    constexpr BlockS2& merge(BlockS1 const& high, BlockS1 const& low) noexcept {
-        assert(high.get_index() == low.get_index());
-        assert(high.get_xflip() == low.get_xflip());
-        assert(high.get_yflip() == low.get_yflip());
-        set_index(high.get_index());
-        if (high.get_xflip()) {
+    constexpr BlockS2& merge(
+            BlockS1 const& high_plane, BlockS1 const& low_plane) noexcept {
+        assert(high_plane.get_index() == low_plane.get_index());
+        assert(high_plane.get_xflip() == low_plane.get_xflip());
+        assert(high_plane.get_yflip() == low_plane.get_yflip());
+        set_index(high_plane.get_index());
+        if (high_plane.get_xflip()) {
             set_xflip();
         } else {
             clear_xflip();
         }
-        if (high.get_yflip()) {
+        if (high_plane.get_yflip()) {
             set_yflip();
         } else {
             clear_yflip();
         }
-        set_collision1(high.get_collision());
-        set_collision2(low.get_collision());
+        set_collision1(high_plane.get_collision());
+        set_collision2(low_plane.get_collision());
         return *this;
     }
 };
@@ -186,14 +187,14 @@ private:
     std::array<Blk, numBlocks> blocks;
 
 public:
-    constexpr void read(istream& in) noexcept {
+    constexpr void read(istream& input) noexcept {
         for (auto& elem : blocks) {
-            elem.read(in);
+            elem.read(input);
         }
     }
-    constexpr void write(ostream& out) noexcept {
+    constexpr void write(ostream& output) noexcept {
         for (auto& elem : blocks) {
-            elem.write(out);
+            elem.write(output);
         }
     }
     constexpr bool operator<(Chunk const& other) const noexcept {
@@ -229,34 +230,37 @@ public:
         }
         return true;
     }
-    [[nodiscard]] constexpr Blk const& get_block(int ii) const noexcept {
-        return blocks[ii];
+    [[nodiscard]] constexpr Blk const& get_block(int n) const noexcept {
+        return blocks[n];
     }
-    constexpr Blk& get_block(int ii) noexcept {
-        return blocks[ii];
+    constexpr Blk& get_block(int n) noexcept {
+        return blocks[n];
     }
-    constexpr void set_block(int ii, Blk const& blk) noexcept {
-        blocks[ii] = blk;
+    constexpr void set_block(int n, Blk const& block) noexcept {
+        blocks[n] = block;
     }
 };
 
 struct ChunkMap {
-    uint8_t tl, tr, bl, br;
+    uint8_t top_left, top_right, bottom_left, bottom_right;
 };
 
 using ChunkS1 = Chunk<16, BlockS1>;
 using ChunkS2 = Chunk<8, BlockS2>;
 
 void split_chunks(
-        ChunkS1 const& highchunk, ChunkS1 const& lowchunk, ChunkS2& tlchunk,
-        ChunkS2& trchunk, ChunkS2& blchunk, ChunkS2& brchunk) noexcept {
+        ChunkS1 const& high_chunk, ChunkS1 const& low_chunk,
+        ChunkS2& top_left_chunk, ChunkS2& top_right_chunk,
+        ChunkS2& bottom_left_chunk, ChunkS2& bottom_right_chunk) noexcept {
     for (int ii = 0; ii < 16; ii++) {
         for (int jj = 0; jj < 16; jj++) {
-            ChunkS2&       curr    = ii < 8 ? (jj < 8 ? tlchunk : blchunk)
-                                            : (jj < 8 ? trchunk : brchunk);
-            BlockS1 const& highblk = highchunk.get_block(jj * 16 + ii);
-            BlockS1 const& lowblk  = lowchunk.get_block(jj * 16 + ii);
-            curr.get_block((jj % 8) * 8 + (ii % 8)).merge(highblk, lowblk);
+            ChunkS2& curr
+                    = ii < 8 ? (jj < 8 ? top_left_chunk : bottom_left_chunk)
+                             : (jj < 8 ? top_right_chunk : bottom_right_chunk);
+            BlockS1 const& high_block = high_chunk.get_block(jj * 16 + ii);
+            BlockS1 const& low_block  = low_chunk.get_block(jj * 16 + ii);
+            curr.get_block((jj % 8) * 8 + (ii % 8))
+                    .merge(high_block, low_block);
         }
     }
 }
@@ -269,12 +273,12 @@ namespace {
         return array<uint8_t, sizeof...(ids)>{base_remap(ids)...};
     }
 
-    constexpr auto identity_remap(uint32_t cc) {
-        return static_cast<uint8_t>(cc & 0x7FU);
+    constexpr auto identity_remap(uint32_t value) {
+        return static_cast<uint8_t>(value & 0x7FU);
     }
 
-    constexpr auto increment_remap(uint32_t cc) {
-        return static_cast<uint8_t>((cc + 1U) & 0x7FU);
+    constexpr auto increment_remap(uint32_t value) {
+        return static_cast<uint8_t>((value + 1U) & 0x7FU);
     }
 
     constexpr auto init_remaps(int levelid) {
@@ -347,22 +351,22 @@ int main(int argc, char* argv[]) {
         return 2;
     }
 
-    ifstream flayoutFG(argv[2], ios::in | ios::binary);
-    if (!flayoutFG.good()) {
+    ifstream input_layout_fg(argv[2], ios::in | ios::binary);
+    if (!input_layout_fg.good()) {
         cerr << "Input layout file '" << argv[2] << "' could not be opened."
              << endl;
         return 3;
     }
 
-    ifstream flayoutBG(argv[3], ios::in | ios::binary);
-    if (!flayoutBG.good()) {
+    ifstream input_layout_bg(argv[3], ios::in | ios::binary);
+    if (!input_layout_bg.good()) {
         cerr << "Input layout file '" << argv[3] << "' could not be opened."
              << endl;
         return 4;
     }
 
-    ifstream fchunks(argv[4], ios::in | ios::binary);
-    if (!fchunks.good()) {
+    ifstream input_chunks(argv[4], ios::in | ios::binary);
+    if (!input_chunks.good()) {
         cerr << "Input chunks file '" << argv[4] << "' could not be opened."
              << endl;
         return 5;
@@ -378,88 +382,90 @@ int main(int argc, char* argv[]) {
 
     do {
         ChunkS1 chunk;
-        chunk.read(fchunks);
+        chunk.read(input_chunks);
         chunkss1.push_back(chunk);
-    } while (fchunks.good());
+    } while (input_chunks.good());
 
-    fchunks.close();
+    input_chunks.close();
 
-    size_t fgw = flayoutFG.get() + 1;
-    size_t fgh = flayoutFG.get() + 1;
-    size_t bgw = flayoutBG.get() + 1;
-    size_t bgh = flayoutBG.get() + 1;
-    cout << "Layout sizes: FG: (" << fgw << ", " << fgh << "), BG: (" << bgw
-         << ", " << bgh << ")" << endl;
-    set<uint8_t>    usedchunks;
-    vector<uint8_t> needremap;
-    needremap.resize(chunkss1.size());
-    set<ChunkS1> uniquechunks;
+    size_t fg_width  = input_layout_fg.get() + 1;
+    size_t fg_height = input_layout_fg.get() + 1;
+    size_t bg_width  = input_layout_bg.get() + 1;
+    size_t bg_height = input_layout_bg.get() + 1;
+    cout << "Layout sizes: FG: (" << fg_width << ", " << fg_height << "), BG: ("
+         << bg_width << ", " << bg_height << ")" << endl;
+    set<uint8_t>    used_chunks;
+    vector<uint8_t> need_remap;
+    need_remap.resize(chunkss1.size());
+    set<ChunkS1> unique_chunks;
 
-    auto process_layout = [&](auto& flayout, auto count) {
+    auto process_layout = [&](auto& input_layout, auto count) {
         vector<uint8_t> vlayout(count, 0);
         for (size_t ii = 0; ii < count; ii++) {
-            char cc;
-            flayout.get(cc);
-            auto uc     = static_cast<uint8_t>(cc);
-            vlayout[ii] = uc;
-            if ((uc & 0x80U) != 0) {
-                needremap[uc & 0x7FU] = 1;
-                // usedchunks.insert(remaps[uc & 0x7F]);
+            char input_value;
+            input_layout.get(input_value);
+            auto value  = static_cast<uint8_t>(input_value);
+            vlayout[ii] = value;
+            if ((value & 0x80U) != 0) {
+                need_remap[value & 0x7FU] = 1;
+                // used_chunks.insert(remaps[uc & 0x7F]);
             }
-            usedchunks.insert(uc & 0x7FU);
-            if ((uc & 0x7FU) != 0) {
-                uniquechunks.insert(chunkss1[(uc & 0x7FU) - 1]);
+            used_chunks.insert(value & 0x7FU);
+            if ((value & 0x7FU) != 0) {
+                unique_chunks.insert(chunkss1[(value & 0x7FU) - 1]);
             }
         }
-        flayout.close();
+        input_layout.close();
         return vlayout;
     };
 
-    auto   layouts1FG = process_layout(flayoutFG, fgw * fgh);
-    size_t usedfg     = usedchunks.size();
-    auto   layouts1BG = process_layout(flayoutBG, bgw * bgh);
+    auto   layouts1FG = process_layout(input_layout_fg, fg_width * fg_height);
+    size_t usedfg     = used_chunks.size();
+    auto   layouts1BG = process_layout(input_layout_bg, bg_width * bg_height);
 
     cout << "Number of chunks: total: " << chunkss1.size() << ", FG: " << usedfg
-         << ", BG: " << (usedchunks.size() - usedfg)
-         << ", used: " << usedchunks.size()
-         << ", unique: " << uniquechunks.size() << endl;
+         << ", BG: " << (used_chunks.size() - usedfg)
+         << ", used: " << used_chunks.size()
+         << ", unique: " << unique_chunks.size() << endl;
 
     // size_t s2w = 128, s2h = 20;
     // vector<uint8_t> layouts2(s2w * s2h, 0);
     vector<ChunkS2> chunkss2;
     chunkss2.reserve(256);
-    map<ChunkS2, size_t>   chunkids;
-    map<uint8_t, ChunkMap> s1s2chunkidmap;
+    map<ChunkS2, size_t>   chunk_ids;
+    map<uint8_t, ChunkMap> s1s2chunk_id_map;
 
-    auto checked_insert = [&](auto& id, auto& dst) {
-        auto it = chunkids.find(id);
-        if (it != chunkids.end()) {
-            dst = it->second;
+    auto checked_insert = [&](auto& index, auto& dest) {
+        auto found = chunk_ids.find(index);
+        if (found != chunk_ids.end()) {
+            dest = found->second;
         } else {
-            dst = chunkids[id] = chunkss2.size();
-            chunkss2.push_back(id);
+            dest = chunk_ids[index] = chunkss2.size();
+            chunkss2.push_back(index);
         }
     };
 
-    for (auto chunk : usedchunks) {
+    for (auto chunk : used_chunks) {
         if (chunk == 0U) {
             continue;
         }
         chunk--;
-        ChunkS1 highchunk = chunkss1[chunk];
-        ChunkS1 lowchunk
-                = needremap[chunk] != 0U ? chunkss1[remaps[chunk]] : highchunk;
-        ChunkS2 tlchunk;
-        ChunkS2 trchunk;
-        ChunkS2 blchunk;
-        ChunkS2 brchunk;
-        split_chunks(highchunk, lowchunk, tlchunk, trchunk, blchunk, brchunk);
-        ChunkMap map{};
-        checked_insert(tlchunk, map.tl);
-        checked_insert(trchunk, map.tr);
-        checked_insert(blchunk, map.bl);
-        checked_insert(brchunk, map.br);
-        s1s2chunkidmap[chunk] = map;
+        ChunkS1 high_chunk = chunkss1[chunk];
+        ChunkS1 low_chunk  = need_remap[chunk] != 0U ? chunkss1[remaps[chunk]]
+                                                     : high_chunk;
+        ChunkS2 top_left_chunk;
+        ChunkS2 top_right_chunk;
+        ChunkS2 bottom_left_chunk;
+        ChunkS2 bottom_right_chunk;
+        split_chunks(
+                high_chunk, low_chunk, top_left_chunk, top_right_chunk,
+                bottom_left_chunk, bottom_right_chunk);
+        ChunkMap chunk_map{};
+        checked_insert(top_left_chunk, chunk_map.top_left);
+        checked_insert(top_right_chunk, chunk_map.top_right);
+        checked_insert(bottom_left_chunk, chunk_map.bottom_left);
+        checked_insert(bottom_right_chunk, chunk_map.bottom_right);
+        s1s2chunk_id_map[chunk] = chunk_map;
     }
 
     cout << "Number of S2 chunks: " << chunkss2.size() << endl;

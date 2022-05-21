@@ -67,8 +67,8 @@ int main(int argc, char* argv[]) {
             option{nullptr, 0, nullptr, 0}};
 
     set<uint16_t> blacklist;
-    bool          sizeOnly = false;
-    uint16_t      paldelta = 0;
+    bool          size_only     = false;
+    uint16_t      palette_delta = 0;
 
     while (true) {
         int option_index = 0;
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
         switch (option_char) {
         case 'p':
             if (optarg != nullptr) {
-                paldelta = static_cast<uint16_t>(
+                palette_delta = static_cast<uint16_t>(
                         (strtoul(optarg, nullptr, 0) & 3U) << 13U);
             }
             break;
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
             }
             break;
         case 's':
-            sizeOnly = true;
+            size_only = true;
             break;
         default:
             break;
@@ -100,22 +100,22 @@ int main(int argc, char* argv[]) {
     }
 
     int numArgs = argc - optind;
-    if (numArgs == 0 || (!sizeOnly && numArgs != 2)) {
+    if (numArgs == 0 || (!size_only && numArgs != 2)) {
         usage(argv[0]);
         return 1;
     }
 
     int32_t delta = 0;
-    if (!sizeOnly) {
+    if (!size_only) {
         delta = strtol(argv[optind++], nullptr, 0);
-        if ((delta == 0) && (paldelta == 0U)) {
+        if ((delta == 0) && (palette_delta == 0U)) {
             cerr << "Adding zero to tile... aborting." << endl << endl;
             return 2;
         }
     }
 
-    ifstream fin(argv[optind], ios::in | ios::binary);
-    if (!fin.good()) {
+    ifstream input(argv[optind], ios::in | ios::binary);
+    if (!input.good()) {
         cerr << "Input file '" << argv[optind] << "' could not be opened."
              << endl
              << endl;
@@ -123,15 +123,15 @@ int main(int argc, char* argv[]) {
     }
 
     stringstream inbuffer(ios::in | ios::out | ios::binary);
-    enigma::decode(fin, inbuffer);
-    fin.close();
+    enigma::decode(input, inbuffer);
+    input.close();
 
-    if (sizeOnly) {
+    if (size_only) {
         inbuffer.seekg(0, ios::end);
         cout << inbuffer.tellg() / 2 << endl;
     } else {
-        ofstream fout(argv[optind], ios::out | ios::binary);
-        if (!fout.good()) {
+        ofstream output(argv[optind], ios::out | ios::binary);
+        if (!output.good()) {
             cerr << "Output file '" << argv[optind] << "' could not be opened."
                  << endl
                  << endl;
@@ -139,27 +139,27 @@ int main(int argc, char* argv[]) {
         }
 
         inbuffer.seekg(0);
-        stringstream outbuffer(ios::in | ios::out | ios::binary);
-        size_t       cnt = 0;
+        stringstream output_buffer(ios::in | ios::out | ios::binary);
+        size_t       count = 0;
         while (true) {
-            uint16_t val = BigEndian::Read2(inbuffer);
+            uint16_t value = BigEndian::Read2(inbuffer);
             if (!inbuffer.good()) {
                 break;
             }
-            uint32_t tile  = val & 0x7FFU;
-            uint32_t pal   = val & 0x6000U;
-            uint32_t flags = val & 0x9800U;
+            uint32_t tile    = value & 0x7FFU;
+            uint32_t palette = value & 0x6000U;
+            uint32_t flags   = value & 0x9800U;
             if (blacklist.find(tile) == blacklist.cend()) {
-                val = ((tile + delta) & 0x7FFU) | ((pal + paldelta) & 0x6000U)
-                      | flags;
+                value = ((tile + delta) & 0x7FFU)
+                        | ((palette + palette_delta) & 0x6000U) | flags;
             }
-            BigEndian::Write2(outbuffer, val);
-            cnt++;
+            BigEndian::Write2(output_buffer, value);
+            count++;
         }
-        cout << cnt << endl;
+        cout << count << endl;
 
-        outbuffer.seekg(0);
-        enigma::encode(outbuffer, fout);
+        output_buffer.seekg(0);
+        enigma::encode(output_buffer, output);
     }
 
     return 0;

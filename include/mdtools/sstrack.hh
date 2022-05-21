@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SSTRACK_HH
-#define SSTRACK_HH
+#ifndef SS_TRACK_HH
+#define SS_TRACK_HH
 
 #include <mdtools/pattern_name_table.hh>
 
@@ -33,7 +33,7 @@ private:
 
 public:
     SSTrackFrame() noexcept = default;
-    SSTrackFrame(std::istream& in, bool xflip) noexcept;
+    SSTrackFrame(std::istream& input, bool xflip) noexcept;
 };
 
-#endif    // SSTRACK_HH
+#endif    // SS_TRACK_HH

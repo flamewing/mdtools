@@ -71,35 +71,35 @@ static void usage() {
 using ColorMap = std::array<int, 16>;
 
 struct Tile {
-    std::array<uint8_t, 64> tiledata;
+    std::array<uint8_t, 64> tile_data;
 
-    bool read(istream& in) {
-        for (size_t i = 0; i < sizeof(tiledata); i += 2) {
-            size_t col = in.get();
-            if (!in.good()) {
+    bool read(istream& input) {
+        for (size_t i = 0; i < sizeof(tile_data); i += 2) {
+            size_t value = input.get();
+            if (!input.good()) {
                 return false;
             }
-            tiledata[i + 0] = col & 0x0fU;
-            tiledata[i + 1] = (col & 0xf0U) >> 4U;
+            tile_data[i + 0] = value & 0x0fU;
+            tile_data[i + 1] = (value & 0xf0U) >> 4U;
         }
         return true;
     }
 
-    [[nodiscard]] bool blacklisted(uint8_t const bll) const {
-        const auto* it
-                = std::find(std::cbegin(tiledata), std::cend(tiledata), bll);
-        return it != std::cend(tiledata);
+    [[nodiscard]] bool blacklisted(uint8_t const value) const {
+        const auto* found = std::find(
+                std::cbegin(tile_data), std::cend(tile_data), value);
+        return found != std::cend(tile_data);
     }
 
-    void remap(ColorMap& colormap) {
-        for (auto& elem : tiledata) {
-            elem = colormap[elem];
+    void remap(ColorMap& color_map) {
+        for (auto& elem : tile_data) {
+            elem = color_map[elem];
         }
     }
 
-    void write(ostream& out) {
-        for (size_t i = 0; i < sizeof(tiledata); i += 2) {
-            out.put(tiledata[i] | uint32_t(tiledata[i + 1] << 4U));
+    void write(ostream& output) {
+        for (size_t i = 0; i < sizeof(tile_data); i += 2) {
+            output.put(tile_data[i] | uint32_t(tile_data[i + 1] << 4U));
         }
     }
 };
@@ -111,31 +111,32 @@ using moduled_uncompressed = ModuledAdaptor<uncompressed, 4096U, 1U>;
 class uncompressed : public basic_uncompressed, public moduled_uncompressed {
     friend basic_uncompressed;
     friend moduled_uncompressed;
-    static bool encode(std::ostream& Dst, uint8_t const* data, size_t Size);
+    static bool encode(std::ostream& Dest, uint8_t const* data, size_t Size);
 
 public:
     using basic_uncompressed::encode;
-    static bool decode(std::istream& Src, std::iostream& Dst);
+    static bool decode(std::istream& Source, std::iostream& Dest);
 };
 
-bool uncompressed::encode(std::ostream& Dst, uint8_t const* data, size_t Size) {
-    Dst.write(reinterpret_cast<const char*>(data), Size);
+bool uncompressed::encode(
+        std::ostream& Dest, uint8_t const* data, size_t Size) {
+    Dest.write(reinterpret_cast<const char*>(data), Size);
     return true;
 }
 
-bool uncompressed::decode(std::istream& Src, std::iostream& Dst) {
-    Dst << Src.rdbuf();
+bool uncompressed::decode(std::istream& Source, std::iostream& Dest) {
+    Dest << Source.rdbuf();
     return true;
 }
 
-void recolor(istream& in, ostream& out, ColorMap& colormap) {
+void recolor(istream& input, ostream& output, ColorMap& color_map) {
     Tile tile{};
     while (true) {
-        if (!tile.read(in)) {
+        if (!tile.read(input)) {
             break;
         }
-        tile.remap(colormap);
-        tile.write(out);
+        tile.remap(color_map);
+        tile.write(output);
     }
 }
 
@@ -160,50 +161,48 @@ int main(int argc, char* argv[]) {
             option{"moduled", optional_argument, nullptr, 'm'},
             option{nullptr, 0, nullptr, 0}};
 
-    bool       moduled    = false;
-    streamsize modulesize = 0x1000;
+    bool       moduled     = false;
+    streamsize module_size = 0x1000;
     // Identity map.
-    ColorMap colormap{0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
-                      0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
-    unsigned numcolors = 0;
+    ColorMap color_map{0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+                       0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
+    unsigned num_colors = 0;
 
-    static const std::unordered_map<string_view, art_format>
-            format_lut{
-                    {{"unc"sv,
-                      {uncompressed::encode, uncompressed::decode,
-                       uncompressed::moduled_encode,
-                       uncompressed::moduled_decode}},
-                     {"comp"sv,
-                      {comper::encode, comper::decode, comper::moduled_encode,
-                       comper::moduled_decode}},
-                     {"compx"sv,
-                      {comperx::encode, comperx::decode,
-                       comperx::moduled_encode, comperx::moduled_decode}},
-                     {"kos"sv,
-                      {kosinski::encode, kosinski::decode,
-                       kosinski::moduled_encode, kosinski::moduled_decode}},
-                     {"kos+"sv,
-                      {kosplus::encode, kosplus::decode,
-                       kosplus::moduled_encode, kosplus::moduled_decode}},
-                     {"lzkn1"sv,
-                      {lzkn1::encode, lzkn1::decode, lzkn1::moduled_encode,
-                       lzkn1::moduled_decode}},
-                     {"nem"sv,
-                      {nemesis::encode,
-                       +[](std::istream& Src, std::iostream& Dst) {
-                           return nemesis::decode(Src, Dst);
-                       },
-                       nemesis::moduled_encode, nemesis::moduled_decode}},
-                     {"rocket"sv,
-                      {rocket::encode, rocket::decode, rocket::moduled_encode,
-                       rocket::moduled_decode}},
-                     {"snk"sv,
-                      {snkrle::encode,
-                       +[](std::istream& Src, std::iostream& Dst) {
-                           return snkrle::decode(Src, Dst);
-                       },
-                       snkrle::moduled_encode, snkrle::moduled_decode}}}};
-    auto fmt = format_lut.cend();
+    static const std::unordered_map<string_view, art_format> format_lut{
+            {{"unc"sv,
+              {uncompressed::encode, uncompressed::decode,
+               uncompressed::moduled_encode, uncompressed::moduled_decode}},
+             {"comp"sv,
+              {comper::encode, comper::decode, comper::moduled_encode,
+               comper::moduled_decode}},
+             {"compx"sv,
+              {comperx::encode, comperx::decode, comperx::moduled_encode,
+               comperx::moduled_decode}},
+             {"kos"sv,
+              {kosinski::encode, kosinski::decode, kosinski::moduled_encode,
+               kosinski::moduled_decode}},
+             {"kos+"sv,
+              {kosplus::encode, kosplus::decode, kosplus::moduled_encode,
+               kosplus::moduled_decode}},
+             {"lzkn1"sv,
+              {lzkn1::encode, lzkn1::decode, lzkn1::moduled_encode,
+               lzkn1::moduled_decode}},
+             {"nem"sv,
+              {nemesis::encode,
+               +[](std::istream& Source, std::iostream& Dest) {
+                   return nemesis::decode(Source, Dest);
+               },
+               nemesis::moduled_encode, nemesis::moduled_decode}},
+             {"rocket"sv,
+              {rocket::encode, rocket::decode, rocket::moduled_encode,
+               rocket::moduled_decode}},
+             {"snk"sv,
+              {snkrle::encode,
+               +[](std::istream& Source, std::iostream& Dest) {
+                   return snkrle::decode(Source, Dest);
+               },
+               snkrle::moduled_encode, snkrle::moduled_decode}}}};
+    auto format = format_lut.cend();
 
     while (true) {
         int option_index = 0;
@@ -224,8 +223,8 @@ int main(int argc, char* argv[]) {
                 usage();
                 return 1;
             }
-            fmt = format_lut.find(optarg);
-            if (fmt == format_lut.cend()) {
+            format = format_lut.find(optarg);
+            if (format == format_lut.cend()) {
                 usage();
                 return 1;
             }
@@ -234,7 +233,7 @@ int main(int argc, char* argv[]) {
         case 'm':
             moduled = true;
             if (optarg != nullptr) {
-                modulesize = strtoul(optarg, nullptr, 0);
+                module_size = strtoul(optarg, nullptr, 0);
             }
             break;
 
@@ -258,24 +257,24 @@ int main(int argc, char* argv[]) {
                 usage();
                 return 1;
             }
-            int c1;
+            int source_color;
             if (option_char >= '0' && option_char <= '9') {
-                c1 = option_char - '0';
+                source_color = option_char - '0';
             } else {
-                c1 = option_char - 'a' + 10;
+                source_color = option_char - 'a' + 10;
             }
-            int d = static_cast<uint8_t>(*optarg);
-            if (d >= '0' && d <= '9') {
-                colormap[c1] = d - '0';
-            } else if (d >= 'a' && d <= 'f') {
-                colormap[c1] = d - 'a' + 10;
-            } else if (d >= 'A' && d <= 'F') {
-                colormap[c1] = d - 'A' + 10;
+            int dest_color = static_cast<uint8_t>(*optarg);
+            if (dest_color >= '0' && dest_color <= '9') {
+                color_map[source_color] = dest_color - '0';
+            } else if (dest_color >= 'a' && dest_color <= 'f') {
+                color_map[source_color] = dest_color - 'a' + 10;
+            } else if (dest_color >= 'A' && dest_color <= 'F') {
+                color_map[source_color] = dest_color - 'A' + 10;
             } else {
                 usage();
                 return 1;
             }
-            numcolors++;
+            num_colors++;
             break;
         }
         default:
@@ -284,49 +283,49 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (argc - optind < 2 || numcolors == 0) {
+    if (argc - optind < 2 || num_colors == 0) {
         usage();
         return 2;
     }
 
-    ifstream fin(argv[optind], ios::in | ios::binary);
-    if (!fin.good()) {
+    ifstream input(argv[optind], ios::in | ios::binary);
+    if (!input.good()) {
         cerr << "Input file '" << argv[optind] << "' could not be opened."
              << endl
              << endl;
         return 3;
     }
 
-    stringstream sin(ios::in | ios::out | ios::binary);
-    stringstream sout(ios::in | ios::out | ios::binary);
+    stringstream input_buffer(ios::in | ios::out | ios::binary);
+    stringstream output_buffer(ios::in | ios::out | ios::binary);
 
-    auto const& [key, fmt_handler] = *fmt;
+    auto const& [key, fmt_handler] = *format;
 
-    fin.seekg(0);
+    input.seekg(0);
     if (moduled) {
-        fmt_handler.moduled_decode(fin, sin, modulesize);
+        fmt_handler.moduled_decode(input, input_buffer, module_size);
     } else {
-        fmt_handler.decode(fin, sin);
+        fmt_handler.decode(input, input_buffer);
     }
 
-    fin.close();
-    sin.seekg(0);
-    recolor(sin, sout, colormap);
+    input.close();
+    input_buffer.seekg(0);
+    recolor(input_buffer, output_buffer, color_map);
 
-    ofstream fout(argv[optind + 1], ios::out | ios::binary);
-    if (!fout.good()) {
+    ofstream output(argv[optind + 1], ios::out | ios::binary);
+    if (!output.good()) {
         cerr << "Output file '" << argv[optind + 1] << "' could not be opened."
              << endl
              << endl;
         return 4;
     }
 
-    sout.seekg(0);
+    output_buffer.seekg(0);
     if (moduled) {
-        fmt_handler.moduled_encode(sout, fout, modulesize);
+        fmt_handler.moduled_encode(output_buffer, output, module_size);
     } else {
-        fmt_handler.encode(sout, fout);
+        fmt_handler.encode(output_buffer, output);
     }
 
-    fout.close();
+    output.close();
 }
