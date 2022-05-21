@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_FRAMEDPLC_H
-#define __LIB_FRAMEDPLC_H
+#ifndef LIB_FRAMEDPLC_HH
+#define LIB_FRAMEDPLC_HH
 
 #include <mdtools/singledplc.hh>
 
@@ -47,4 +47,4 @@ struct frame_dplc {
             frame_dplc const& rhs) const noexcept = default;
 };
 
-#endif    // __LIB_FRAMEDPLC_H
+#endif    // LIB_FRAMEDPLC_HH

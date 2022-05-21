@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_SINGLEMAPPING_H
-#define __LIB_SINGLEMAPPING_H
+#ifndef LIB_SINGLEMAPPING_HH
+#define LIB_SINGLEMAPPING_HH
 
 #include <mdtools/singledplc.hh>
 
@@ -69,4 +69,4 @@ struct single_mapping {
             single_mapping const& rhs) const noexcept = default;
 };
 
-#endif    // __LIB_SINGLEMAPPING_H
+#endif    // LIB_SINGLEMAPPING_HH

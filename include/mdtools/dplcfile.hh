@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_DPLCFILE_H
-#define __LIB_DPLCFILE_H
+#ifndef LIB_DPLCFILE_HH
+#define LIB_DPLCFILE_HH
 
 #include <mdtools/framedplc.hh>
 
@@ -36,4 +36,4 @@ struct dplc_file {
     [[nodiscard]] dplc_file consolidate() const;
 };
 
-#endif    // __LIB_DPLCFILE_H
+#endif    // LIB_DPLCFILE_HH

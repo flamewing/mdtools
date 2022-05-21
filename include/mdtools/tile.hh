@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TILE_H
-#define __TILE_H
+#ifndef TILE_HH
+#define TILE_HH
 
 #include <mdtools/pattern_name.hh>
 
@@ -628,4 +628,4 @@ void BaseTile<lsize, nlines>::draw_tile(
 
 using Tile = BaseTile<8, 8>;
 
-#endif    // __TILE_H
+#endif    // TILE_HH

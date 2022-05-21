@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PATTERN_NAME_TABLE_H
-#define __PATTERN_NAME_TABLE_H
+#ifndef PATTERN_NAME_TABLE_HH
+#define PATTERN_NAME_TABLE_HH
 
 #include <mdcomp/bigendian_io.hh>
 #include <mdcomp/enigma.hh>
@@ -85,4 +85,4 @@ using PlaneH32V28  = Pattern_Name_Table<32, 28>;
 using PlaneH40V28  = Pattern_Name_Table<40, 28>;
 using PlaneH128V28 = Pattern_Name_Table<128, 28>;
 
-#endif    // __PATTERN_NAME_TABLE_H
+#endif    // PATTERN_NAME_TABLE_HH

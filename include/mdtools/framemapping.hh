@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_FRAMEMAPPING_H
-#define __LIB_FRAMEMAPPING_H
+#ifndef LIB_FRAMEMAPPING_HH
+#define LIB_FRAMEMAPPING_HH
 
 #include <mdtools/framedplc.hh>
 #include <mdtools/singlemapping.hh>
@@ -48,4 +48,4 @@ struct frame_mapping {
             frame_mapping const& rhs) const noexcept = default;
 };
 
-#endif    // __LIB_FRAMEMAPPING_H
+#endif    // LIB_FRAMEMAPPING_HH

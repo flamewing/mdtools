@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __VRAM_H
-#define __VRAM_H
+#ifndef VRAM_HH
+#define VRAM_HH
 
 #include <mdtools/pattern_name.hh>
 #include <mdtools/tile.hh>
@@ -143,4 +143,4 @@ public:
     }
 };
 
-#endif    // __VRAM_H
+#endif    // VRAM_HH

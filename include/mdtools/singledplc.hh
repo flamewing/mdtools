@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_SINGLEDPLC_H
-#define __LIB_SINGLEDPLC_H
+#ifndef LIB_SINGLEDPLC_HH
+#define LIB_SINGLEDPLC_HH
 
 #include <mdtools/ignore_unused_variable_warning.hh>
 
@@ -46,4 +46,4 @@ struct single_dplc {
             single_dplc const& rhs) const noexcept = default;
 };
 
-#endif    // __LIB_SINGLEDPLC_H
+#endif    // LIB_SINGLEDPLC_HH

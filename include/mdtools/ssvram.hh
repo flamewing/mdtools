@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SSVRAM_H
-#define __SSVRAM_H
+#ifndef SSVRAM_HH
+#define SSVRAM_HH
 
 #include <mdtools/vram.hh>
 
@@ -43,4 +43,4 @@ Tile merge_tiles(
         FlipMode flip1, ShortTile const& tile2, FlipMode flip2,
         ShortTile const& tile3, FlipMode flip3) noexcept;
 
-#endif    // __SSVRAM_H
+#endif    // SSVRAM_HH

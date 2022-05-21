@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TOOLS_FMVOICE_H
-#define __TOOLS_FMVOICE_H
+#ifndef TOOLS_FMVOICE_HH
+#define TOOLS_FMVOICE_HH
 
 #include <array>
 #include <cstdint>
@@ -53,4 +53,4 @@ public:
     void print(std::ostream& out, int sonicver, int id) const;
 };
 
-#endif    // __TOOLS_FMVOICE_H
+#endif    // TOOLS_FMVOICE_HH

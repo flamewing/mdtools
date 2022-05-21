@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_MAPPINGFILE_H
-#define __LIB_MAPPINGFILE_H
+#ifndef LIB_MAPPINGFILE_HH
+#define LIB_MAPPINGFILE_HH
 
 #include <mdtools/dplcfile.hh>
 #include <mdtools/framemapping.hh>
@@ -42,4 +42,4 @@ struct mapping_file {
     [[nodiscard]] dplc_file split(mapping_file const& src);
 };
 
-#endif    // __LIB_MAPPINGFILE_H
+#endif    // LIB_MAPPINGFILE_HH

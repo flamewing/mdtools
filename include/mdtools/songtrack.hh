@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TOOLS_SONGTRACK_H
-#define __TOOLS_SONGTRACK_H
+#ifndef TOOLS_SONGTRACK_HH
+#define TOOLS_SONGTRACK_HH
 
 #include <mdtools/fmvoice.hh>
 #include <mdtools/ignore_unused_variable_warning.hh>
@@ -364,4 +364,4 @@ template class CoordFlagPointer1ParamByte<false>;
 template class CoordFlagPointer2ParamBytes<true>;
 template class CoordFlagPointer2ParamBytes<false>;
 
-#endif    // __TOOLS_SONGTRACK_H
+#endif    // TOOLS_SONGTRACK_HH

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PATTERN_NAME_H
-#define __PATTERN_NAME_H
+#ifndef PATTERN_NAME_HH
+#define PATTERN_NAME_HH
 
 #include <mdcomp/bigendian_io.hh>
 
@@ -181,4 +181,4 @@ public:
     }
 };
 
-#endif    // __PATTERN_NAME_H
+#endif    // PATTERN_NAME_HH
