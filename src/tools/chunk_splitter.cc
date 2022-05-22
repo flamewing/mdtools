@@ -230,14 +230,14 @@ public:
         }
         return true;
     }
-    [[nodiscard]] constexpr Blk const& get_block(int n) const noexcept {
-        return blocks[n];
+    [[nodiscard]] constexpr Blk const& get_block(int index) const noexcept {
+        return blocks[index];
     }
-    constexpr Blk& get_block(int n) noexcept {
-        return blocks[n];
+    constexpr Blk& get_block(int index) noexcept {
+        return blocks[index];
     }
-    constexpr void set_block(int n, Blk const& block) noexcept {
-        blocks[n] = block;
+    constexpr void set_block(int index, Blk const& block) noexcept {
+        blocks[index] = block;
     }
 };
 

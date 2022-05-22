@@ -66,11 +66,11 @@ public:
     Pattern_Name_Table& operator=(Pattern_Name_Table const&) noexcept = default;
     Pattern_Name_Table& operator=(Pattern_Name_Table&&) noexcept      = default;
 
-    Line const& operator[](size_t const n) const noexcept {
-        return table[n];
+    Line const& operator[](size_t const index) const noexcept {
+        return table[index];
     }
-    Line& operator[](size_t const n) noexcept {
-        return table[n];
+    Line& operator[](size_t const index) noexcept {
+        return table[index];
     }
 
     virtual void write(std::ostream& output) const noexcept {

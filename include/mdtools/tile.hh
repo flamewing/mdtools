@@ -480,11 +480,11 @@ private:
         pointer operator->() const noexcept {
             return &(tile_data[loc]);
         }
-        value_type operator[](difference_type n) const noexcept {
-            return *operator+(n);
+        value_type operator[](difference_type index) const noexcept {
+            return *operator+(index);
         }
-        reference operator[](difference_type n) noexcept {
-            return *operator+(n);
+        reference operator[](difference_type index) noexcept {
+            return *operator+(index);
         }
     };
 
