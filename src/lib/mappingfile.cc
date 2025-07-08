@@ -87,10 +87,11 @@ void mapping_file::write(
         }
     }
     for (auto const& [pos, maps] : pos_to_map) {
-        if (pos == size_t(output.tellp())) {
+        auto const fpos = static_cast<size_t>(output.tellp());
+        if (pos == fpos) {
             maps.write(output, version);
         } else if (pos != 0U) {
-            fmt::print(stderr, "Missed write at {}\n", output.tellp());
+            fmt::print(stderr, "Missed write at {}\n", fpos);
             maps.print();
         }
     }

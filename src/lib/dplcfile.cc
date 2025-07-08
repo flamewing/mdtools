@@ -66,7 +66,8 @@ dplc_file::dplc_file(istream& input, int const version) {
     }
 }
 
-void dplc_file::write(ostream& output, int const version, bool const null_first) const {
+void dplc_file::write(
+        ostream& output, int const version, bool const null_first) const {
     map<frame_dplc, size_t> map_to_pos;
     map<size_t, frame_dplc> pos_to_map;
 
@@ -78,7 +79,8 @@ void dplc_file::write(ostream& output, int const version, bool const null_first)
         pos_to_map.emplace(0, frames.front());
     }
     for (auto const& frame : frames) {
-        if (auto const found = map_to_pos.find(frame); found != map_to_pos.end()) {
+        if (auto const found = map_to_pos.find(frame);
+            found != map_to_pos.end()) {
             BigEndian::Write2(output, found->second);
         } else {
             map_to_pos.emplace(frame, size);
@@ -88,10 +90,11 @@ void dplc_file::write(ostream& output, int const version, bool const null_first)
         }
     }
     for (auto const& [position, dplc] : pos_to_map) {
-        if (position == size_t(output.tellp())) {
+        auto const fpos = static_cast<size_t>(output.tellp());
+        if (position == fpos) {
             dplc.write(output, version);
         } else if (position != 0U) {
-            fmt::print(stderr, "Missed write at {}\n", output.tellp());
+            fmt::print(stderr, "Missed write at {}\n", fpos);
             dplc.print();
         }
     }
