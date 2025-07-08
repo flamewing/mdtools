@@ -49,8 +49,14 @@ CheckOptions:
     value: 4
   - key: readability-identifier-length.MinimumParameterNameLength
     value: 4
+  - key: readability-identifier-length.IgnoredParameterNames
+    value: ""
   - key: readability-identifier-length.MinimumLoopCounterNameLength
     value: 4
   - key: readability-identifier-length.IgnoredLoopCounterNames
-    value: "^([ijk][ijk]?|it[0-9]?|_)$"
+    value: "^([ijk]{1,2}|it[0-9]?|_)$"
+  - key: readability-identifier-length.MinimumExceptionNameLength
+    value: 4
+  - key: readability-identifier-length.IgnoredExceptionVariableNames
+    value: ""
 FormatStyle: "file"
