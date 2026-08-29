@@ -597,7 +597,7 @@ void CoordFlag1ParamByte<noret>::print(
             case 0xe1:
                 return {"smpsDetune"sv, false};
             case 0xe2:
-                return {"smpsNop"sv, false};
+                return {"smpsSetCommByte"sv, false};
             case 0xe5:
                 return {"smpsChanTempoDiv"sv, false};
             case 0xe6:
